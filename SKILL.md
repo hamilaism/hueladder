@@ -116,7 +116,10 @@ hue). The adapted Fusilier is Hueladder's default, at the top of the list: a pre
 intervals, not a ranking. Say it is adapted: David Fusilier's contrast targets, exactly, on an
 OKLCH path (color-shades keeps the HSL hue and saturation); the tuner and dark mode work in
 OKLCH too. The original, `colorshades` (color-shades reproduced to the hex), sits right after
-it, to compare. Choose on these numbers and on the criterion that matters to the team
+it, to compare. Leonardo comes the same way: `leonardo` is Adobe's library, to the hex;
+`leonardoAdapted` is the same search and ratios, but colors that fall outside sRGB lose chroma at
+the same hue, where the library clips RGB channels and turns the hue of dark yellows, oranges and
+reds. Name which one you show. Choose on these numbers and on the criterion that matters to the team
 (`$C explain` compares them criterion by criterion). Write `coreMethod`. Reading the results:
 `references/reading-results.md`, `references/methods.md`.
 

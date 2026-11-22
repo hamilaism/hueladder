@@ -230,13 +230,13 @@ try {
   ok(/par défaut/i.test(m) && !/recommand/i.test(m), 'générer : Fusilier marqué « par défaut », rien n\'est « recommandé »');
   const order = await js('return [...document.querySelectorAll("main > .panel, main > details")].map(p => p.querySelector(".briefs") ? "resume" : p.tagName === "DETAILS" ? "detail" : p.querySelector(".ramp") ? "systeme" : "?").join(",")');
   ok(order.startsWith('resume,systeme,detail'), 'générer : le résumé comparatif vient avant le système, le détail après', order);
-  ok(/méthodes? sur 11/.test(m) && /contrat du mode clair/.test(m), 'générer : un verdict chiffré ouvre l\'étape');
+  ok(/méthodes? sur 12/.test(m) && /contrat du mode clair/.test(m), 'générer : un verdict chiffré ouvre l\'étape');
   ok(/contrat tenu/.test(await text('.brief[data-m="fusilier"]')), 'générer : Fusilier annoncé « contrat tenu » dès le choix');
   const pred = await js('return [...document.querySelectorAll(".brief")].map(b => [b.dataset.m, /contrat tenu/.test(b.textContent)]);');
   const real = await js('const { data } = dataOf({ tuned: false }); return data.methodOrder.filter(m => !["existing","tuned"].includes(m)).map(m => [m, contractChecks({ ...data, meta: { ...data.meta, coreMethod: m } }).filter(c => !c.pass && c.area !== "dark").length === 0]);');
   const R0 = Object.fromEntries(real);
   ok(pred.every(([m2, p2]) => R0[m2] === p2), 'générer : la prédiction affichée est celle du contrat', JSON.stringify(pred));
-  ok(await js('return document.querySelectorAll(".brief").length') === 11, 'générer : les 11 méthodes dans le résumé');
+  ok(await js('return document.querySelectorAll(".brief").length') === 12, 'générer : les 12 méthodes dans le résumé');
   ok(await js('return document.querySelector(".brief").dataset.m === "fusilier"'), 'générer : Fusilier en tête');
   const nR = (await st()).ramps.length;
   const shown = await js('const p = [...document.querySelectorAll("main > .panel")].find(p => !p.querySelector(".briefs") && p.querySelector(".ramp")); return p.querySelectorAll(".ramp").length');

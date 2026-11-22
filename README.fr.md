@@ -69,7 +69,7 @@ Cet outil répond aux trois, en mesurant.
 
 | | |
 |---|---|
-| **`index.html`** | l'artefact d'arbitrage : 11 méthodes de génération comparées, plus l'existant comme témoin, sur les vraies couleurs du client, 8 métriques, 5 groupes de graphiques, testeur de paires, usages conventionnels, matrices de contraste. À ouvrir en réunion. |
+| **`index.html`** | l'artefact d'arbitrage : 12 méthodes de génération comparées, plus l'existant comme témoin, sur les vraies couleurs du client, 8 métriques, 5 groupes de graphiques, testeur de paires, usages conventionnels, matrices de contraste. À ouvrir en réunion. |
 | **`tuner.html`** | le régleur : ajuster teinte et éclat pendant que le contraste reste **verrouillé**, comparer les nuanciers entre eux, et récupérer le système complet. |
 | **`<client>-core-colors.tokens.json`** | les tokens DTCG, prêts pour `figma_import_tokens`. Avec un mode sombre déclaré, deux fichiers : `.light.` et `.dark.` |
 | **`<client>-color-guide.md`** | le guide d'usage, pour les personnes et les IA : la règle, le rôle de chaque cran, un bloc de données (pas de rôles sémantiques imposés). |
@@ -259,7 +259,7 @@ La colorimétrie n'est pas approximée :
 | `lib/apca.mjs` | APCA 0.0.98G-4g — les vecteurs apca-w3 |
 | `lib/cam16.mjs` | CAM16 / HCT — material-color-utilities |
 | `lib/tune.mjs` | verrou de luminance, barreau sombre, profil de chroma, moyenne de variantes — 8 000 assertions sur toute la roue |
-| `engine/conformance` | chaque méthode face à sa librairie d'origine : mix et Tailwind 4.3 au hex près, HCT à ΔE 0,6, easing identique hors bord du gamut ; Leonardo identique au hex près, portage de la librairie d'Adobe ; Fusilier original (color-shades) identique au hex près, face aux fonctions de color-shades (`references/methods.md`) |
+| `engine/conformance` | chaque méthode face à sa librairie d'origine : mix et Tailwind 4.3 au hex près, HCT à ΔE 0,6, easing identique hors bord du gamut ; Leonardo original identique au hex près, portage de la librairie d'Adobe (le Leonardo adapté en change le seul gamut, à teinte constante) ; Fusilier original (color-shades) identique au hex près, face aux fonctions de color-shades (`references/methods.md`) |
 
 ```bash
 node check.mjs

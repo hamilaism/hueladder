@@ -5,7 +5,7 @@
 **[Try the studio online](https://hamilaism.github.io/hueladder/)**, nothing to install. *Version française : [README.fr.md](README.fr.md).*
 
 Hueladder turns the few colors a brand picked by hand into complete, accessible scales for a
-design system, and puts a number on every trade-off. It compares eleven generation methods on
+design system, and puts a number on every trade-off. It compares twelve generation methods on
 *your* colors, audits the palette you already have, and ships tokens for code, Figma and AI
 agents.
 
@@ -69,7 +69,7 @@ semantic mapping stays your team's decision.
 
 ## The methods
 
-Eleven generation methods, plus your existing colors as a witness. They all keep the hue and
+Twelve generation methods, plus your existing colors as a witness. They all keep the hue and
 vividness of your starting color, each in its own color space; what sets them apart is what
 they make equal across hues at the same step.
 
@@ -77,7 +77,8 @@ they make equal across hues at the same step.
 |---|---|---|
 | `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier. **Adapted**: his contrast targets, exactly; but Hueladder keeps the OKLCH hue and chroma of your color, where color-shades keeps its HSL hue and saturation, so that the tuner and dark mode work in the same space |
 | `colorshades` | the same contrasts as `fusilier` | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier. **Original**: his tool, reproduced to the hex, keeping your color's HSL hue and saturation. It is there to compare with the adapted version |
-| `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe), interpolated in OKLCH (the library defaults to RGB) |
+| `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe). **Original**: Adobe's library, reproduced to the hex, interpolated in OKLCH (the library defaults to RGB) |
+| `leonardoAdapted` | the same ratios as `leonardo` | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe). **Adapted**: the same scale, search and ratios; but when a color of the scale falls outside sRGB, Hueladder lowers its chroma at the same OKLCH hue, where the library clips each RGB channel, which turns the hue (dark yellows go reddish brown). On the example, 40 colors of 88 change, by ΔE 2.1 on average; hue drift drops from 47° to 2° |
 | `apca` | APCA contrast (Lc) against white | [APCA](https://github.com/Myndex/apca-w3), Andrew Somers. APCA is a measure; Hueladder turns it into a generator |
 | `hct` | HCT tone | [Material Color Utilities](https://github.com/material-foundation/material-color-utilities), Google |
 | `oklch` | OKLCH lightness | [Accessible Palette](https://accessiblepalette.com), Eugene Fedorenko, on Björn Ottosson's [Oklab](https://bottosson.github.io/posts/oklab/) |
@@ -159,7 +160,7 @@ documentation in reading order.
 | APCA 0.0.98G-4g | the apca-w3 test vectors |
 | CAM16 / HCT | material-color-utilities |
 | Six generation methods | their original code (`engine/conformance`): mix, Tailwind 4.3, Leonardo and the original Fusilier identical to the hex (Leonardo is a port of Adobe's library, in OKLCH as in its default RGB; the original Fusilier is checked against color-shades' own functions, on the colorjs.io version it uses); HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge |
-| The other five | no library to compare against: the adapted Fusilier (color-shades' targets, on an OKLCH path), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
+| The other six | no library to compare against: the adapted Fusilier (color-shades' targets, on an OKLCH path), the adapted Leonardo (the library's search, with hue-keeping gamut mapping), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
 
 `node engine/check.mjs` runs the whole verification: color science, engine genericity, both
 pages rendered in a real browser, build determinism, explicit rejection of invalid input, and

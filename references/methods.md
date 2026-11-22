@@ -17,7 +17,8 @@ place dans l'échelle ni la teinte.
 | `colorshades` | le même contraste (Fusilier original, color-shades au hex près, chemin HSL) | oui | oui, en HSL |
 | `mix` | rien | non | non |
 | `hct` | le tone (L*) par cran | oui (le tone est fonction de la luminance) | oui (CAM16) |
-| `leonardo` | le ratio WCAG face au fond (les ratios qu'on lui donne) | oui | oui |
+| `leonardo` | le ratio WCAG face au fond (les ratios qu'on lui donne ; Leonardo original, la librairie au hex près) | oui | oui |
+| `leonardoAdapted` | les mêmes ratios (Leonardo adapté : éclat réduit à teinte constante hors de sRGB) | oui | oui |
 | `apca` | le Lc APCA vs blanc | oui, au sens d'APCA | oui |
 | `easing` | la luminosité L* par cran | oui | approximativement |
 | `curves` | rien d'une teinte à l'autre : chaque canal (L, C, H) suit sa courbe, le seed garde sa place | non | non : elle tourne de 12° au plus aux extrêmes, à dessein |
@@ -125,6 +126,15 @@ par défaut ceux du barreau de l'échelle, pour comparer à ratios égaux avec F
 chemin de couleur diffère alors, et la précision : Leonardo arrondit les ratios et s'arrête à 0,01 près) ; `ladders.leonardoReference` rejoue ceux d'une rampe
 Tailwind. Pensée pour plusieurs fonds : les mêmes ratios se recalculent contre le fond du thème.
 
+**`leonardoAdapted`** (Leonardo adapté) — le Leonardo original à un geste près. Quand une couleur
+de l'échelle sort de sRGB, chroma.js écrête chaque canal RGB, ce qui fait tourner sa teinte : les
+foncés d'un jaune virent au brun-rouge, ceux des rouges, des roses et des oranges convergent vers
+le rouge pur (#850000, #610000…), parce que chroma.js garde l'éclat du seed jusqu'au noir. Adapté
+par Hueladder : l'éclat baisse à clarté et teinte OKLCH constantes, comme dans le reste du harnais
+(`leonardoColors(…, { gamut: 'chroma' })`). Même échelle, même place du seed, même recherche,
+mêmes ratios ; les couleurs déjà dans le gamut restent identiques. Sur l'exemple : 40 couleurs sur
+88 changent, de ΔE 2,1 en moyenne et 18 au plus ; la dérive de teinte tombe de 47° (jaune 950) à 2°.
+
 **`apca`** — comme Fusilier mais avec la métrique APCA (brouillon WCAG 3), sensible à la
 polarité et mieux corrélée à la lisibilité réelle. Ses « violations » de la règle WCAG 2
 mesurent surtout le désaccord entre les deux référentiels, pas un défaut. Zone morte sous
@@ -168,7 +178,7 @@ Trois corrections en sont sorties : `easing` suit désormais le chemin de chroma
 par la clarté, plus par le rang), la table Tailwind est celle de la 4.3, plus celle de la 3, et
 `leonardo` suit le chemin de la librairie, avec par défaut les ratios du barreau au lieu de
 ceux de Tailwind slate, qui serraient les crans clairs (1,04 puis 1,09:1) jusqu'à les confondre.
-Le 22 novembre, `leonardo` est devenu un portage exact de la librairie : il divergeait jusqu'à
+Le 22 novembre, `leonardo` est devenu un portage exact de la librairie (et `leonardoAdapted` en garde l'écart de gamut, déclaré) : il divergeait jusqu'à
 ΔE 19 (17 couleurs identiques sur 88), parce qu'il cherchait son propre point exact au lieu de
 reproduire la recherche de Leonardo (ratios arrondis à deux décimales, arrêt à 0,01 près, cache
 de chroma.js) et réduisait le gamut à teinte constante là où chroma.js écrête en RGB.

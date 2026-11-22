@@ -38,7 +38,9 @@ The `leonardo` method is a port, so that it gives exactly what Adobe's library g
 - the CIECAM02 lightness that places the key color, from ciecam02 0.4.6 and ciebase 0.1.1,
   copyright (c) 2014 Bastien Dejean, BSD 2-Clause ([full text](LICENSES/ciecam02-ciebase-BSD-2-Clause.txt)).
 
-Changes: gathered in one dependency-free file, for a single key color on a white background.
+Changes: gathered in one dependency-free file, for a single key color on a white background. The
+same file holds the adapted Leonardo (`leonardoAdapted`): an option that lowers chroma at constant
+OKLCH hue instead of clipping RGB channels; it is Hueladder's change, not the library's behavior.
 
 ## color-shades and colorjs.io (`engine/lib/colorshades.mjs`)
 

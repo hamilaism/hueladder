@@ -13,6 +13,10 @@
  * leonardoColors(seed, ratios, { colorSpace }) → one hex per ratio, against a white background,
  * exactly as `new Theme({ colors: [new Color({ colorKeys: [seed], ratios, colorSpace })],
  * backgroundColor: white, lightness: 100 })` returns them.
+ *
+ * `{ gamut: 'chroma' }` is Hueladder's adapted Leonardo, not the library: an OKLCH colour of the
+ * scale that falls outside sRGB loses chroma at the same lightness and hue, instead of having
+ * each RGB channel clipped (which turns its hue). Everything else is unchanged.
  */
 
 const { PI, round, floor, min, max, sqrt, atan2, cos, sin, cbrt, pow, abs, sign, exp } = Math;
@@ -107,10 +111,24 @@ const clip = rgb => rgb.map(v => min(max(0, v), 255));
 const parseHex = hex => { const u = parseInt(hex.replace('#', ''), 16); return [(u >> 16) & 0xff, (u >> 8) & 0xff, u & 0xff]; };
 const toHex = rgb => { const u = (round(rgb[0]) << 16) | (round(rgb[1]) << 8) | round(rgb[2]); const s = '000000' + u.toString(16); return '#' + s.substr(s.length - 6); };
 
+// how an OKLCH colour becomes RGB: chroma.js clips each channel, which turns the hue of what
+// falls outside sRGB; Hueladder's adaptation lowers its chroma instead, at the same OKLCH
+// lightness and hue (bisection on chroma, then the clip of chroma.js for the rounding residue)
+const OUT = {
+  clip: (l, c, h) => clip(oklch2rgb(l, c, h)),
+  chroma(l, c, h) {
+    const inside = rgb => rgb.every(v => v >= 0 && v <= 255);
+    if (inside(oklch2rgb(l, c, h))) return clip(oklch2rgb(l, c, h));
+    let lo = 0, hi = c;
+    for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (inside(oklch2rgb(l, m, h))) lo = m; else hi = m; }
+    return clip(oklch2rgb(l, lo, h));
+  },
+};
+
 // interpolators, by Leonardo colour-space name
 const INTERPOLATE = {
   // chroma.js `_hsx`, mode 'oklch'
-  OKLCH(c1, c2, f) {
+  OKLCH(c1, c2, f, out) {
     const [lbv0, sat0, hue0] = rgb2oklch(c1), [lbv1, sat1, hue1] = rgb2oklch(c2);
     let sat, hue;
     if (!isNaN(hue0) && !isNaN(hue1)) {
@@ -128,7 +146,7 @@ const INTERPOLATE = {
     } else hue = Number.NaN;
     if (sat === undefined) sat = sat0 + f * (sat1 - sat0);
     const lbv = lbv0 + f * (lbv1 - lbv0);
-    return clip(oklch2rgb(lbv, sat, hue));
+    return out(lbv, sat, hue);
   },
   // chroma.js 'rgb': channel by channel
   RGB(c1, c2, f) {
@@ -200,9 +218,11 @@ function contrastOnWhite(rgb) {
  * One hex per ratio, on a white background: Leonardo's Theme with a single key colour.
  * The colour space is the key's interpolation space, as in `new Color({ colorSpace })`.
  */
-export function leonardoColors(seedHex, ratios, { colorSpace = 'OKLCH' } = {}) {
-  const lerp = INTERPOLATE[colorSpace];
-  if (!lerp) throw new Error(`Leonardo colour space “${colorSpace}” not supported`);
+export function leonardoColors(seedHex, ratios, { colorSpace = 'OKLCH', gamut = 'clip' } = {}) {
+  const interpolate = INTERPOLATE[colorSpace], out = OUT[gamut];
+  if (!interpolate) throw new Error(`Leonardo colour space “${colorSpace}” not supported`);
+  if (!out) throw new Error(`gamut “${gamut}” not supported`);
+  const lerp = (a, b, f) => interpolate(a, b, f, out);
   // Color._updateColorSaturation (saturation 100): the key goes through OKLCH and back
   const key = parseHex(toHex(clip(oklch2rgb(...rgb2oklch(parseHex(seedHex))))));
   // createScale: white, key, black on a 3000-swatch domain, the key placed by its CIECAM02 J

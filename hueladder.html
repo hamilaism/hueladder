@@ -1678,6 +1678,10 @@ __lib["leonardo"] = (function () {
  * leonardoColors(seed, ratios, { colorSpace }) → one hex per ratio, against a white background,
  * exactly as `new Theme({ colors: [new Color({ colorKeys: [seed], ratios, colorSpace })],
  * backgroundColor: white, lightness: 100 })` returns them.
+ *
+ * `{ gamut: 'chroma' }` is Hueladder's adapted Leonardo, not the library: an OKLCH colour of the
+ * scale that falls outside sRGB loses chroma at the same lightness and hue, instead of having
+ * each RGB channel clipped (which turns its hue). Everything else is unchanged.
  */
 
 const { PI, round, floor, min, max, sqrt, atan2, cos, sin, cbrt, pow, abs, sign, exp } = Math;
@@ -1772,10 +1776,24 @@ const clip = rgb => rgb.map(v => min(max(0, v), 255));
 const parseHex = hex => { const u = parseInt(hex.replace('#', ''), 16); return [(u >> 16) & 0xff, (u >> 8) & 0xff, u & 0xff]; };
 const toHex = rgb => { const u = (round(rgb[0]) << 16) | (round(rgb[1]) << 8) | round(rgb[2]); const s = '000000' + u.toString(16); return '#' + s.substr(s.length - 6); };
 
+// how an OKLCH colour becomes RGB: chroma.js clips each channel, which turns the hue of what
+// falls outside sRGB; Hueladder's adaptation lowers its chroma instead, at the same OKLCH
+// lightness and hue (bisection on chroma, then the clip of chroma.js for the rounding residue)
+const OUT = {
+  clip: (l, c, h) => clip(oklch2rgb(l, c, h)),
+  chroma(l, c, h) {
+    const inside = rgb => rgb.every(v => v >= 0 && v <= 255);
+    if (inside(oklch2rgb(l, c, h))) return clip(oklch2rgb(l, c, h));
+    let lo = 0, hi = c;
+    for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (inside(oklch2rgb(l, m, h))) lo = m; else hi = m; }
+    return clip(oklch2rgb(l, lo, h));
+  },
+};
+
 // interpolators, by Leonardo colour-space name
 const INTERPOLATE = {
   // chroma.js `_hsx`, mode 'oklch'
-  OKLCH(c1, c2, f) {
+  OKLCH(c1, c2, f, out) {
     const [lbv0, sat0, hue0] = rgb2oklch(c1), [lbv1, sat1, hue1] = rgb2oklch(c2);
     let sat, hue;
     if (!isNaN(hue0) && !isNaN(hue1)) {
@@ -1793,7 +1811,7 @@ const INTERPOLATE = {
     } else hue = Number.NaN;
     if (sat === undefined) sat = sat0 + f * (sat1 - sat0);
     const lbv = lbv0 + f * (lbv1 - lbv0);
-    return clip(oklch2rgb(lbv, sat, hue));
+    return out(lbv, sat, hue);
   },
   // chroma.js 'rgb': channel by channel
   RGB(c1, c2, f) {
@@ -1865,9 +1883,11 @@ function contrastOnWhite(rgb) {
  * One hex per ratio, on a white background: Leonardo's Theme with a single key colour.
  * The colour space is the key's interpolation space, as in `new Color({ colorSpace })`.
  */
-function leonardoColors(seedHex, ratios, { colorSpace = 'OKLCH' } = {}) {
-  const lerp = INTERPOLATE[colorSpace];
-  if (!lerp) throw new Error(`Leonardo colour space “${colorSpace}” not supported`);
+function leonardoColors(seedHex, ratios, { colorSpace = 'OKLCH', gamut = 'clip' } = {}) {
+  const interpolate = INTERPOLATE[colorSpace], out = OUT[gamut];
+  if (!interpolate) throw new Error(`Leonardo colour space “${colorSpace}” not supported`);
+  if (!out) throw new Error(`gamut “${gamut}” not supported`);
+  const lerp = (a, b, f) => interpolate(a, b, f, out);
   // Color._updateColorSaturation (saturation 100): the key goes through OKLCH and back
   const key = parseHex(toHex(clip(oklch2rgb(...rgb2oklch(parseHex(seedHex))))));
   // createScale: white, key, black on a 3000-swatch domain, the key placed by its CIECAM02 J
@@ -2273,6 +2293,16 @@ function mLeonardo(ctx) {
   return leonardoColors(ctx.seed, ctx.ladders.leonardo, { colorSpace: 'OKLCH' });
 }
 
+/**
+ * Leonardo adapté : la même échelle, la même recherche, les mêmes ratios ; seule change la façon
+ * de ramener dans sRGB une couleur de l'échelle qui en sort. La librairie écrête chaque canal RGB,
+ * ce qui fait tourner la teinte (un jaune foncé y devient brun-rouge) ; ici l'éclat baisse à
+ * clarté et teinte OKLCH constantes, comme pour les autres méthodes du harnais.
+ */
+function mLeonardoAdapted(ctx) {
+  return leonardoColors(ctx.seed, ctx.ladders.leonardo, { colorSpace: 'OKLCH', gamut: 'chroma' });
+}
+
 /** APCA : chaque step vise un Lc pour du texte de cette couleur sur blanc. */
 function mApca(ctx) {
   const { C, H } = hexToOklch(ctx.seed);
@@ -2417,6 +2447,7 @@ const METHOD_IMPL = {
   mix: mMix,
   hct: mHct,
   leonardo: mLeonardo,
+  leonardoAdapted: mLeonardoAdapted,
   apca: mApca,
   easing: mEasing,
   curves: mCurves,
@@ -2425,7 +2456,7 @@ const METHOD_IMPL = {
 
 /** Ordre de calcul : `anchored` a besoin de `fusilier`, `existing` du placement des ancres. */
 const METHOD_COMPUTE_ORDER = [
-  'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
+  'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'leonardoAdapted', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
 ];
 
 /** Méthodes creuses : elles n'ont pas de valeur à tous les steps. */
@@ -4016,7 +4047,7 @@ function synthesizeSeed(anchors, ladders, seedIndex) {
 
 /** Ordre d'affichage : l'existant d'abord (le point de départ), le core mis en avant. */
 const METHOD_DISPLAY_ORDER = [
-  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind',
+  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'leonardoAdapted', 'apca', 'easing', 'curves', 'tailwind',
 ];
 
 const n1 = (x, lang) => {
@@ -4136,8 +4167,8 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `by binary search at constant tone and hue. It is the cousin of “fixed lightness” in a perceptually finer model.`),
     },
     leonardo: {
-      label: t(() => 'Leonardo — contraste visé', () => 'Leonardo — target contrast'),
-      short: 'Leonardo',
+      label: t(() => 'Leonardo (original) — la librairie d\'Adobe', () => 'Leonardo (original) — Adobe\'s library'),
+      short: 'Leonardo (original)',
       generated: true,
       desc: t(() => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe), reproduite au hex près : une échelle blanc → seed → noir interpolée en OKLCH (la librairie interpole en RGB par défaut), et sur elle, `
         + `le point que la recherche de la librairie retient pour chaque ratio visé face au fond (ici le blanc), ratios arrondis à deux décimales comme dans la librairie. L'éclat suit l'échelle : il culmine au seed et s'éteint vers les extrêmes. `
@@ -4147,6 +4178,19 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `the point the library's search keeps for each target ratio against the background (white here), ratios rounded to two decimals as in the library. Chroma follows the scale: it peaks at the seed and fades towards the ends. `
         + `The ratios are a choice: ${ladders.leonardoReference ? `those of the Tailwind ${ladders.leonardoReference} ramp` : 'here, the contrasts of the scale\'s ladder, to compare at equal ratios'} `
         + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}).`),
+    },
+    leonardoAdapted: {
+      label: t(() => 'Leonardo (adapté) — teinte tenue', () => 'Leonardo (adapted) — hue held'),
+      short: t(() => 'Leonardo (adapté)', () => 'Leonardo (adapted)'),
+      generated: true,
+      desc: t(() => `Le Leonardo original, à un geste près : la même échelle blanc → seed → noir en OKLCH, la même place du seed, la même recherche, les mêmes ratios `
+        + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}). Adapté par Hueladder : quand une couleur de l'échelle sort de sRGB, la librairie écrête chaque canal RGB, `
+        + `ce qui fait tourner sa teinte (un jaune foncé y devient brun-rouge, les rouges foncés y convergent vers le rouge pur) ; ici, l'éclat baisse à clarté et teinte OKLCH constantes, `
+        + `comme dans le reste du harnais. Les contrastes restent ceux de la recherche de Leonardo ; seules les couleurs qui sortaient du gamut changent.`,
+      () => `The original Leonardo, but for one step: the same white → seed → black scale in OKLCH, the same seed placement, the same search, the same ratios `
+        + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}). Adapted by Hueladder: when a colour of the scale falls outside sRGB, the library clips each RGB channel, `
+        + `which turns its hue (a dark yellow becomes reddish brown, dark reds converge on pure red); here, chroma drops at constant OKLCH lightness and hue, `
+        + `as in the rest of the harness. Contrasts stay those of Leonardo's search; only the colours that fell outside the gamut change.`),
     },
     apca: {
       label: t(() => 'APCA — Lc cible (WCAG 3)', () => 'APCA — target Lc (WCAG 3)'),
@@ -6667,7 +6711,7 @@ const { distinguishability } = __lib["cvd"];
 const { extractPairs, auditPairs, pairsMarkdown } = __lib["pairs"];
 const { isFigmaScan, figmaAudit, figmaMarkdown } = __lib["figma"];
 
-const GENERATIVE = ['oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'tailwind'];
+const GENERATIVE = ['oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'leonardoAdapted', 'apca', 'easing', 'tailwind'];
 const round = (v, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 const mean = xs => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const byStep = (a, b) => (Number(a) - Number(b)) || String(a).localeCompare(String(b));
@@ -7257,7 +7301,7 @@ const FAMILIES = [
   { key: 'perceptual', methods: ['oklch', 'hct', 'easing'],
     fr: ['Clarté perçue', 'La même clarté perçue à cran égal, sur une échelle de clarté régulière. Avec L* (HCT, Lab), la clarté ne dépend que de la luminance : toutes les teintes ont le même contraste. Avec OKLCH, elle dépend aussi de la teinte : le contraste varie un peu. L\'échelle de clarté ne vise pas les seuils de contraste.'],
     en: ['Perceived lightness', 'The same perceived lightness at equal step, on an even lightness scale. With L* (HCT, Lab), lightness depends on luminance only: every hue has the same contrast. With OKLCH it also depends on the hue: contrast varies a little. The lightness scale does not aim at contrast thresholds.'] },
-  { key: 'contrast', methods: ['fusilier', 'colorshades', 'leonardo', 'apca'],
+  { key: 'contrast', methods: ['fusilier', 'colorshades', 'leonardo', 'leonardoAdapted', 'apca'],
     fr: ['Contraste visé', 'Chaque cran vise un contraste, donc une luminance, la même pour toutes les teintes. Leonardo prend les ratios qu\'on lui donne ; Fusilier les fixe en progression logarithmique, pour que l\'écart entre deux noms donne leur contraste (dans son outil, color-shades, et dans la version adaptée de Hueladder) ; APCA vise une autre mesure du contraste, celle du brouillon WCAG 3.'],
     en: ['Target contrast', 'Each step aims at a contrast, hence a luminance, the same for every hue. Leonardo takes the ratios you give it; Fusilier sets them on a logarithmic progression, so that the gap between two names gives their contrast (in his tool, color-shades, and in Hueladder\'s adapted version); APCA aims at another measure of contrast, the WCAG 3 draft\'s.'] },
   { key: 'curves', methods: ['curves'],
@@ -7303,6 +7347,9 @@ const METHOD_NOTES = {
   leonardo: { tool: ['Leonardo (Nate Baldwin, Adobe)', 'https://github.com/adobe/leonardo'], lum: true,
     fr: { equal: 'le contraste face au fond, donc la luminance', spread: 'les ratios qu\'on lui donne ; ici, les mêmes cibles que le barreau de l\'échelle, pour comparer à ratios égaux', when: 'Tu veux choisir toi-même le contraste de chaque cran, face à un fond clair ou sombre.', watch: 'La couleur est prise sur une échelle blanc → couleur → noir : vers le blanc, l\'éclat s\'éteint. Avec d\'autres ratios, la répartition change avec eux.' },
     en: { equal: 'contrast against the background, hence luminance', spread: 'the ratios you give it; here, the same targets as the scale\'s ladder, to compare at equal ratios', when: 'You want to choose the contrast of each step yourself, against a light or dark background.', watch: 'The colour is taken on a white → colour → black scale: towards white, chroma fades. With other ratios, the spread changes with them.' } },
+  leonardoAdapted: { tool: ['Leonardo (Nate Baldwin, Adobe)', 'https://github.com/adobe/leonardo'], lum: true,
+    fr: { equal: 'le contraste face au fond, donc la luminance', spread: 'les mêmes ratios que le Leonardo original', when: 'Tu veux la logique de Leonardo sans que la teinte tourne dans les foncés des jaunes, des oranges et des rouges.', watch: 'Ce n\'est plus exactement la librairie : les couleurs qui sortaient du gamut perdent de l\'éclat au lieu de changer de teinte. Les autres sont identiques à l\'original.' },
+    en: { equal: 'contrast against the background, hence luminance', spread: 'the same ratios as the original Leonardo', when: 'You want Leonardo\'s logic without the hue turning in the dark yellows, oranges and reds.', watch: 'It is no longer exactly the library: the colours that fell outside the gamut lose chroma instead of changing hue. The others are identical to the original.' } },
   apca: { tool: ['APCA (Andrew Somers, Myndex)', 'https://github.com/Myndex/apca-w3'], lum: true,
     fr: { equal: 'le contraste APCA face au blanc, donc la luminance', spread: 'un contraste APCA (Lc) qui progresse régulièrement', when: 'Tu prépares l\'après-WCAG 2, ou tu veux juger la lisibilité selon APCA, qui tient compte du sens du contraste.', watch: 'APCA n\'est pas normatif aujourd\'hui. Jugée en WCAG 2, une rampe APCA demande plus d\'écart de crans pour les mêmes seuils.' },
     en: { equal: 'APCA contrast against white, hence luminance', spread: 'an APCA contrast (Lc) that rises evenly', when: 'You are preparing for after WCAG 2, or want to judge legibility with APCA, which accounts for contrast polarity.', watch: 'APCA is not normative today. Judged by WCAG 2, an APCA ramp needs a larger step gap for the same thresholds.' } },
@@ -7328,6 +7375,7 @@ const SETTINGS = {
     mix: 'Mélange en sRGB avec le blanc au-dessus de la couleur de départ et le noir en dessous, en parts égales d\'un cran à l\'autre ; la couleur de départ reste à son cran. Bootstrap, lui, mélange par pas de 20 %.',
     hct: 'Tons HCT de 95 au cran le plus clair à 5 au plus foncé, un par cran choisi, régulièrement espacés ; teinte et chroma HCT de la couleur de départ, chroma réduite au gamut comme le fait Material. Material fixe ses propres tons (0, 10, 20 … 90, 95, 99, 100) ; ici, comme pour toutes les méthodes, ce sont les crans choisis qui les fixent. Réglable dans la spec : ladders.toneMax, ladders.toneMin.',
     leonardo: 'Librairie @adobe/leonardo-contrast-colors 1.1, reproduite au hex près : même recherche, ratios arrondis à deux décimales, couleurs écrêtées en RGB comme chroma.js. Une seule couleur clé, sans lissage. Interpolation choisie par Hueladder : OKLCH (la librairie interpole en RGB par défaut). Ratios visés face au blanc : lus dans les crans choisis, comme pour Fusilier, pour comparer à ratios égaux. Réglable dans la spec : ladders.leonardoReference (les ratios d\'une rampe Tailwind).',
+    leonardoAdapted: 'Le Leonardo original, mêmes réglages. Adapté par Hueladder : une couleur de l\'échelle hors de sRGB perd de l\'éclat à clarté et teinte OKLCH constantes, au lieu d\'être écrêtée canal par canal comme dans chroma.js, ce qui faisait tourner sa teinte. Les couleurs déjà dans le gamut sont identiques à l\'original ; la recherche et les ratios ne changent pas.',
     apca: 'APCA est une mesure de contraste, pas un générateur : c\'est Hueladder qui en fait un. Chaque cran vise un Lc face au blanc, Lc = 106 × (1 − shade/200), shade lu dans les crans choisis comme pour Fusilier, soit de 5 à 101 sur l\'échelle standard, avec l\'éclat et la teinte de la couleur de départ. Ce réglage est celui de Hueladder, pas une recommandation d\'Andrew Somers.',
     easing: 'chroma.scale([blanc, couleur, noir]).mode(\'lab\').correctLightness() : clarté L* de 95 au cran le plus clair à 5 au plus foncé, en ligne droite. Réglable dans la spec : ladders.easingLMax, ladders.easingLMin.',
     curves: 'Ce n\'est pas l\'algorithme de ColorBox : Hueladder met sa démarche en formule. La clarté suit une courbe en sinus du presque blanc au presque noir en passant par la couleur de départ, l\'éclat culmine à la couleur de départ, la teinte tourne jusqu\'à 12° aux extrêmes.',
@@ -7341,6 +7389,7 @@ const SETTINGS = {
     mix: 'sRGB mix with white above the starting colour and black below it, in equal parts from one step to the next; the starting colour stays at its step. Bootstrap mixes in 20% steps.',
     hct: 'HCT tones from 95 at the lightest step to 5 at the darkest, one per chosen step, evenly spaced; HCT hue and chroma of the starting colour, chroma reduced to the gamut the way Material does it. Material sets its own tones (0, 10, 20 … 90, 95, 99, 100); here, as for every method, the chosen steps set them. Adjustable in the spec: ladders.toneMax, ladders.toneMin.',
     leonardo: '@adobe/leonardo-contrast-colors 1.1 library, reproduced to the hex: the same search, ratios rounded to two decimals, colours clipped in RGB as chroma.js does. A single key colour, no smoothing. Interpolation chosen by Hueladder: OKLCH (the library interpolates in RGB by default). Target ratios against white: read from the chosen steps, as for Fusilier, to compare at equal ratios. Adjustable in the spec: ladders.leonardoReference (the ratios of a Tailwind ramp).',
+    leonardoAdapted: 'The original Leonardo, same settings. Adapted by Hueladder: a colour of the scale outside sRGB loses chroma at constant OKLCH lightness and hue, instead of being clipped channel by channel as in chroma.js, which turned its hue. Colours already inside the gamut are identical to the original; the search and the ratios do not change.',
     apca: 'APCA is a contrast measure, not a generator: Hueladder turns it into one. Each step targets an Lc against white, Lc = 106 × (1 − shade/200), shade read from the chosen steps as for Fusilier, from 5 to 101 on the standard scale, with the chroma and hue of the starting colour. This setting is Hueladder\'s, not a recommendation by Andrew Somers.',
     easing: 'chroma.scale([white, colour, black]).mode(\'lab\').correctLightness(): L* lightness from 95 at the lightest step to 5 at the darkest, in a straight line. Adjustable in the spec: ladders.easingLMax, ladders.easingLMin.',
     curves: 'This is not ColorBox\'s algorithm: Hueladder puts its approach into a formula. Lightness follows a sine curve from near white to near black through the starting colour, chroma peaks at the starting colour, hue turns up to 12° at the ends.',
@@ -7612,7 +7661,7 @@ function choose(data, { lang = 'en', label = null } = {}) {
     row(T('Le plus de paires à 7:1 (AAA)', 'The most 7:1 pairs (AAA)'), best.aaa),
     row(T('Ne pas déplacer la couleur de départ', 'Not moving the starting colour'), best.drift),
     row(T('Garder le plus d\'éclat', 'Keeping the most chroma'), best.kept),
-    row(T('Choisir toi-même le contraste de chaque cran, sur fond clair ou sombre', 'Choosing each step\'s contrast yourself, on a light or dark background'), ['leonardo']),
+    row(T('Choisir toi-même le contraste de chaque cran, sur fond clair ou sombre', 'Choosing each step\'s contrast yourself, on a light or dark background'), ['leonardo', 'leonardoAdapted']),
     row(T('Une règle qui se dit en une phrase, un calcul standard', 'A rule you can say in one sentence, a standard computation'), ['oklch']),
     row(T('Android, Material You', 'Android, Material You'), ['hct']),
     row(T('Préparer l\'après-WCAG 2 (APCA)', 'Preparing for after WCAG 2 (APCA)'), ['apca']),
@@ -7670,7 +7719,7 @@ const DECK = {
 
 const TRUST = {
   fr: {
-    protocol: 'Toutes les méthodes passent par le même harnais : même couleur de départ pour chaque teinte, même réduction de gamut (la chroma baisse à teinte et clarté constantes, jamais la teinte ; sauf Leonardo et le Fusilier original, reproduits tels que leur outil les calcule : écrêtage RGB pour Leonardo, chemin HSL pour color-shades), même arrondi hex, mêmes mesures. On isole ainsi la règle de chaque méthode du bruit de chaque outil.',
+    protocol: 'Toutes les méthodes passent par le même harnais : même couleur de départ pour chaque teinte, même réduction de gamut (la chroma baisse à teinte et clarté constantes, jamais la teinte ; sauf le Leonardo et le Fusilier originaux, reproduits tels que leur outil les calcule : écrêtage RGB pour Leonardo, chemin HSL pour color-shades), même arrondi hex, mêmes mesures. On isole ainsi la règle de chaque méthode du bruit de chaque outil.',
     measures: 'Contraste WCAG 2.x ; un seul ΔE, le ΔE2000 ; APCA 0.0.98G-4g, vérifié sur les vecteurs de test d\'apca-w3.',
     corpus: (r, c, p) => `Ici : ${r} nuanciers, ${c} couleurs et ${p} paires par méthode.`,
     conformanceNote: 'Mesuré le 22 novembre 2026 par engine/conformance, sur l\'exemple.',
@@ -7690,7 +7739,7 @@ const TRUST = {
     ],
   },
   en: {
-    protocol: 'Every method goes through the same harness: the same starting colour for each hue, the same gamut reduction (chroma drops at constant hue and lightness, never the hue; except Leonardo and the original Fusilier, reproduced as their tool computes them: RGB clipping for Leonardo, the HSL path for color-shades), the same hex rounding, the same measures. This isolates each method\'s rule from each tool\'s noise.',
+    protocol: 'Every method goes through the same harness: the same starting colour for each hue, the same gamut reduction (chroma drops at constant hue and lightness, never the hue; except the original Leonardo and the original Fusilier, reproduced as their tool computes them: RGB clipping for Leonardo, the HSL path for color-shades), the same hex rounding, the same measures. This isolates each method\'s rule from each tool\'s noise.',
     measures: 'WCAG 2.x contrast; a single ΔE, ΔE2000; APCA 0.0.98G-4g, checked against the apca-w3 test vectors.',
     corpus: (r, c, p) => `Here: ${r} ramps, ${c} colours and ${p} pairs per method.`,
     conformanceNote: 'Measured on 22 November 2026 by engine/conformance, on the example.',
@@ -8178,7 +8227,7 @@ const I18N = {
       guide: ['Guide IA', 'la règle, le rôle de chaque cran et un bloc de données, pour une IA comme pour une personne'], spec: ['Spec', 'rejoue exactement ce résultat par la ligne de commande (node engine/build.mjs)'] },
     pkg: 'Le paquet', pkgText: n => 'Tout en une archive, rangé par destination : <code>code/</code> (CSS, Tailwind 3 et 4, tokens DTCG), <code>figma/</code> (un fichier par mode, à glisser dans le panneau Variables), <code>tokens-studio/</code>, <code>ai/</code> (le guide et ses données en JSON), la spec' + (n ? ' et la migration' : '') + '. Un README dit quoi faire de chaque dossier.', pkgBtn: 'Télécharger le paquet (.zip)',
     copy: 'Copier', download: 'Télécharger', copied: 'Copié', meeting: 'Pour la réunion',
-    meetingText: 'Le rapport complet : les onze méthodes de génération comparées sur tes couleurs, leurs métriques, l\'interchangeabilité et le testeur de paires. C\'est la page qui sert à faire arbitrer.',
+    meetingText: 'Le rapport complet : les douze méthodes de génération comparées sur tes couleurs, leurs métriques, l\'interchangeabilité et le testeur de paires. C\'est la page qui sert à faire arbitrer.',
     linkCopied: 'Lien copié : qui l\'ouvre retrouve ce projet, couleurs et réglages compris', linkPrompt: 'Lien du projet',
     confirmCrans: 'Changer de jeu de crans efface les réglages faits à la main. Continuer ?',
     confirmReset: 'Repartir de zéro ? Le système en cours sera effacé de ce navigateur.',
@@ -8190,7 +8239,8 @@ const I18N = {
       oklch: ['OKLCH — luminosité fixe', 'Luminosité OKLCH fixe par cran : régulier à l\'œil, sans garantie de contraste.'],
       mix: ['Mélange blanc/noir (sRGB)', 'Mélange avec le blanc et le noir : simple, la teinte se délave.'],
       hct: ['HCT — tone fixe (Material)', 'Tone HCT fixe par cran : proche du contraste, pas exact.'],
-      leonardo: ['Leonardo — contraste visé', 'Le contraste de chaque cran face au fond, avec les ratios qu\'on lui donne ; l\'éclat s\'éteint vers le blanc.'],
+      leonardo: ['Leonardo (original) — la librairie d\'Adobe', 'Le contraste de chaque cran face au fond, avec les ratios qu\'on lui donne ; l\'éclat s\'éteint vers le blanc. La librairie de Nate Baldwin, au hex près.'],
+      leonardoAdapted: ['Leonardo (adapté) — teinte tenue', 'Le Leonardo original, sauf pour les couleurs qui sortent de l\'écran : la librairie coupe chaque canal RGB, ce qui fait tourner leur teinte (les jaunes foncés virent au brun-rouge) ; Hueladder baisse plutôt leur éclat, à teinte égale. Mêmes contrastes.'],
       apca: ['APCA — Lc cible (WCAG 3)', 'Une cible Lc APCA par cran, pensée pour WCAG 3.'],
       easing: ['Interpolation Lab (chroma.js)', 'Interpolation blanc → seed → noir : douce, sans garantie.'],
       curves: ['Courbes par canal (L, C, H)', 'Clarté, éclat et teinte suivent chacun leur courbe autour du seed : belle, sans garantie.'],
@@ -8426,7 +8476,7 @@ const I18N = {
       guide: ['AI guide', 'the rule, what each step is for and a data block, for an AI as much as for a person'], spec: ['Spec', 'replays this exact result from the command line (node engine/build.mjs)'] },
     pkg: 'The package', pkgText: n => 'Everything in one archive, sorted by destination: <code>code/</code> (CSS, Tailwind 3 and 4, DTCG tokens), <code>figma/</code> (one file per mode, to drop into the Variables panel), <code>tokens-studio/</code>, <code>ai/</code> (the guide and its JSON data), the spec' + (n ? ' and the migration' : '') + '. A README says what to do with each folder.', pkgBtn: 'Download the package (.zip)',
     copy: 'Copy', download: 'Download', copied: 'Copied', meeting: 'For the meeting',
-    meetingText: 'The full report: the eleven generation methods compared on your colours, their metrics, interchangeability and the pair tester. It is the page used to reach a decision.',
+    meetingText: 'The full report: the twelve generation methods compared on your colours, their metrics, interchangeability and the pair tester. It is the page used to reach a decision.',
     linkCopied: 'Link copied: whoever opens it gets this project, colours and tuning included', linkPrompt: 'Project link',
     confirmCrans: 'Changing the step set erases hand tuning. Continue?',
     confirmReset: 'Start from scratch? The current system will be erased from this browser.',
@@ -8438,7 +8488,8 @@ const I18N = {
       oklch: ['OKLCH — fixed lightness', 'Fixed OKLCH lightness per step: even to the eye, no contrast guarantee.'],
       mix: ['White/black mix (sRGB)', 'Mixing with white and black: simple, the hue washes out.'],
       hct: ['HCT — fixed tone (Material)', 'Fixed HCT tone per step: close to contrast, not exact.'],
-      leonardo: ['Leonardo — target contrast', 'Each step\'s contrast against the background, with the ratios you give it; chroma fades towards white.'],
+      leonardo: ['Leonardo (original) — Adobe\'s library', 'Each step\'s contrast against the background, with the ratios you give it; chroma fades towards white. Nate Baldwin\'s library, to the hex.'],
+      leonardoAdapted: ['Leonardo (adapted) — hue held', 'The original Leonardo, except for the colours that fall outside the screen\'s range: the library cuts each RGB channel, which turns their hue (dark yellows go reddish brown); Hueladder lowers their chroma instead, at the same hue. Same contrasts.'],
       apca: ['APCA — target Lc (WCAG 3)', 'One APCA Lc target per step, designed for WCAG 3.'],
       easing: ['Lab interpolation (chroma.js)', 'White → seed → black interpolation: smooth, no guarantee.'],
       curves: ['Per-channel curves (L, C, H)', 'Lightness, chroma and hue each follow their own curve around the seed: pleasing, no guarantee.'],

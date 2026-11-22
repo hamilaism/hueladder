@@ -12,4 +12,15 @@ const REF = [
 ];
 for (const [seed, colorSpace, want] of REF) assert.deepEqual(leonardoColors(seed, ratios, { colorSpace }), want, `${seed} ${colorSpace}`);
 assert.throws(() => leonardoColors('#2f5bd3', ratios, { colorSpace: 'CAM02' }));
+
+// le Leonardo adapté : mêmes couleurs tant que l'échelle reste dans sRGB ; au-delà, l'éclat baisse
+// et la teinte tient (la librairie fait virer au brun-rouge les foncés d'un jaune)
+import { hexToOklch, contrastVsWhite } from './color.mjs';
+const hueOf = h => hexToOklch(h).H;
+const yellow = leonardoColors('#ffd400', ratios, { gamut: 'chroma' });
+const hueSpread = hs => Math.max(...hs) - Math.min(...hs);
+assert.ok(hueSpread(yellow.map(hueOf)) < 4, `adapté : la teinte du jaune tient (${yellow.map(h => Math.round(hueOf(h))).join(' ')})`);
+assert.ok(hueSpread(REF[2][2].map(hueOf)) > 30, 'original : la teinte du jaune tourne');
+yellow.forEach((h, i) => assert.ok(Math.abs(contrastVsWhite(h) - ratios[i]) < 0.15, `adapté : ratio ${ratios[i]} tenu (${contrastVsWhite(h).toFixed(2)})`));
+assert.deepEqual(leonardoColors('#2f5bd3', ratios, { gamut: 'chroma' }).slice(0, 10), REF[0][2].slice(0, 10), 'adapté : identique tant que l\'échelle reste dans le gamut');
 console.log('leonardo : ok');

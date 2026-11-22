@@ -11,7 +11,9 @@ against published vectors and, for the methods, against their original libraries
 Compare methods on named criteria, each with its best value: the adapted Fusilier (David Fusilier's
 contrast targets, on an OKLCH path instead of color-shades' HSL) is Hueladder's default for one
 criterion (even contrast intervals), a preference, not a ranking; the original, `colorshades`
-(color-shades reproduced to the hex), is there to compare. Every method's targets come
+(color-shades reproduced to the hex), is there to compare. Likewise `leonardo` is Adobe's library
+to the hex, and `leonardoAdapted` the same search with hue-keeping gamut mapping (the library clips
+RGB channels, which turns the hue of dark yellows and reds). Every method's targets come
 from the chosen number of steps, never from the method.
 
 ## Commands (node engine/hueladder.mjs <command> --json)

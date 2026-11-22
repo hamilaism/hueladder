@@ -41,7 +41,7 @@ function synthesizeSeed(anchors, ladders, seedIndex) {
 
 /** Ordre d'affichage : l'existant d'abord (le point de départ), le core mis en avant. */
 export const METHOD_DISPLAY_ORDER = [
-  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind',
+  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'leonardoAdapted', 'apca', 'easing', 'curves', 'tailwind',
 ];
 
 const n1 = (x, lang) => {
@@ -161,8 +161,8 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `by binary search at constant tone and hue. It is the cousin of “fixed lightness” in a perceptually finer model.`),
     },
     leonardo: {
-      label: t(() => 'Leonardo — contraste visé', () => 'Leonardo — target contrast'),
-      short: 'Leonardo',
+      label: t(() => 'Leonardo (original) — la librairie d\'Adobe', () => 'Leonardo (original) — Adobe\'s library'),
+      short: 'Leonardo (original)',
       generated: true,
       desc: t(() => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe), reproduite au hex près : une échelle blanc → seed → noir interpolée en OKLCH (la librairie interpole en RGB par défaut), et sur elle, `
         + `le point que la recherche de la librairie retient pour chaque ratio visé face au fond (ici le blanc), ratios arrondis à deux décimales comme dans la librairie. L'éclat suit l'échelle : il culmine au seed et s'éteint vers les extrêmes. `
@@ -172,6 +172,19 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `the point the library's search keeps for each target ratio against the background (white here), ratios rounded to two decimals as in the library. Chroma follows the scale: it peaks at the seed and fades towards the ends. `
         + `The ratios are a choice: ${ladders.leonardoReference ? `those of the Tailwind ${ladders.leonardoReference} ramp` : 'here, the contrasts of the scale\'s ladder, to compare at equal ratios'} `
         + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}).`),
+    },
+    leonardoAdapted: {
+      label: t(() => 'Leonardo (adapté) — teinte tenue', () => 'Leonardo (adapted) — hue held'),
+      short: t(() => 'Leonardo (adapté)', () => 'Leonardo (adapted)'),
+      generated: true,
+      desc: t(() => `Le Leonardo original, à un geste près : la même échelle blanc → seed → noir en OKLCH, la même place du seed, la même recherche, les mêmes ratios `
+        + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}). Adapté par Hueladder : quand une couleur de l'échelle sort de sRGB, la librairie écrête chaque canal RGB, `
+        + `ce qui fait tourner sa teinte (un jaune foncé y devient brun-rouge, les rouges foncés y convergent vers le rouge pur) ; ici, l'éclat baisse à clarté et teinte OKLCH constantes, `
+        + `comme dans le reste du harnais. Les contrastes restent ceux de la recherche de Leonardo ; seules les couleurs qui sortaient du gamut changent.`,
+      () => `The original Leonardo, but for one step: the same white → seed → black scale in OKLCH, the same seed placement, the same search, the same ratios `
+        + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}). Adapted by Hueladder: when a colour of the scale falls outside sRGB, the library clips each RGB channel, `
+        + `which turns its hue (a dark yellow becomes reddish brown, dark reds converge on pure red); here, chroma drops at constant OKLCH lightness and hue, `
+        + `as in the rest of the harness. Contrasts stay those of Leonardo's search; only the colours that fell outside the gamut change.`),
     },
     apca: {
       label: t(() => 'APCA — Lc cible (WCAG 3)', () => 'APCA — target Lc (WCAG 3)'),

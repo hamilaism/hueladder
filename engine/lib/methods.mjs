@@ -254,6 +254,16 @@ function mLeonardo(ctx) {
   return leonardoColors(ctx.seed, ctx.ladders.leonardo, { colorSpace: 'OKLCH' });
 }
 
+/**
+ * Leonardo adapté : la même échelle, la même recherche, les mêmes ratios ; seule change la façon
+ * de ramener dans sRGB une couleur de l'échelle qui en sort. La librairie écrête chaque canal RGB,
+ * ce qui fait tourner la teinte (un jaune foncé y devient brun-rouge) ; ici l'éclat baisse à
+ * clarté et teinte OKLCH constantes, comme pour les autres méthodes du harnais.
+ */
+function mLeonardoAdapted(ctx) {
+  return leonardoColors(ctx.seed, ctx.ladders.leonardo, { colorSpace: 'OKLCH', gamut: 'chroma' });
+}
+
 /** APCA : chaque step vise un Lc pour du texte de cette couleur sur blanc. */
 function mApca(ctx) {
   const { C, H } = hexToOklch(ctx.seed);
@@ -398,6 +408,7 @@ export const METHOD_IMPL = {
   mix: mMix,
   hct: mHct,
   leonardo: mLeonardo,
+  leonardoAdapted: mLeonardoAdapted,
   apca: mApca,
   easing: mEasing,
   curves: mCurves,
@@ -406,7 +417,7 @@ export const METHOD_IMPL = {
 
 /** Ordre de calcul : `anchored` a besoin de `fusilier`, `existing` du placement des ancres. */
 export const METHOD_COMPUTE_ORDER = [
-  'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
+  'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'leonardoAdapted', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
 ];
 
 /** Méthodes creuses : elles n'ont pas de valeur à tous les steps. */
