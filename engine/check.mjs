@@ -24,7 +24,7 @@ function step(title) { console.log(`\n\x1b[1m${title}\x1b[0m`); }
 
 // ---------------------------------------------------------------- 1. colorimétrie
 step('1 · Colorimétrie — vecteurs de test publiés');
-for (const mod of ['deltae', 'apca', 'cam16', 'tune', 'analysis', 'crans', 'naming', 'dark']) {
+for (const mod of ['deltae', 'apca', 'cam16', 'leonardo', 'tune', 'analysis', 'crans', 'naming', 'dark']) {
   try {
     execFileSync('node', [join(HERE, 'lib', `${mod}.test.mjs`)], { stdio: 'pipe' });
     ok(`lib/${mod}.test.mjs`);

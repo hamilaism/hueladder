@@ -10,6 +10,7 @@ import {
 import { deltaE2000Hex } from './deltae.mjs';
 import { apcaLc } from './apca.mjs';
 import { hctFromHex, hctToHex } from './cam16.mjs';
+import { leonardoColors } from './leonardo.mjs';
 
 // ---------------------------------------------------------------- palette Tailwind (référence « dessinée à la main »)
 
@@ -234,16 +235,14 @@ function mHct(ctx) {
 }
 
 /**
- * Leonardo : comme la librairie, une échelle blanc → seed → noir interpolée en OKLCH, et sur
- * elle, pour chaque ratio visé face au blanc, le point qui le tient. Vers le blanc l'éclat
- * s'éteint ; vers le noir, chroma.js garde celui du seed (le noir n'a pas de teinte à
- * interpoler). Seule la réduction de gamut diffère : à teinte constante, comme partout ici.
+ * Leonardo : la recherche de @adobe/leonardo-contrast-colors 1.1.0, portée à l'identique
+ * (lib/leonardo.mjs) : une échelle blanc → seed → noir, le seed placé par sa clarté CIECAM02,
+ * et sur elle, pour chaque ratio visé face au blanc (arrondi à deux décimales, comme la
+ * librairie), le point que sa recherche retient. Interpolation OKLCH ; la librairie interpole
+ * en RGB par défaut, l'autre réglage tient en un paramètre.
  */
 function mLeonardo(ctx) {
-  const { L: L0, C: C0, H } = hexToOklch(ctx.seed);
-  const at = l => oklchToHex(l, l >= L0 ? C0 * (1 - l) / Math.max(1e-6, 1 - L0) : C0, H);
-  // le contraste face au blanc décroît quand L croît
-  return ctx.ladders.leonardo.map(target => at(bisectLightness(target, l => contrastVsWhite(at(l)), { increasing: false })));
+  return leonardoColors(ctx.seed, ctx.ladders.leonardo, { colorSpace: 'OKLCH' });
 }
 
 /** APCA : chaque step vise un Lc pour du texte de cette couleur sur blanc. */

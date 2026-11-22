@@ -26,6 +26,20 @@ copyright 2021 Google LLC, licensed under the Apache License, Version 2.0
 ([full text](LICENSES/Apache-2.0.txt)). Changes: ported from TypeScript to dependency-free
 JavaScript, with Hueladder's own gamut solver.
 
+## Leonardo, chroma.js and CIECAM02 (`engine/lib/leonardo.mjs`)
+
+The `leonardo` method is a port, so that it gives exactly what Adobe's library gives:
+
+- [@adobe/leonardo-contrast-colors](https://github.com/adobe/leonardo) 1.1.0 (the scale and the
+  contrast search), copyright 2024 Adobe, Apache License 2.0 ([full text](LICENSES/Apache-2.0.txt));
+- the [chroma.js](https://github.com/gka/chroma.js) 3.2.0 code it runs on (OKLCH conversions,
+  hue interpolation, scale cache, clipping), copyright (c) 2011-2025 Gregor Aisch, BSD 3-Clause
+  ([full text](LICENSES/chroma-js-BSD-3-Clause.txt));
+- the CIECAM02 lightness that places the key color, from ciecam02 0.4.6 and ciebase 0.1.1,
+  copyright (c) 2014 Bastien Dejean, BSD 2-Clause ([full text](LICENSES/ciecam02-ciebase-BSD-2-Clause.txt)).
+
+Changes: gathered in one dependency-free file, for a single key color on a white background.
+
 ## Tailwind CSS palette (`engine/lib/methods.mjs`)
 
 The `tailwind` method embeds the Tailwind CSS 4.3 default palette.
@@ -49,8 +63,8 @@ Modulz, Copyright (c) 2022-Present WorkOS.
 
 These methods are reimplemented from their published descriptions. No code is copied, and
 each one is credited in the [README](README.md#credits): color-shades (David Fusilier, MIT),
-Leonardo (Adobe, Apache 2.0), chroma.js (Gregor Aisch, BSD 3-Clause), Oklab and OKLCH (Björn
-Ottosson), Accessible Palette, ColorBox (Lyft), Stripe's accessible color system, Adobe
-Spectrum, IBM Carbon, GitHub Primer and Atlassian. The test vectors and matrices come from
+chroma.js's `correctLightness` scale (the `easing` method), Oklab and OKLCH (Björn Ottosson),
+Accessible Palette, ColorBox (Lyft), Stripe's accessible color system, Adobe Spectrum, IBM
+Carbon, GitHub Primer and Atlassian. The test vectors and matrices come from
 published papers: CIEDE2000 (Sharma, Wu & Dalal, 2005), CAM16 (Li et al., 2017) and
 color-vision deficiency simulation (Machado, Oliveira & Fernandes, 2009).

@@ -143,10 +143,10 @@ export const SETTINGS = {
   fr: {
     anchored: 'Fusilier sert de colonne. À chaque couleur de départ, l\'écart en OKLCH (clarté, éclat, teinte) est mesuré, puis interpolé d\'une couleur à l\'autre ; au-delà de la dernière, teinte et éclat restent corrigés, la clarté revient vers Fusilier.',
     oklch: 'Clarté OKLCH de 0,965 au cran le plus clair à 0,205 au plus foncé, en ligne droite ; éclat et teinte de la couleur de départ, éclat réduit si la couleur sort de l\'écran. Réglable dans la spec : ladders.oklchLMax, ladders.oklchLMin.',
-    fusilier: 'Contraste visé face au noir : 21^(shade/200), avec shade = 200 × (1 − (rang + 0,5) / nombre de crans) ; éclat et teinte OKLCH de la couleur de départ, éclat réduit à clarté et teinte constantes si besoin. Les cibles suivent la nomenclature choisie. Écart à l\'outil d\'origine : color-shades garde la teinte et la saturation HSL ; mêmes contrastes, couleurs un peu différentes.',
+    fusilier: 'Contraste visé face au noir : 21^(shade/200), avec shade = 200 × (1 − (rang + 0,5) / nombre de crans) ; éclat et teinte OKLCH de la couleur de départ, éclat réduit à clarté et teinte constantes si besoin. Les cibles suivent la nomenclature choisie. Adapté par Hueladder : color-shades, l\'outil de David Fusilier, garde la teinte et la saturation HSL ; ici, la teinte et l\'éclat OKLCH, l\'espace où travaillent aussi le régleur, le mode sombre et les ancres. Mêmes contrastes, couleurs un peu différentes (ΔE2000 de 2,6 en moyenne sur l\'exemple, jusqu\'à 12,6).',
     mix: 'Mélange en sRGB avec le blanc au-dessus de la couleur de départ et le noir en dessous, en parts égales d\'un cran à l\'autre ; la couleur de départ reste à son cran. Bootstrap, lui, mélange par pas de 20 %.',
     hct: 'Tons HCT de 95 au cran le plus clair à 5 au plus foncé, un par cran choisi, régulièrement espacés ; teinte et chroma HCT de la couleur de départ, chroma réduite au gamut comme le fait Material. Material fixe ses propres tons (0, 10, 20 … 90, 95, 99, 100) ; ici, comme pour toutes les méthodes, ce sont les crans choisis qui les fixent. Réglable dans la spec : ladders.toneMax, ladders.toneMin.',
-    leonardo: 'Librairie @adobe/leonardo-contrast-colors 1.1, une seule couleur clé, sans lissage. Interpolation choisie par Hueladder : OKLCH (la librairie interpole en RGB par défaut). Ratios visés face au blanc : lus dans les crans choisis, comme pour Fusilier, pour comparer à ratios égaux. Réglable dans la spec : ladders.leonardoReference (les ratios d\'une rampe Tailwind).',
+    leonardo: 'Librairie @adobe/leonardo-contrast-colors 1.1, reproduite au hex près : même recherche, ratios arrondis à deux décimales, couleurs écrêtées en RGB comme chroma.js. Une seule couleur clé, sans lissage. Interpolation choisie par Hueladder : OKLCH (la librairie interpole en RGB par défaut). Ratios visés face au blanc : lus dans les crans choisis, comme pour Fusilier, pour comparer à ratios égaux. Réglable dans la spec : ladders.leonardoReference (les ratios d\'une rampe Tailwind).',
     apca: 'APCA est une mesure de contraste, pas un générateur : c\'est Hueladder qui en fait un. Chaque cran vise un Lc face au blanc, Lc = 106 × (1 − shade/200), shade lu dans les crans choisis comme pour Fusilier, soit de 5 à 101 sur l\'échelle standard, avec l\'éclat et la teinte de la couleur de départ. Ce réglage est celui de Hueladder, pas une recommandation d\'Andrew Somers.',
     easing: 'chroma.scale([blanc, couleur, noir]).mode(\'lab\').correctLightness() : clarté L* de 95 au cran le plus clair à 5 au plus foncé, en ligne droite. Réglable dans la spec : ladders.easingLMax, ladders.easingLMin.',
     curves: 'Ce n\'est pas l\'algorithme de ColorBox : Hueladder met sa démarche en formule. La clarté suit une courbe en sinus du presque blanc au presque noir en passant par la couleur de départ, l\'éclat culmine à la couleur de départ, la teinte tourne jusqu\'à 12° aux extrêmes.',
@@ -155,10 +155,10 @@ export const SETTINGS = {
   en: {
     anchored: 'Fusilier is the backbone. At each starting colour, the OKLCH offset (lightness, chroma, hue) is measured, then interpolated from one colour to the next; beyond the last one, hue and chroma stay corrected and lightness returns to Fusilier.',
     oklch: 'OKLCH lightness from 0.965 at the lightest step to 0.205 at the darkest, in a straight line; chroma and hue of the starting colour, chroma reduced when the colour leaves the screen gamut. Adjustable in the spec: ladders.oklchLMax, ladders.oklchLMin.',
-    fusilier: 'Target contrast against black: 21^(shade/200), with shade = 200 × (1 − (rank + 0.5) / number of steps); OKLCH chroma and hue of the starting colour, chroma reduced at constant lightness and hue when needed. The targets follow the chosen naming. Departure from the original tool: color-shades keeps the HSL hue and saturation; same contrasts, slightly different colours.',
+    fusilier: 'Target contrast against black: 21^(shade/200), with shade = 200 × (1 − (rank + 0.5) / number of steps); OKLCH chroma and hue of the starting colour, chroma reduced at constant lightness and hue when needed. The targets follow the chosen naming. Adapted by Hueladder: color-shades, David Fusilier\'s tool, keeps the HSL hue and saturation; here, the OKLCH hue and chroma, the space the tuner, dark mode and anchors also work in. Same contrasts, slightly different colours (ΔE2000 2.6 on average on the example, up to 12.6).',
     mix: 'sRGB mix with white above the starting colour and black below it, in equal parts from one step to the next; the starting colour stays at its step. Bootstrap mixes in 20% steps.',
     hct: 'HCT tones from 95 at the lightest step to 5 at the darkest, one per chosen step, evenly spaced; HCT hue and chroma of the starting colour, chroma reduced to the gamut the way Material does it. Material sets its own tones (0, 10, 20 … 90, 95, 99, 100); here, as for every method, the chosen steps set them. Adjustable in the spec: ladders.toneMax, ladders.toneMin.',
-    leonardo: '@adobe/leonardo-contrast-colors 1.1 library, a single key colour, no smoothing. Interpolation chosen by Hueladder: OKLCH (the library interpolates in RGB by default). Target ratios against white: read from the chosen steps, as for Fusilier, to compare at equal ratios. Adjustable in the spec: ladders.leonardoReference (the ratios of a Tailwind ramp).',
+    leonardo: '@adobe/leonardo-contrast-colors 1.1 library, reproduced to the hex: the same search, ratios rounded to two decimals, colours clipped in RGB as chroma.js does. A single key colour, no smoothing. Interpolation chosen by Hueladder: OKLCH (the library interpolates in RGB by default). Target ratios against white: read from the chosen steps, as for Fusilier, to compare at equal ratios. Adjustable in the spec: ladders.leonardoReference (the ratios of a Tailwind ramp).',
     apca: 'APCA is a contrast measure, not a generator: Hueladder turns it into one. Each step targets an Lc against white, Lc = 106 × (1 − shade/200), shade read from the chosen steps as for Fusilier, from 5 to 101 on the standard scale, with the chroma and hue of the starting colour. This setting is Hueladder\'s, not a recommendation by Andrew Somers.',
     easing: 'chroma.scale([white, colour, black]).mode(\'lab\').correctLightness(): L* lightness from 95 at the lightest step to 5 at the darkest, in a straight line. Adjustable in the spec: ladders.easingLMax, ladders.easingLMin.',
     curves: 'This is not ColorBox\'s algorithm: Hueladder puts its approach into a formula. Lightness follows a sine curve from near white to near black through the starting colour, chroma peaks at the starting colour, hue turns up to 12° at the ends.',
@@ -488,16 +488,16 @@ export const DECK = {
 
 export const TRUST = {
   fr: {
-    protocol: 'Toutes les méthodes passent par le même harnais : même couleur de départ pour chaque teinte, même réduction de gamut (la chroma baisse à teinte et clarté constantes, jamais la teinte), même arrondi hex, mêmes mesures. On isole ainsi la règle de chaque méthode du bruit de chaque outil.',
+    protocol: 'Toutes les méthodes passent par le même harnais : même couleur de départ pour chaque teinte, même réduction de gamut (la chroma baisse à teinte et clarté constantes, jamais la teinte ; sauf Leonardo, reproduit tel que la librairie le calcule, écrêtage RGB compris), même arrondi hex, mêmes mesures. On isole ainsi la règle de chaque méthode du bruit de chaque outil.',
     measures: 'Contraste WCAG 2.x ; un seul ΔE, le ΔE2000 ; APCA 0.0.98G-4g, vérifié sur les vecteurs de test d\'apca-w3.',
     corpus: (r, c, p) => `Ici : ${r} nuanciers, ${c} couleurs et ${p} paires par méthode.`,
-    conformanceNote: 'Mesuré le 29 octobre 2026 par engine/conformance, sur l\'exemple.',
+    conformanceNote: 'Mesuré le 22 novembre 2026 par engine/conformance, sur l\'exemple.',
     conformance: [
       ['mix', 'chroma.js 3.2', 'identique au hex près'],
       ['easing', 'chroma.js 3.2', 'identique sur 82 couleurs sur 88, les autres à ΔE 1,7 au plus, au bord du gamut'],
       ['hct', 'material-color-utilities 0.4', 'fidèle, ΔE 0,61 au plus'],
       ['tailwind', 'tailwindcss 4.3', 'identique au hex près'],
-      ['leonardo', '@adobe/leonardo-contrast-colors 1.1', 'même chemin (échelle blanc → couleur → noir en OKLCH), mêmes ratios ; les écarts viennent du gamut : la librairie écrête en RGB, ce qui fait tourner la teinte des jaunes et orangés foncés, Hueladder réduit la chroma à teinte constante'],
+      ['leonardo', '@adobe/leonardo-contrast-colors 1.1', 'identique au hex près'],
     ],
     limits: [
       'Les seuils WCAG 2 sont critiqués : ils sous-estiment le contraste sur fond sombre. APCA corrige ce point mais n\'est pas normatif. Les deux lectures se montrent, aucune n\'est érigée en vérité.',
@@ -507,16 +507,16 @@ export const TRUST = {
     ],
   },
   en: {
-    protocol: 'Every method goes through the same harness: the same starting colour for each hue, the same gamut reduction (chroma drops at constant hue and lightness, never the hue), the same hex rounding, the same measures. This isolates each method\'s rule from each tool\'s noise.',
+    protocol: 'Every method goes through the same harness: the same starting colour for each hue, the same gamut reduction (chroma drops at constant hue and lightness, never the hue; except Leonardo, reproduced as the library computes it, RGB clipping included), the same hex rounding, the same measures. This isolates each method\'s rule from each tool\'s noise.',
     measures: 'WCAG 2.x contrast; a single ΔE, ΔE2000; APCA 0.0.98G-4g, checked against the apca-w3 test vectors.',
     corpus: (r, c, p) => `Here: ${r} ramps, ${c} colours and ${p} pairs per method.`,
-    conformanceNote: 'Measured on 29 October 2026 by engine/conformance, on the example.',
+    conformanceNote: 'Measured on 22 November 2026 by engine/conformance, on the example.',
     conformance: [
       ['mix', 'chroma.js 3.2', 'identical to the hex'],
       ['easing', 'chroma.js 3.2', 'identical on 82 colours out of 88, the others within ΔE 1.7, at the gamut edge'],
       ['hct', 'material-color-utilities 0.4', 'faithful, ΔE 0.61 at most'],
       ['tailwind', 'tailwindcss 4.3', 'identical to the hex'],
-      ['leonardo', '@adobe/leonardo-contrast-colors 1.1', 'same path (white → colour → black scale in OKLCH), same ratios; the gaps come from the gamut: the library clips RGB, which turns the hue of dark yellows and oranges, Hueladder reduces chroma at constant hue'],
+      ['leonardo', '@adobe/leonardo-contrast-colors 1.1', 'identical to the hex'],
     ],
     limits: [
       'WCAG 2 thresholds are criticised: they underestimate contrast on dark backgrounds. APCA fixes this but is not normative. Both readings are shown; neither is set up as the truth.',

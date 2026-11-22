@@ -259,7 +259,7 @@ La colorimétrie n'est pas approximée :
 | `lib/apca.mjs` | APCA 0.0.98G-4g — les vecteurs apca-w3 |
 | `lib/cam16.mjs` | CAM16 / HCT — material-color-utilities |
 | `lib/tune.mjs` | verrou de luminance, barreau sombre, profil de chroma, moyenne de variantes — 8 000 assertions sur toute la roue |
-| `engine/conformance` | chaque méthode face à sa librairie d'origine : mix et Tailwind 4.3 au hex près, HCT à ΔE 0,6, easing identique hors bord du gamut ; Leonardo, même principe et autre chemin (`references/methods.md`) |
+| `engine/conformance` | chaque méthode face à sa librairie d'origine : mix et Tailwind 4.3 au hex près, HCT à ΔE 0,6, easing identique hors bord du gamut ; Leonardo identique au hex près, portage de la librairie d'Adobe (`references/methods.md`) |
 
 ```bash
 node check.mjs

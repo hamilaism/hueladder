@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // ordre de dépendance : un module n'importe que des modules placés avant lui
-export const BROWSER_MODULES = ['color', 'deltae', 'apca', 'cam16', 'methods', 'analysis', 'tune', 'cvd', 'dataviz', 'gradient', 'hicontrast', 'p3', 'dark', 'build', 'crans', 'naming', 'import', 'suggest', 'diagnose', 'outputs', 'zip', 'contract', 'compare', 'pairs', 'figma', 'audit', 'explain', 'package'];
+export const BROWSER_MODULES = ['color', 'deltae', 'apca', 'cam16', 'leonardo', 'methods', 'analysis', 'tune', 'cvd', 'dataviz', 'gradient', 'hicontrast', 'p3', 'dark', 'build', 'crans', 'naming', 'import', 'suggest', 'diagnose', 'outputs', 'zip', 'contract', 'compare', 'pairs', 'figma', 'audit', 'explain', 'package'];
 
 export function wrapModule(src, name) {
   const exported = [];

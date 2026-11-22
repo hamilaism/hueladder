@@ -75,7 +75,7 @@ the same step.
 
 | Method | Makes equal across hues | Comes from |
 |---|---|---|
-| `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier: his contrast targets. Hueladder keeps the OKLCH hue and chroma of your color, where color-shades keeps its HSL hue and saturation |
+| `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier. **Adapted**: his contrast targets, exactly; but Hueladder keeps the OKLCH hue and chroma of your color, where color-shades keeps its HSL hue and saturation, so that the tuner and dark mode work in the same space |
 | `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe), interpolated in OKLCH (the library defaults to RGB) |
 | `apca` | APCA contrast (Lc) against white | [APCA](https://github.com/Myndex/apca-w3), Andrew Somers. APCA is a measure; Hueladder turns it into a generator |
 | `hct` | HCT tone | [Material Color Utilities](https://github.com/material-foundation/material-color-utilities), Google |
@@ -86,10 +86,10 @@ the same step.
 | `tailwind` | nothing: drawn by hand, the witness of manual design | the [Tailwind CSS](https://tailwindcss.com/docs/colors) palette |
 | `anchored` | passes exactly through every color you already have | Hueladder, on Fusilier's backbone |
 
-Fusilier is the default for one criterion, even contrast intervals: a preference for
+The adapted Fusilier is the default for one criterion, even contrast intervals: a preference for
 predictability, not a ranking. Each criterion has its own best method, and the Understand
-page shows which one. Third-party methods are set the way their authors set them, and every
-deviation is stated. Each method's targets come from the number of steps you choose, so all
+page shows which one. Third-party methods are applied the way their authors apply them; where Hueladder adapts one,
+its name says so and the change is explained. Each method's targets come from the number of steps you choose, so all
 of them are compared on equal terms.
 
 **Dark mode is not a second palette.** It is the same contrast ladder, read against another
@@ -157,7 +157,7 @@ documentation in reading order.
 | CIEDE2000 | the 34 test vectors of Sharma, Wu & Dalal |
 | APCA 0.0.98G-4g | the apca-w3 test vectors |
 | CAM16 / HCT | material-color-utilities |
-| Five generation methods | their original library (`engine/conformance`): mix and Tailwind 4.3 identical to the hex; HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge; Leonardo on the same OKLCH path and target ratios, but only 17 of 88 colors identical, up to ΔE 19 near the gamut edge |
+| Five generation methods | their original library (`engine/conformance`): mix, Tailwind 4.3 and Leonardo identical to the hex (Leonardo is a port of Adobe's library, in OKLCH as in its default RGB); HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge |
 | The other five | no library to compare against: Fusilier (color-shades is an app), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
 
 `node engine/check.mjs` runs the whole verification: color science, engine genericity, both

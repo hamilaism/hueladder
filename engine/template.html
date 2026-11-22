@@ -1018,7 +1018,7 @@ function toggleMatrix(name) {
     + '<tr><td>' + T('L* (interpolation Lab)', 'L* (Lab interpolation)') + '</td>' + L.easingL.map(v => '<td class="num">' + (Math.round(v * 10) / 10) + '</td>').join('') + '</tr>'
     + '</table><p class="hint">' + (L.leonardoReference
       ? T('Les ratios Leonardo sont copiés de la rampe Tailwind <code>', 'The Leonardo ratios are copied from the Tailwind ramp <code>') + L.leonardoReference + '</code>.'
-      : T('Les ratios Leonardo sont ceux du barreau de l\'échelle : à ratios égaux, Leonardo et Fusilier ne diffèrent que par le chemin de couleur.', 'The Leonardo ratios are those of the scale\'s ladder: at equal ratios, Leonardo and Fusilier differ only by their colour path.')) + '</p></details>';
+      : T('Les ratios Leonardo sont ceux du barreau de l\'échelle : à ratios égaux, Leonardo et Fusilier diffèrent par le chemin de couleur, et par la précision : Leonardo arrondit les ratios à deux décimales et s\'arrête à 0,01 près.', 'The Leonardo ratios are those of the scale\'s ladder: at equal ratios, Leonardo and Fusilier differ by their colour path, and by precision: Leonardo rounds ratios to two decimals and stops within 0.01.')) + '</p></details>';
 
   for (const m of METHODS) {
     const v = M[m].violationSample;

@@ -85,14 +85,16 @@ perdues.
 (accessiblepalette.com). Uniformité perceptuelle parfaite, mais aucune promesse de contraste :
 à luminosité OKLCH égale, un jaune et un bleu n'ont pas le même contraste WCAG.
 
-**`fusilier`** — chaque cran vise `21^(shade/200)` face au noir, avec
+**`fusilier`** (Fusilier adapté) — chaque cran vise `21^(shade/200)` face au noir, avec
 `shade = 200·(1 − (i+0.5)/n)`. Le demi-pas d'inset évite que les crans extrêmes touchent le
 blanc et le noir purs, qui n'ont plus de teinte. Conséquence : l'écart de rang **détermine**
 le contraste, la garantie est lisible dans le nom du step. Symétrique clair/sombre par
 construction : c'est la raison du choix par défaut, une préférence de prévisibilité, pas un
-classement. **Écart à l'outil d'origine** : color-shades fait varier la luminosité HSL en gardant
+classement. **Adapté par Hueladder** : color-shades fait varier la luminosité HSL en gardant
 la teinte et la saturation HSL ; Hueladder garde la teinte et l'éclat OKLCH de la couleur de
-départ. Mêmes cibles de contraste, couleurs un peu différentes.
+départ, parce que le régleur, le mode sombre et les ancres travaillent dans cet espace. Mêmes
+cibles de contraste, couleurs un peu différentes : ΔE2000 de 2,6 en moyenne sur l'exemple,
+jusqu'à 12,6 sur le vert le plus clair.
 
 **`mix`** — mélange linéaire en sRGB avec du blanc ou du noir (Sass `mix()`, Bootstrap).
 Aucune notion perceptuelle. Seule méthode à épingler la couleur d'identité exactement
@@ -103,11 +105,13 @@ c'est ce que produit l'outil par défaut de beaucoup de projets.
 dans un modèle d'apparence couleur plus fin. Le bon choix quand la cible est Android /
 Material.
 
-**`leonardo`** (Nate Baldwin, Adobe) — comme la librairie : une échelle blanc → seed → noir
-interpolée en OKLCH, et sur elle le point qui tient chaque ratio visé face au fond. Vers le
-blanc l'éclat s'éteint ; vers le noir, chroma.js garde celui du seed. Les ratios sont un choix :
-par défaut ceux du barreau de l'échelle, pour comparer à ratios égaux avec Fusilier (seul le
-chemin de couleur diffère alors) ; `ladders.leonardoReference` rejoue ceux d'une rampe
+**`leonardo`** (Nate Baldwin, Adobe) — la librairie elle-même, portée à l'identique dans
+`lib/leonardo.mjs` : une échelle blanc → seed → noir interpolée en OKLCH, le seed placé par sa
+clarté CIECAM02, et sur elle le point que la recherche de la librairie retient pour chaque ratio
+visé face au fond (ratios arrondis à deux décimales, couleurs écrêtées en RGB comme chroma.js).
+Vers le blanc l'éclat s'éteint ; vers le noir, chroma.js garde celui du seed. Les ratios sont un choix :
+par défaut ceux du barreau de l'échelle, pour comparer à ratios égaux avec Fusilier (le
+chemin de couleur diffère alors, et la précision : Leonardo arrondit les ratios et s'arrête à 0,01 près) ; `ladders.leonardoReference` rejoue ceux d'une rampe
 Tailwind. Pensée pour plusieurs fonds : les mêmes ratios se recalculent contre le fond du thème.
 
 **`apca`** — comme Fusilier mais avec la métrique APCA (brouillon WCAG 3), sensible à la
@@ -139,7 +143,7 @@ métadonnées, comme le fait `tailwind` avec sa famille retenue).
 
 Le moteur réimplémente chaque méthode sans dépendance. `engine/conformance/run.mjs` les compare
 aux librairies qui les portent (`npm install` dans ce dossier, hors du moteur), sur l'exemple
-synthétique de `hueladder explain`. Mesuré le 21 octobre 2026, Leonardo remesuré le 29 :
+synthétique de `hueladder explain`. Mesuré le 21 octobre 2026, Leonardo remesuré le 22 novembre :
 
 | Méthode | Librairie | Résultat |
 |---|---|---|
@@ -147,9 +151,13 @@ synthétique de `hueladder explain`. Mesuré le 21 octobre 2026, Leonardo remesu
 | `easing` | chroma.js 3.2 (`scale().mode('lab').correctLightness()`) | identique sur 82 couleurs sur 88 ; les autres à ΔE 1,7 au plus, au bord du gamut (chroma.js écrête en RGB, Hueladder réduit la chroma à teinte constante) |
 | `hct` | material-color-utilities 0.4 (`Hct`) | fidèle : ΔE 0,61 au plus |
 | `tailwind` | tailwindcss 4.3 (`theme.css`, OKLCH ramené en sRGB comme un navigateur) | identique au hex près (286 sur 286) |
-| `leonardo` | @adobe/leonardo-contrast-colors 1.1 (`colorSpace: 'OKLCH'`) | même chemin, mêmes ratios : là où la couleur tient dans l'écran, les deux coïncident. Les écarts (ΔE jusqu'à 19, 17 couleurs identiques sur 88) viennent tous du gamut : la librairie écrête en RGB, ce qui fait tourner la teinte des jaunes et orangés foncés ; Hueladder réduit la chroma à teinte constante, comme pour toutes les méthodes. Ratios tenus à 0,13 près (librairie : 0,10) |
+| `leonardo` | @adobe/leonardo-contrast-colors 1.1 (`colorSpace: 'OKLCH'`) | identique au hex près (88 couleurs sur 88), ratios tenus comme la librairie (0,096 près). Également identique en `colorSpace: 'RGB'`, le réglage par défaut de la librairie |
 
 Trois corrections en sont sorties : `easing` suit désormais le chemin de chroma.js (paramétré
 par la clarté, plus par le rang), la table Tailwind est celle de la 4.3, plus celle de la 3, et
 `leonardo` suit le chemin de la librairie, avec par défaut les ratios du barreau au lieu de
 ceux de Tailwind slate, qui serraient les crans clairs (1,04 puis 1,09:1) jusqu'à les confondre.
+Le 22 novembre, `leonardo` est devenu un portage exact de la librairie : il divergeait jusqu'à
+ΔE 19 (17 couleurs identiques sur 88), parce qu'il cherchait son propre point exact au lieu de
+reproduire la recherche de Leonardo (ratios arrondis à deux décimales, arrêt à 0,01 près, cache
+de chroma.js) et réduisait le gamut à teinte constante là où chroma.js écrête en RGB.

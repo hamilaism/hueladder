@@ -69,7 +69,7 @@ Statut : **fait** · **à faire** · *écarté* (avec la raison).
 | U14 | Le tableau : huit critères nommés, ce qui est bon pour chacun, la meilleure valeur en gras, chaque colonne définie ; l'écart de crans mesuré pour chaque méthode, pas la règle d'une seule | fait |
 | U15 | Choisir sa méthode : pour chaque critère, les méthodes qui y font le mieux (calculé), leur prix ailleurs, où le faire ; régler sous verrou et panachage compris | fait |
 | U19 | Six graphiques aux mêmes axes, un à la fois : contraste face au noir, intervalles entre crans voisins, clarté OKLCH, éclat, teinte, Lc APCA | fait |
-| U20 | Leonardo sur le chemin de la librairie (échelle blanc → couleur → noir en OKLCH), ratios du barreau par défaut | fait (écarts à la librairie : le seul gamut) |
+| U20 | Leonardo sur le chemin de la librairie (échelle blanc → couleur → noir en OKLCH), ratios du barreau par défaut | fait ; portage exact de la librairie le 2026-11-22 (identique au hex près, en OKLCH comme en RGB) |
 | U21 | Une teinte, toutes les méthodes : la même couleur de départ passée par chacune ; sous chaque case, son contraste face au blanc et face au noir, en gras dès 4,5:1. Le même tableau, toutes teintes, dans `hueladder explain` | fait |
 | U22 | Une ligne « Réglages » par fiche : ce que Hueladder choisit, et en quoi il s'écarte de l'auteur (Leonardo en OKLCH, APCA devenu générateur, ColorBox mis en formule, tons HCT) | fait |
 | U23 | Le rapport complet sans gagnant : la meilleure de chaque ligne, plus de « qui tient la règle » ; l'exemple n'y a ni existant ni « couleurs déjà choisies » | fait |

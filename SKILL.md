@@ -112,8 +112,10 @@ hue, proven value): the brand does not move, the system steps aside.
 `$C compare <id>.json`: each method, whether it will hold the contract, its mean gap to the
 original colors (ΔE) and its threshold crossings. The contract is the set of checks from the
 Verify step, including the naming rule (the same step gap guarantees the same contrast on every
-hue). Fusilier is Hueladder's default, at the top of the list: a preference for even intervals,
-not a ranking. Choose on these numbers and on the criterion that matters to the team
+hue). The adapted Fusilier is Hueladder's default, at the top of the list: a preference for even
+intervals, not a ranking. Say it is adapted: David Fusilier's contrast targets, exactly, on an
+OKLCH path (color-shades keeps the HSL hue and saturation); the tuner and dark mode work in
+OKLCH too. Choose on these numbers and on the criterion that matters to the team
 (`$C explain` compares them criterion by criterion). Write `coreMethod`. Reading the results:
 `references/reading-results.md`, `references/methods.md`.
 

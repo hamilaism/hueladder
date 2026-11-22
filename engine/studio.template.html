@@ -59,6 +59,11 @@
   /* ---------- en-tête ---------- */
   .top { position: sticky; top: 0; z-index: 20; background: var(--ground); border-bottom: 1px solid var(--line); }
   .top-in { max-width: 1320px; margin: 0 auto; padding: 10px 20px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .global { display: flex; gap: 2px; align-items: center; }
+  .sub { border-top: 1px solid var(--line); }
+  .sub .top-in { padding-block: 8px; gap: 20px; }
+  .field { display: flex; align-items: center; gap: 8px; }
+  .pactions { display: flex; align-items: center; gap: 6px; }
   .mark { display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 21px; letter-spacing: -0.03em; }
   .mark svg { align-self: center; }
   .mark small { font: 500 11px/1 var(--mono); color: var(--muted); letter-spacing: 0.04em; }
@@ -70,7 +75,7 @@
   .crans { display: flex; align-items: center; gap: 10px; }
   .crans select { font-size: 13px; }
   #cransbtn { font-size: 13px; padding: 5px 10px; }
-  @media (max-width: 1440px) { .ruler, .mark small { display: none; } }
+  @media (max-width: 1100px) { .mark small { display: none; } }
   .cpanel { border-top: 1px solid var(--line); background: var(--paper); }
   .cpanel-in { max-width: 1320px; margin: 0 auto; padding: 16px 20px 20px; display: grid; gap: 14px; }
   .namings { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; }
@@ -84,6 +89,17 @@
   .stepchip button { border: 0; background: none; padding: 2px 6px; border-radius: 20px; font-size: 13px; line-height: 1; }
   .stepchip button:hover { background: var(--sunk); }
   .ruler { display: block; }
+  /* téléphone : le logo et les réglages globaux sur une ligne, les trois entrées dessous ; le projet ensuite */
+  @media (max-width: 720px) {
+    .ruler { display: none; }
+    .top-in { padding-inline: 16px; gap: 10px; }
+    .top .entries { order: 3; width: 100%; }
+    .top .entries button { flex: 1; }
+    .sub .top-in { gap: 10px; }
+    .field { width: 100%; }
+    .field .brandname { flex: 1; width: auto; }
+    #cransbtn { white-space: nowrap; }
+  }
 
   /* ---------- structure ---------- */
   .shell { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; padding: 26px 20px 90px; }
@@ -329,21 +345,25 @@
       </svg>
       Hueladder <small id="tagline"></small>
     </div>
-    <input class="brandname" id="brand" type="text">
     <nav class="entries" id="entries"></nav>
     <span class="grow"></span>
+    <div class="global">
+      <a class="toplink" id="gh" href="https://github.com/hamilaism/hueladder" target="_blank" rel="noopener">GitHub</a>
+      <a class="toplink" id="dl" href="https://github.com/hamilaism/hueladder/archive/refs/heads/main.zip"></a>
+      <button class="ghost" id="lang"></button>
+      <button class="ghost" id="theme">◐</button>
+    </div>
+  </div>
+  <div class="sub"><div class="top-in">
+    <label class="field"><span class="label" id="brandlabel"></span><input class="brandname" id="brand" type="text"></label>
     <div class="crans">
       <span class="label" id="cranslabel"></span>
       <button id="cransbtn" aria-expanded="false" aria-controls="cranspanel"></button>
       <svg class="ruler" id="ruler" width="168" height="22" aria-hidden="true"></svg>
     </div>
-    <a class="toplink" id="gh" href="https://github.com/hamilaism/hueladder" target="_blank" rel="noopener">GitHub</a>
-    <a class="toplink" id="dl" href="https://github.com/hamilaism/hueladder/archive/refs/heads/main.zip"></a>
-    <button class="ghost" id="lang"></button>
-    <button class="ghost" id="theme">◐</button>
-    <button id="share"></button>
-    <button class="ghost" id="reset"></button>
-  </div>
+    <span class="grow"></span>
+    <div class="pactions"><button id="share"></button><button class="ghost" id="reset"></button></div>
+  </div></div>
   <div class="cpanel" id="cranspanel" hidden><div class="cpanel-in" id="cranspanel-in"></div></div>
 </header>
 
@@ -471,8 +491,8 @@ const I18N = {
     trustT: 'D\'où viennent ces chiffres', trustProto: 'Le protocole', trustConf: 'Les méthodes face à leurs librairies d\'origine', trustLimits: 'Les limites', trustSources: 'Les sources', confCols: ['Méthode', 'Librairie', 'Résultat'],
     otherT: 'Les autres choix de méthode', otherDark: 'Le mode sombre : six façons de passer d\'un cran clair à un cran sombre', otherDarkGo: 'Les comparer sur tes couleurs : Créer, étape Mode sombre.',
     otherNaming: 'La nomenclature : comment le nom porte la règle', otherNamingGo: 'En changer : le bouton des crans, en haut de la page.', otherNorm: 'La norme : WCAG 2 ou APCA',
-    tagline: "studio d'échelles", brandAria: 'Nom du système', brandTitle: 'nom du système — sert de préfixe aux fichiers',
-    crans: 'Crans', cransTitle: 'Les crans livrés. Modifiable à tout moment : un cran garde sa couleur d\'un jeu à l\'autre.', cransAria: 'Jeu de crans livré', share: 'Copier le lien', reset: 'Nouveau', resetTitle: 'recommencer à zéro',
+    tagline: "studio d'échelles", brandLabel: 'Marque', brandAria: 'Nom du système', brandTitle: 'nom du système — sert de préfixe aux fichiers',
+    crans: 'Crans', cransTitle: 'Les crans livrés. Modifiable à tout moment : un cran garde sa couleur d\'un jeu à l\'autre.', cransAria: 'Jeu de crans livré', share: 'Lien de partage', shareTitle: 'Copie un lien qui contient tout le projet : qui l\'ouvre retrouve les mêmes couleurs', reset: 'Nouveau projet', resetTitle: 'effacer ce projet et repartir de zéro',
     theme: 'thème clair / sombre', ghTitle: 'Le code source, les retours et les discussions sur GitHub', dl: 'Télécharger', dlTitle: 'Télécharger Hueladder : le studio, la ligne de commande et le skill (zip du dépôt GitHub)', langBtn: 'EN', langTitle: 'Switch to English', rail: 'Étapes',
     steps: [['Entrer', 'tes couleurs'], ['Diagnostic', 'ce que valent tes couleurs'], ['Générer', 'un parti pris'], ['Régler', 'teinte et éclat'],
       ['Mode sombre', 'le fond, le calcul'], ['Vérifier', 'le contrat'], ['Livrer', 'tokens et spec']],
@@ -575,7 +595,7 @@ const I18N = {
     confirmReset: 'Repartir de zéro ? Le système en cours sera effacé de ce navigateur.',
     engineRefused: 'Le moteur a refusé cette configuration', myBrand: 'Ma marque',
     methods: {
-      fusilier: ['Fusilier — color-shades', 'Chaque cran vise un contraste exact, la teinte et l\'éclat du seed sont gardés.'],
+      fusilier: ['Fusilier adapté — cibles de color-shades, chemin OKLCH', 'Chaque cran vise le contraste exact de la formule de David Fusilier. Adapté par Hueladder : color-shades garde la teinte et la saturation HSL de ta couleur ; ici, sa teinte et son éclat OKLCH, l\'espace du régleur et du mode sombre.'],
       anchored: ['Ancres + interpolation OKLCH', 'Tes couleurs restent en place, les crans manquants sont interpolés entre elles.'],
       oklch: ['OKLCH — luminosité fixe', 'Luminosité OKLCH fixe par cran : régulier à l\'œil, sans garantie de contraste.'],
       mix: ['Mélange blanc/noir (sRGB)', 'Mélange avec le blanc et le noir : simple, la teinte se délave.'],
@@ -725,8 +745,8 @@ const I18N = {
     trustT: 'Where these figures come from', trustProto: 'The protocol', trustConf: 'The methods against their original libraries', trustLimits: 'The limits', trustSources: 'Sources', confCols: ['Method', 'Library', 'Result'],
     otherT: 'The other method choices', otherDark: 'Dark mode: six ways from a light step to a dark step', otherDarkGo: 'Compare them on your colours: Create, Dark mode step.',
     otherNaming: 'Naming: how the name carries the rule', otherNamingGo: 'To change it: the steps button, at the top of the page.', otherNorm: 'The norm: WCAG 2 or APCA',
-    tagline: 'colour scale studio', brandAria: 'System name', brandTitle: 'system name — used as the file prefix',
-    crans: 'Steps', cransTitle: 'The steps delivered. Change it any time: a step keeps its colour from one set to another.', cransAria: 'Delivered step set', share: 'Copy link', reset: 'New', resetTitle: 'start from scratch',
+    tagline: 'colour scale studio', brandLabel: 'Brand', brandAria: 'System name', brandTitle: 'system name — used as the file prefix',
+    crans: 'Steps', cransTitle: 'The steps delivered. Change it any time: a step keeps its colour from one set to another.', cransAria: 'Delivered step set', share: 'Share link', shareTitle: 'Copies a link that holds the whole project: whoever opens it gets the same colours', reset: 'New project', resetTitle: 'clear this project and start from scratch',
     theme: 'light / dark theme', ghTitle: 'Source code, feedback and discussions on GitHub', dl: 'Download', dlTitle: 'Download Hueladder: the studio, the command line and the skill (zip of the GitHub repository)', langBtn: 'FR', langTitle: 'Passer en français', rail: 'Steps',
     steps: [['Enter', 'your colours'], ['Diagnosis', 'what your colours are worth'], ['Generate', 'pick a stance'], ['Tune', 'hue and vividness'],
       ['Dark mode', 'background, maths'], ['Verify', 'the contract'], ['Ship', 'tokens and spec']],
@@ -822,7 +842,7 @@ const I18N = {
     confirmReset: 'Start from scratch? The current system will be erased from this browser.',
     engineRefused: 'The engine rejected this configuration', myBrand: 'My brand',
     methods: {
-      fusilier: ['Fusilier — color-shades', 'Each step targets an exact contrast; the seed\'s hue and vividness are kept.'],
+      fusilier: ['Fusilier, adapted — color-shades targets, OKLCH path', 'Each step targets the exact contrast of David Fusilier\'s formula. Adapted by Hueladder: color-shades keeps your colour\'s HSL hue and saturation; here, its OKLCH hue and vividness, the space of the tuner and dark mode.'],
       anchored: ['Anchors + OKLCH interpolation', 'Your colours stay put; missing steps are interpolated between them.'],
       oklch: ['OKLCH — fixed lightness', 'Fixed OKLCH lightness per step: even to the eye, no contrast guarantee.'],
       mix: ['White/black mix (sRGB)', 'Mixing with white and black: simple, the hue washes out.'],
@@ -1095,7 +1115,8 @@ function renderHeader() {
   $('cransbtn').setAttribute('aria-expanded', String(ui.cransOpen));
   $('cranspanel').hidden = !ui.cransOpen;
   if (ui.cransOpen) renderCransPanel();
-  $('share').textContent = t('share'); $('reset').textContent = t('reset'); $('reset').title = t('resetTitle');
+  $('brandlabel').textContent = t('brandLabel');
+  $('share').textContent = t('share'); $('share').title = t('shareTitle'); $('reset').textContent = t('reset'); $('reset').title = t('resetTitle');
   $('theme').title = t('theme'); $('theme').setAttribute('aria-label', t('theme'));
   $('gh').title = t('ghTitle'); $('dl').textContent = t('dl'); $('dl').title = t('dlTitle');
   $('lang').textContent = t('langBtn'); $('lang').title = t('langTitle'); $('lang').setAttribute('aria-label', t('langTitle'));

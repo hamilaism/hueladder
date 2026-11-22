@@ -8,7 +8,8 @@ To install as an agent skill: `npx skills add hamilaism/hueladder`.
 For an agent: read SKILL.md first (the conversation path, one decision at a time), then use the
 CLI with `--json`. Never re-implement the colour science: it lives in engine/lib, validated
 against published vectors and, for the methods, against their original libraries.
-Compare methods on named criteria, each with its best value: Fusilier is Hueladder's default for one
+Compare methods on named criteria, each with its best value: the adapted Fusilier (David Fusilier's
+contrast targets, on an OKLCH path instead of color-shades' HSL) is Hueladder's default for one
 criterion (even contrast intervals), a preference, not a ranking. Every method's targets come
 from the chosen number of steps, never from the method.
 

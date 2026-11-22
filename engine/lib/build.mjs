@@ -111,11 +111,11 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `at constant hue and lightness when it falls outside the sRGB gamut. Perfect perceptual uniformity, but no explicit contrast guarantee.`),
     },
     fusilier: {
-      label: 'Fusilier — color-shades',
-      short: 'Fusilier',
+      label: t(() => 'Fusilier adapté — cibles de color-shades, chemin OKLCH', () => 'Fusilier, adapted — color-shades targets, OKLCH path'),
+      short: t(() => 'Fusilier (adapté)', () => 'Fusilier (adapted)'),
       generated: true,
       desc: t(() => `Chaque step vise un contraste précis face au noir : shade = 200 · (1 − (rang+0,5)/${n}), contraste cible = 21^(shade/200). `
-        + `Recherche binaire sur la luminosité OKLCH, hue et chroma du seed conservés. Le demi-pas d'inset évite que ${first} et ${last} `
+        + `Recherche binaire sur la luminosité OKLCH, hue et chroma du seed conservés. Adapté par Hueladder : color-shades, l'outil de David Fusilier, garde la teinte et la saturation HSL ; ici, la teinte et la chroma OKLCH, l'espace où travaillent aussi le régleur, le mode sombre et les ancres. Mêmes contrastes, couleurs un peu différentes. Le demi-pas d'inset évite que ${first} et ${last} `
         + `touchent le blanc et le noir purs, qui n'ont plus de teinte. Barreau de shades : ${ladders.shade.map(s => Math.round(s)).join(', ')} `
         + `— soit ${n1(rules.shadePerRank)} shades par cran, et donc les garanties lisibles dans les noms : `
         + (rules.grain ? `Δ nom ≥ ${rules.rankForAA * rules.grain} ⇒ AA (4.5), Δ nom ≥ ${rules.rankForUI * rules.grain} ⇒ 3.0, Δ nom ≥ ${rules.rankForAAA * rules.grain} ⇒ AAA (7) — le nom de chaque cran fixe son contraste.`
@@ -153,12 +153,12 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
       label: t(() => 'Leonardo — contraste visé', () => 'Leonardo — target contrast'),
       short: 'Leonardo',
       generated: true,
-      desc: t(() => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe) : une échelle blanc → seed → noir interpolée en OKLCH (la librairie interpole en RGB par défaut), et sur elle, `
-        + `le point qui tient chaque ratio visé face au fond (ici le blanc). L'éclat suit l'échelle : il culmine au seed et s'éteint vers les extrêmes. `
+      desc: t(() => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe), reproduite au hex près : une échelle blanc → seed → noir interpolée en OKLCH (la librairie interpole en RGB par défaut), et sur elle, `
+        + `le point que la recherche de la librairie retient pour chaque ratio visé face au fond (ici le blanc), ratios arrondis à deux décimales comme dans la librairie. L'éclat suit l'échelle : il culmine au seed et s'éteint vers les extrêmes. `
         + `Les ratios sont un choix : ${ladders.leonardoReference ? `ceux de la rampe Tailwind ${ladders.leonardoReference}` : 'ici, les contrastes du barreau de l\'échelle, pour comparer à ratios égaux'} `
         + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}).`,
-      () => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe): a white → seed → black scale interpolated in OKLCH (the library interpolates in RGB by default), and on it, `
-        + `the point that holds each target ratio against the background (white here). Chroma follows the scale: it peaks at the seed and fades towards the ends. `
+      () => `@adobe/leonardo-contrast-colors (Nate Baldwin, Adobe), reproduced to the hex: a white → seed → black scale interpolated in OKLCH (the library interpolates in RGB by default), and on it, `
+        + `the point the library's search keeps for each target ratio against the background (white here), ratios rounded to two decimals as in the library. Chroma follows the scale: it peaks at the seed and fades towards the ends. `
         + `The ratios are a choice: ${ladders.leonardoReference ? `those of the Tailwind ${ladders.leonardoReference} ramp` : 'here, the contrasts of the scale\'s ladder, to compare at equal ratios'} `
         + `(${ladders.leonardo.map(v => fmtRatio(v)).join(', ')}).`),
     },

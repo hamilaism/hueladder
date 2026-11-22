@@ -68,15 +68,17 @@ if (hct && str) {
   }));
 } else results.push({ method: 'hct', lib: '@material/material-color-utilities', verdict: 'librairie absente' });
 
-// Leonardo : chaque cran vise un ratio face au blanc ; on compare les ratios obtenus et les couleurs
+// Leonardo : chaque cran vise un ratio face au blanc ; on compare les ratios obtenus et les couleurs.
+// La librairie reçoit tous les ratios d'un coup, comme Hueladder : sa recherche partage un cache
+// d'une couleur à l'autre, l'ordre et la liste comptent.
 if (leo && leo.Color && leo.Theme) {
-  const targets = data.ladders.leonardo.filter((_, i) => data.meta.isCore[i]);
+  const targets = data.ladders.leonardo;
   let errHueladder = 0, errLeo = 0;
   const pairs = real.flatMap(r => {
     const col = new leo.Color({ name: 'c', colorKeys: [r.seed], ratios: targets, colorSpace: 'OKLCH' });
     const theme = new leo.Theme({ colors: [col], backgroundColor: new leo.BackgroundColor({ name: 'bg', colorKeys: ['#ffffff'], ratios: [1] }), lightness: 100 });
     const vals = (theme.contrastColors.find(x => x.values) || { values: [] }).values.map(v => v.value);
-    const hueladderCore = r.colors.leonardo.filter((_, i) => data.meta.isCore[i]);
+    const hueladderCore = r.colors.leonardo;
     return hueladderCore.map((h, k) => {
       if (!h || !vals[k]) return {};
       errHueladder = Math.max(errHueladder, Math.abs(contrast(h, '#ffffff') - targets[k]));
