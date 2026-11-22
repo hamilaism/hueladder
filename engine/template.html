@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__TITLE__</title>
+<style>
+  :root {
+    --bg: #f5f5f5; --fg: #1a1a1a; --card: #ffffff; --line: #e0e0e0; --muted: #6b6b6b;
+    --ok: #126812; --warn: #ad4e00; --bad: #a81f0b; --accent: #d81f06;
+  }
+  body.dark { --bg: #141414; --fg: #ececec; --card: #1f1f1f; --line: #3a3a3a; --muted: #9a9a9a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 36px 0 12px; border-bottom: 2px solid var(--line); padding-bottom: 6px; }
+  h3 { font-size: 14px; margin: 18px 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .mtoggles { position: sticky; top: 0; z-index: 40; background: var(--bg); padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+  .mtog { font-size: 12px; white-space: nowrap; cursor: pointer; user-select: none; }
+  .mtog input { vertical-align: -2px; }
+  .mtoggles button { font: inherit; font-size: 11px; padding: 2px 8px; border-radius: 5px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  .card h3 { margin: 0 0 6px; }
+  .card p { margin: 0; color: var(--muted); font-size: 13px; }
+  .card.is-core { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .card .tag { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; }
+  th { background: color-mix(in srgb, var(--card) 85%, var(--fg) 15%); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .best { font-weight: 700; color: var(--ok); }
+  .worst { color: var(--bad); }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .pill.aaa { background: #126812; color: #fff; } .pill.aa { background: #2d8f2d; color: #fff; }
+  .pill.ui { background: #e06806; color: #fff; } .pill.fail { background: #aaa; color: #fff; }
+  .kindpill { display: inline-block; padding: 0 7px; border-radius: 9px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #fff; }
+  .kindpill.brand { background: #d81f06; } .kindpill.product { background: #444; }
+  .kindpill.system { background: #0067f0; } .kindpill.neutral { background: #6b6b6b; }
+  /* rampes */
+  .ramp { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+  .ramp-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+  .ramp-head b { font-size: 15px; }
+  .ramp-head .seed { font-size: 12px; color: var(--muted); }
+  .ramp-head button { margin-left: auto; }
+  .ramp-src { font-size: 11px; color: var(--muted); margin: 0 0 10px; }
+  .mrow { display: grid; grid-template-columns: 152px 1fr; gap: 8px; align-items: center; margin-bottom: 5px; }
+  .mrow.is-core { background: color-mix(in srgb, var(--accent) 7%, transparent); border-radius: 6px; padding: 4px; margin: 3px -4px 7px; }
+  .mname { font-size: 12px; color: var(--muted); }
+  .mrow.is-core .mname { color: var(--accent); font-weight: 700; }
+  .sw-strip { display: grid; gap: 3px; }
+  .sw { position: relative; height: 56px; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 5px; border: 1px solid rgba(0,0,0,.08); }
+  .sw .st { font-size: 10px; font-weight: 700; }
+  .sw .hx { font-size: 9px; opacity: .85; font-family: ui-monospace, monospace; }
+  .sw .marks { position: absolute; top: 4px; right: 5px; font-size: 8px; letter-spacing: 1px; }
+  .sw.sel-bg { outline: 3px solid var(--accent); outline-offset: 1px; z-index: 2; }
+  .sw.sel-fg { outline: 3px dashed var(--accent); outline-offset: 1px; z-index: 2; }
+  .sw.anchored-at { box-shadow: 0 0 0 2px var(--fg); z-index: 1; }
+  .sw-none { height: 56px; border-radius: 4px; border: 1px dashed var(--line); background: repeating-linear-gradient(45deg, transparent, transparent 5px, var(--line) 5px, var(--line) 6px); opacity: .55; }
+  .anchor-rail { display: grid; gap: 3px; margin-top: 2px; }
+  .anchor-rail span { font-size: 9px; font-weight: 700; color: var(--accent); text-align: center; min-height: 12px; }
+  /* déclinaisons de teinte : décalées et en retrait, pour qu'on ne les confonde jamais
+     avec une couleur réellement arbitrée par la marque */
+  .ramp.is-derived { margin-left: 28px; border-style: dashed; background: color-mix(in srgb, var(--card) 94%, var(--fg) 6%); }
+  .kindpill.derivedpill { background: transparent; color: var(--muted); border: 1px dashed var(--muted); }
+  .hue-loss { color: var(--warn); }
+  .hue-map td { vertical-align: middle; }
+  .hue-cell { display: flex; align-items: center; gap: 7px; }
+  .hue-chip { width: 34px; height: 26px; border-radius: 4px; border: 1px solid rgba(0,0,0,.15); flex: none; }
+  .hue-cell.is-ref .hue-chip { box-shadow: 0 0 0 2px var(--fg); }
+  .hp-ruler { position: relative; height: 54px; margin: 6px 0 18px; }
+  .hp-ruler .bar { position: absolute; left: 0; right: 0; top: 20px; height: 10px; border-radius: 5px; opacity: .5;
+    background: linear-gradient(90deg, oklch(.7 .15 0), oklch(.7 .15 60), oklch(.7 .15 120), oklch(.7 .15 180), oklch(.7 .15 240), oklch(.7 .15 300), oklch(.7 .15 360)); }
+  .hp-ruler .pin { position: absolute; top: 13px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; border: 2px solid var(--card); box-shadow: 0 0 0 1px rgba(0,0,0,.2); }
+  .hp-ruler .tick { position: absolute; top: 38px; font-size: 11px; color: var(--muted); transform: translateX(-50%); }
+  .hp-band h3 { font-size: 14px; margin: 16px 0 6px; } .hp-band h3 span { font-weight: 400; font-size: 12px; color: var(--muted); }
+  .hp-scroll { overflow-x: auto; }
+  .hp-row { display: grid; grid-template-columns: 180px repeat(var(--n), minmax(34px, 1fr)); gap: 3px; align-items: center; margin-bottom: 3px; min-width: 560px; }
+  .hp-row .lbl { font-size: 13px; font-weight: 600; } .hp-row .lbl small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+  .hp-row .c { height: 34px; border-radius: 4px; border: 1px solid rgba(0,0,0,.08); }
+  .hp-row .c.none { background: repeating-linear-gradient(45deg, transparent, transparent 5px, var(--line) 5px, var(--line) 6px); opacity: .5; border-style: dashed; }
+  .hp-row .c.seed { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .hp-row.head .c { height: auto; border: 0; font-size: 11px; color: var(--muted); text-align: center; }
+  .hp-switch button { font: inherit; font-size: 12px; padding: 3px 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 12px; cursor: pointer; }
+  .hp-switch button[aria-pressed="true"] { background: var(--fg); color: var(--card); }
+  .hp-pair { display: inline-flex; gap: 2px; vertical-align: middle; } .hp-pair i { width: 12px; height: 18px; border-radius: 2px; display: inline-block; }
+  .matrices { display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-top: 10px; }
+  .matrices.open { display: grid; }
+  .mx { font-size: 10px; }
+  .mx table { font-size: 10px; }
+  .mx th, .mx td { padding: 2px 4px; text-align: center; border: 1px solid var(--line); }
+  .mx td.aaa { background: #12681233; } .mx td.aa { background: #2d8f2d22; }
+  .mx td.ui { background: #e0680622; } .mx td.no { color: var(--muted); }
+  /* testeur */
+  .tester { position: sticky; top: 42px; z-index: 10; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr 400px; gap: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+  .spec-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .spec-sample { border-radius: 5px; padding: 5px 8px; border: 1px solid var(--line); min-height: 20px; display: flex; align-items: center; gap: 8px; }
+  .chip { display: inline-block; padding: 0 5px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 3px; }
+  .chip.ok { background: #2d8f2d; color: #fff; } .chip.ko { background: #aaa; color: #fff; }
+  .ipt { border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+  .apca-line { font-size: 11px; color: var(--muted); margin-top: 5px; border-top: 1px dashed var(--line); padding-top: 5px; }
+  .tester select, .ramp button, .tester button, .bgbtns button { font: inherit; font-size: 12px; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+  .tester .col label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; font-weight: 600; }
+  .verdict { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+  .ratio { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .bgbtns { position: fixed; bottom: 16px; right: 16px; display: flex; gap: 6px; z-index: 30; }
+  .chart-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; margin-bottom: 6px; }
+  .chart { width: 100%; height: auto; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .chart polyline:hover, .chart circle:hover { opacity: 1; stroke-width: 3; }
+  .note { background: color-mix(in srgb, var(--card) 92%, var(--accent) 8%); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 0 6px 6px 0; font-size: 13px; margin: 10px 0; }
+  details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; }
+  code { font-family: ui-monospace, monospace; font-size: 12px; background: color-mix(in srgb, var(--card) 80%, var(--fg) 20%); padding: 1px 5px; border-radius: 4px; }
+  .viol { font-size: 12px; font-family: ui-monospace, monospace; color: var(--muted); }
+  .dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; border: 1px solid rgba(0,0,0,.18); }
+  td.score-best { font-weight: 700; color: var(--ok); } td.score-bad { color: var(--bad); font-weight: 700; }
+  .caveat { border-left: 4px solid var(--warn, #9a5200); padding: 8px 12px; background: rgba(154,82,0,.08); border-radius: 6px; }
+</style>
+<style id="mvis"></style>
+</head>
+<body>
+<div class="wrap">
+  <h1>__TITLE__</h1>
+  <p class="sub" id="subtitle"></p>
+  <div class="mtoggles" id="mtoggles"></div>
+
+  <h2 data-en="The methods compared">Les méthodes comparées</h2>
+  <div class="cards" id="method-cards"></div>
+
+  <h2 data-en="Summary — accessibility performance">Synthèse — performance a11y</h2>
+  <div id="summary"></div>
+  <div class="note" id="verdict-note"></div>
+
+  <h2 data-en="Charts — reading the methods">Visualisations — lire les méthodes</h2>
+  <p class="sub" data-en="One panel per method, same scales for comparison. Each line/point is a ramp, drawn in its own anchor colour (dotted grey = neutral ramp). Hover to identify the ramp.">Un panneau par méthode, échelles identiques pour comparer. Chaque ligne/point = un nuancier, tracé dans sa propre couleur d'ancrage (gris pointillé = nuancier neutre). Survole pour identifier le nuancier.</p>
+  <div id="charts"></div>
+
+  <h2 data-en="Pair tester">Testeur de paires</h2>
+  <p class="sub" data-en="Pick a background and a text colour below, or click the ramp swatches (1<sup>st</sup> click = background, 2<sup>nd</sup> click = text).">Sélectionne un fond et un texte ci-dessous, ou clique sur les swatches des nuanciers (1<sup>er</sup> clic = fond, 2<sup>e</sup> clic = texte).</p>
+  <div class="tester" id="tester"></div>
+
+  <h2 id="anchors-title" data-en="The colours already chosen — where do they land?">Les couleurs déjà choisies — où tombent-elles ?</h2>
+  <p class="sub" id="anchors-sub"></p>
+  <div id="anchors"></div>
+
+  <h2 data-en="Conventional usages">Usages conventionnels</h2>
+  <p class="sub" data-en="Each row is a classic usage pattern (typical semantic roles in a design system), evaluated on every ramp with its own WCAG threshold. A cell = number of ramps where the pair passes. Hover a cell to see the failing ramps and their ratio.">Chaque ligne est un pattern d'usage classique (rôles sémantiques typiques d'un DS), évalué sur tous les nuanciers avec son seuil WCAG propre. Une cellule = nombre de nuanciers où la paire passe. Survole une cellule pour voir les nuanciers en échec et leur ratio.</p>
+  <div id="usages"></div>
+
+  <h2 id="hue-title" data-en="Hue neighbourhood — what if we turned the wheel?">Voisinage de teinte — et si on tournait la roue ?</h2>
+  <p class="sub" id="hue-sub"></p>
+  <div id="huemap"></div>
+
+  <h2 data-en="Ramps — side by side">Nuanciers — rendu côte à côte</h2>
+  <p class="sub" data-en="Markers on each swatch: <b>W</b> = white text passes AA (≥ 4.5) on this colour · <b>B</b> = black text passes AA. The dark outline and the label under the ramp mark the rank where a starting colour lands. “matrices” button: step × step contrast.">Marqueurs sur chaque swatch : <b>W</b> = texte blanc AA (≥ 4.5) sur cette couleur · <b>B</b> = texte noir AA. Le liseré sombre et l'étiquette sous la rampe repèrent le rang où tombe une couleur de départ. Bouton « matrices » : contrastes step × step.</p>
+  <div id="ramps"></div>
+
+  <h2 data-en="Cross-hue interchangeability">Interchangeabilité cross-teintes</h2>
+  <p class="sub" data-en="The formal test first: across <b>all</b> pairs of chromatic ramps at equal rank, how many do not give the same answer to “does it pass 3 / 4.5 / 7”. It is the figure that tells whether one hue can be swapped for another at the same step without re-checking: a single crossing forces an exception to be documented for that hue. The contrast spread, on the other hand, is <b>never</b> zero: the hex grid is discrete, and the best achievable across 20 families is around 0.04 points. The next table gives the detail step by step.">Le test formel d'abord : sur <b>toutes</b> les paires de nuanciers chromatiques à rang égal, combien ne donnent pas la même réponse à « est-ce que ça passe 3 / 4.5 / 7 ». C'est le chiffre qui dit si l'on peut échanger une teinte contre une autre au même cran sans revérifier : un seul franchissement oblige à documenter une exception pour cette teinte. L'écart de contraste, lui, ne vaut <b>jamais</b> zéro : la grille hex est discrète, le meilleur atteignable sur 20 familles est de l'ordre de 0,04 point. Le tableau suivant en donne le détail cran par cran.</p>
+  <div id="spread"></div>
+
+  <h2 data-en="Appendix">Annexe</h2>
+  <div id="annex"></div>
+</div>
+
+<div class="bgbtns">
+  <button data-en="☀️ Light background" onclick="document.body.classList.remove('dark')">☀️ Fond clair</button>
+  <button data-en="🌙 Dark background" onclick="document.body.classList.add('dark')">🌙 Fond sombre</button>
+</div>
+
+<script>
+const DATA = /*DATA_INJECT*/{};
+
+// Langue du rapport : portée par les données (spec.lang), français par défaut.
+const LANG = DATA.meta.lang === 'en' ? 'en' : 'fr';
+const T = (fr, en) => (LANG === 'en' ? en : fr);
+// La règle dans l'unité de la nomenclature : des rangs, ou un écart de noms quand le nom encode le contraste.
+const RG = k => (DATA.rules.grain ? T('Δ nom ≥ ', 'Δ name ≥ ') + k * DATA.rules.grain : T('Δrang ≥ ', 'Δrank ≥ ') + k);
+const RN = k => (DATA.rules.grain ? String(k * DATA.rules.grain) : String(k));
+document.documentElement.lang = LANG;
+// le texte statique de la page porte sa version anglaise dans data-en
+if (LANG === 'en') document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.dataset.en; });
+
+/* APCA 0.0.98G-4g — code injecté depuis lib/apca.mjs (validé contre les vecteurs apca-w3),
+   pour que le testeur de paires calcule exactement la même chose que la génération. */
+/*APCA_INJECT*/
+
+const METHODS = DATA.methodOrder;
+const ML = m => DATA.methods[m].label;
+const MS = m => DATA.methods[m].short || DATA.methods[m].label;
+const CORE = DATA.meta.coreMethod;
+const STEPS = DATA.meta.steps;
+const NSTEP = STEPS.length;
+const ROLES = DATA.anchorRoles || {};
+const roleShort = r => (ROLES[r] && ROLES[r].short) || r;
+const roleLabel = r => (ROLES[r] && ROLES[r].label) || r;
+
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmt = x => (Math.floor(x * 100) / 100).toFixed(2);
+const nf = x => (x === null || x === undefined ? '—' : x.toLocaleString(T('fr-FR', 'en-US')));
+
+// ---------- contraste (identique à lib/color.mjs) ----------
+function lum(hex) {
+  const v = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(v.slice(i, i + 2), 16) / 255)
+    .map(c => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  return 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+}
+function ratio(h1, h2) {
+  const a = lum(h1) + 0.05, b = lum(h2) + 0.05;
+  return a > b ? a / b : b / a;
+}
+// 0.179 = point d'équi-contraste WCAG : en dessous le blanc gagne, au-dessus le noir.
+const readableOn = hex => (lum(hex) < 0.179 ? '#ffffff' : '#000000');
+
+function pillFor(r) {
+  if (r >= 7) return '<span class="pill aaa">AAA ' + fmt(r) + '</span>';
+  if (r >= 4.5) return '<span class="pill aa">AA ' + fmt(r) + '</span>';
+  if (r >= 3) return '<span class="pill ui">UI-only ' + fmt(r) + '</span>';
+  return '<span class="pill fail">' + T('échec', 'fail') + ' ' + fmt(r) + '</span>';
+}
+
+// ---------- en-tête ----------
+document.getElementById('subtitle').innerHTML = DATA.meta.subtitle
+  + ' <br><b>' + DATA.meta.rampCount + T(' nuanciers', ' ramps') + '</b> × <b>' + METHODS.length + T(' méthodes', ' methods') + '</b> × <b>' + NSTEP + ' steps</b> ('
+  + STEPS.join(', ') + ') · ' + T('ancrage sur le step', 'anchored at step') + ' <code>' + DATA.meta.seedStep + '</code> · '
+  + DATA.meta.anchorCount + (DATA.meta.demo ? T(' couleurs de départ synthétiques, une par nuancier.', ' synthetic starting colours, one per ramp.')
+    : T(' couleurs déjà choisies, reprises telles quelles.', ' already chosen colours, taken as they are.'));
+if (DATA.meta.caveat) document.getElementById('subtitle').insertAdjacentHTML('beforebegin', '<p class="caveat"><b>' + T('À lire avant les chiffres', 'Read before the numbers') + '</b> — ' + esc(DATA.meta.caveat) + '</p>');
+
+// ---------- toggles ----------
+window.refreshTester = null;
+(function renderToggles() {
+  const el = document.getElementById('mtoggles');
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('mvis-' + DATA.meta.brand) || 'null'); } catch (e) {}
+  const vis = Array.isArray(saved) && saved.filter(m => METHODS.includes(m)).length ? saved : METHODS.slice();
+  el.innerHTML = '<b style="font-size:12px">' + T('Méthodes affichées :', 'Methods shown:') + '</b>' + METHODS.map(m =>
+    '<label class="mtog"><input type="checkbox" data-m="' + m + '"' + (vis.includes(m) ? ' checked' : '') + '> ' + esc(ML(m)) + '</label>').join('')
+    + '<button id="mtog-all">' + T('toutes', 'all') + '</button><button id="mtog-core">' + (METHODS.includes('existing') ? T('existant + ', 'existing + ') : '') + esc(MS(CORE)) + '</button>';
+  function apply() {
+    let checked = METHODS.filter(m => el.querySelector('input[data-m="' + m + '"]').checked);
+    if (!checked.length) { el.querySelectorAll('input').forEach(i => (i.checked = true)); checked = METHODS.slice(); }
+    try { localStorage.setItem('mvis-' + DATA.meta.brand, JSON.stringify(checked)); } catch (e) {}
+    document.getElementById('mvis').textContent = METHODS.filter(m => !checked.includes(m))
+      .map(m => '[data-method="' + m + '"]{display:none !important}').join('');
+    if (window.refreshTester) window.refreshTester();
+  }
+  el.addEventListener('change', apply);
+  document.getElementById('mtog-all').onclick = () => { el.querySelectorAll('input').forEach(i => (i.checked = true)); apply(); };
+  document.getElementById('mtog-core').onclick = () => {
+    el.querySelectorAll('input').forEach(i => (i.checked = ['existing', CORE].includes(i.dataset.m))); apply();
+  };
+  apply();
+  window.visibleMethods = () => METHODS.filter(m => el.querySelector('input[data-m="' + m + '"]').checked);
+})();
+
+// ---------- cartes méthodes ----------
+document.getElementById('method-cards').innerHTML = METHODS.map(m =>
+  '<div class="card' + (m === CORE ? ' is-core' : '') + '" data-method="' + m + '">'
+  + (m === CORE ? '<span class="tag">' + T('méthode retenue pour le core', 'method chosen for the core') + '</span>' : '')
+  + '<h3>' + esc(ML(m)) + '</h3><p>' + DATA.methods[m].desc + '</p></div>').join('');
+
+// ---------- synthèse ----------
+(function renderSummary() {
+  const M = DATA.metrics;
+  const complete = METHODS.filter(m => !M[m].sparse);
+  // chaque ligne : libellé, rendu, sens, valeur, et ce qu'on dit de la meilleure. Aucune ligne ne
+  // juge une méthode à la règle d'une autre : l'écart sûr est mesuré sur chaque méthode elle-même.
+  const rows = [
+    [T('Paires accessibles AA (≥ 4.5) — tous nuanciers confondus', 'AA-accessible pairs (≥ 4.5) — all ramps combined'),
+      m => nf(M[m].pairsAA) + ' / ' + nf(M[m].totalPairs) + ' (' + M[m].pctAA + T(' %)', '%)'), 'max', m => M[m].pairsAA, T('le plus de paires AA', 'most AA pairs')],
+    [T('Écart de crans qui garantit AA partout (le plus petit qui vaut pour toutes les paires, toutes teintes)', 'Step gap that guarantees AA everywhere (the smallest that holds for every pair, every hue)'),
+      m => (M[m].safeRank === null ? T('aucun', 'none') : 'Δ ≥ ' + RN(M[m].safeRank)), 'min', m => M[m].safeRank ?? 9999, T('le plus petit écart sûr', 'smallest safe gap')],
+    [T('Écart de contraste entre teintes à cran égal (moyenne)', 'Contrast spread between hues at equal step (mean)'),
+      m => M[m].meanSpread, 'min', m => M[m].meanSpread, T('le moins d\'écart entre teintes', 'least spread between hues')],
+    [T('Couleurs utilisables en texte AA sur blanc', 'Colours usable as AA text on white'),
+      m => M[m].onWhite + ' / ' + M[m].colorCount, 'max', m => M[m].onWhite / M[m].colorCount, T('le plus de textes AA sur blanc', 'most AA text colours on white')],
+    [T('Couleurs utilisables en texte AA sur noir', 'Colours usable as AA text on black'),
+      m => M[m].onBlack + ' / ' + M[m].colorCount, 'max', m => M[m].onBlack / M[m].colorCount, T('le plus de textes AA sur noir', 'most AA text colours on black')],
+    [T('Asymétrie clair / sombre', 'Light / dark asymmetry') + ' <span style="color:var(--muted);font-size:11px">' + T('(écart entre les deux lignes ci-dessus ; il vient de la répartition des crans)', '(gap between the two rows above; it comes from how the steps are spread)') + '</span>',
+      m => Math.abs(M[m].onWhite - M[m].onBlack) + T(' couleurs', Math.abs(M[m].onWhite - M[m].onBlack) === 1 ? ' colour' : ' colours'), 'min', m => Math.abs(M[m].onWhite - M[m].onBlack) / M[m].colorCount, T('le plus équilibré entre clair et sombre', 'most balanced between light and dark')],
+    [T('Écart à la couleur de départ au ' + DATA.meta.seedStep + ' (ΔE2000 moyen)', 'Distance from the starting colour at ' + DATA.meta.seedStep + ' (mean ΔE2000)'),
+      m => (M[m].drift ? M[m].drift.meanDE : m === 'existing' ? T('— (référence)', '— (reference)') : '—'), 'min', m => (M[m].drift ? M[m].drift.meanDE : Infinity), T('la couleur de départ la mieux gardée', 'starting colour best kept')],
+    [T('Fidélité à <b>toutes</b> les couleurs de départ (ΔE2000 moyen au cran le plus proche)', 'Fidelity to <b>all</b> the starting colours (mean ΔE2000 at the nearest step)'),
+      m => M[m].meanFidelity, 'min', m => M[m].meanFidelity, T('la plus fidèle aux couleurs de départ', 'most faithful to the starting colours')],
+  ];
+  const winners = [];
+  let h = '<table><tr><th>' + T('Métrique', 'Metric') + '</th>' + METHODS.map(m => '<th data-method="' + m + '">' + esc(ML(m)) + '</th>').join('') + '</tr>';
+  for (const [label, render, best, val, what] of rows) {
+    // l'existant est creux : ses totaux ne sont pas comparables, il ne concourt pas
+    const vals = complete.map(val);
+    const target = best === 'max' ? Math.max(...vals) : Math.min(...vals);
+    if (Number.isFinite(target)) winners.push([what, complete.filter(m => val(m) === target)]);
+    h += '<tr><td>' + label + '</td>' + METHODS.map(m =>
+      '<td data-method="' + m + '" class="num' + (!M[m].sparse && val(m) === target ? ' best' : '') + '">' + render(m) + '</td>').join('') + '</tr>';
+  }
+  h += '</table>' + (M.existing ? '<p class="hint">' + T('L\'existant est une méthode <b>creuse</b> — il ne couvre que '
+    + M.existing.colorCount + ' couleurs sur les ' + DATA.meta.colorCount + ' d\'une échelle complète. '
+    + 'Ses totaux sont affichés pour information mais ne concourent pas au meilleur score, faute d\'être comparables.',
+    'The existing set is a <b>sparse</b> method — it only covers '
+    + M.existing.colorCount + ' colours out of the ' + DATA.meta.colorCount + ' of a complete scale. '
+    + 'Its totals are shown for information but do not compete for the best score, since they are not comparable.') + '</p>' : '');
+  document.getElementById('summary').innerHTML = h;
+
+  // pas de gagnant : la meilleure de chaque ligne, et c'est au lecteur de dire quelle ligne compte
+  const list = '<ul>' + winners.map(([what, ms]) => '<li>' + what + T(' : ', ': ') + ms.map(m => '<code>' + esc(MS(m)) + '</code>').join(', ') + '</li>').join('') + '</ul>';
+  const core = DATA.meta.demo ? T('la méthode que Hueladder propose par défaut', 'the method Hueladder offers by default') : T('la méthode retenue pour le core de cette palette', 'the method chosen for this palette\'s core');
+  document.getElementById('verdict-note').innerHTML = T(
+    '<b>Lecture.</b> Aucune méthode n\'a la meilleure valeur sur toutes les lignes : chacune répond à un critère. La meilleure de chaque ligne, en gras dans le tableau :'
+    + list + 'Choisis d\'abord le critère qui compte pour toi, puis regarde ce que la méthode qui y répond paie sur les autres lignes ; '
+    + 'le guide de choix du studio (Comprendre) et <code>hueladder explain</code> partent de ces critères. <code>' + esc(MS(CORE)) + '</code> est ' + core + ' : un choix, pas un classement.',
+    '<b>How to read this.</b> No method has the best value on every row: each one answers a criterion. The best of each row, in bold in the table:'
+    + list + 'Pick the criterion that matters to you first, then look at what the method that answers it pays on the other rows; '
+    + 'the studio\'s choice guide (Understand) and <code>hueladder explain</code> start from these criteria. <code>' + esc(MS(CORE)) + '</code> is ' + core + ': a choice, not a ranking.');
+})();
+
+// ---------- visualisations ----------
+(function renderCharts() {
+  const CHROM = DATA.ramps.filter(r => r.kind !== 'neutral');
+  const PL = 44, PR = 26, PT = 14, PB = 26, W = 400, H = 240;
+  const plotR = W - PR, plotB = H - PB;
+  const sx = i => PL + (i / (NSTEP - 1)) * (plotR - PL);
+
+  function svgPanel(title, body, yTicks, opts) {
+    let s = '<div><div class="mname" style="margin:0 0 4px 4px">' + esc(title) + '</div>'
+      + '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chart">'
+      + '<rect x="' + PL + '" y="' + PT + '" width="' + (plotR - PL) + '" height="' + (plotB - PT) + '" fill="none" stroke="var(--line)"/>';
+    STEPS.forEach((st, i) => {
+      if (i % 2 !== 0 && i !== NSTEP - 1) return;
+      s += '<text x="' + sx(i) + '" y="' + (plotB + 14) + '" font-size="9" text-anchor="middle" fill="var(--muted)">' + st + '</text>';
+    });
+    for (const t of yTicks) {
+      s += '<line x1="' + PL + '" y1="' + t.y + '" x2="' + plotR + '" y2="' + t.y + '" stroke="var(--line)" stroke-dasharray="2,3"/>'
+        + '<text x="' + (PL - 4) + '" y="' + (t.y + 3) + '" font-size="9" text-anchor="end" fill="var(--muted)">' + t.label + '</text>';
+    }
+    if (opts && opts.rightTicks) for (const t of opts.rightTicks) {
+      s += '<text x="' + (plotR + 3) + '" y="' + (t.y + 3) + '" font-size="8" fill="var(--muted)">' + t.label + '</text>';
+    }
+    if (opts && opts.refs) for (const rl of opts.refs) {
+      s += '<line x1="' + PL + '" y1="' + rl.y + '" x2="' + plotR + '" y2="' + rl.y + '" stroke="' + rl.color + '" stroke-width="1.2" stroke-dasharray="6,3"/>'
+        + (rl.label ? '<text x="' + (PL + 4) + '" y="' + (rl.y - 3) + '" font-size="9" fill="' + rl.color + '">' + rl.label + '</text>' : '');
+    }
+    return s + body + '</svg></div>';
+  }
+
+  const strokeOf = (r, m) => (r.kind === 'neutral' ? 'var(--muted)' : (r.meta[m][r.seedIndex] ? r.colors[m][r.seedIndex] : r.seed));
+
+  function lineBody(m, getVal, sy, chromOnly) {
+    let s = '';
+    for (const r of (chromOnly ? CHROM : DATA.ramps)) {
+      // une méthode creuse produit des segments : on coupe la polyline sur les trous
+      const runs = [];
+      let cur = [];
+      for (let i = 0; i < NSTEP; i++) {
+        const v = getVal(r, m, i);
+        if (v === null || v === undefined) { if (cur.length) runs.push(cur); cur = []; continue; }
+        cur.push(sx(i) + ',' + sy(v));
+      }
+      if (cur.length) runs.push(cur);
+      for (const pts of runs) {
+        if (pts.length < 2) {
+          const [cx, cy] = pts[0].split(',');
+          s += '<circle cx="' + cx + '" cy="' + cy + '" r="2.5" fill="' + strokeOf(r, m) + '"><title>' + esc(r.label) + '</title></circle>';
+          continue;
+        }
+        s += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + strokeOf(r, m) + '" stroke-width="1.5" opacity="0.85"'
+          + (r.kind === 'neutral' ? ' stroke-dasharray="4,3"' : '') + '><title>' + esc(r.label) + '</title></polyline>';
+      }
+    }
+    return s;
+  }
+
+  function dotBody(m, getVal, sy) {
+    let s = '';
+    for (const r of CHROM) {
+      for (let i = 0; i < NSTEP; i++) {
+        const v = getVal(r, m, i);
+        if (v === null || v === undefined) continue;
+        s += '<circle cx="' + sx(i) + '" cy="' + sy(v) + '" r="3" fill="' + strokeOf(r, m) + '" opacity="0.85" stroke="var(--line)" stroke-width="0.5">'
+          + '<title>' + esc(r.label) + '/' + STEPS[i] + '</title></circle>';
+      }
+    }
+    return s;
+  }
+
+  const chartGroup = (title, caption, panelFor) =>
+    '<h3>' + title + '</h3><p class="sub">' + caption + '</p><div class="chart-row">'
+    + METHODS.map(m => '<div data-method="' + m + '">' + panelFor(m) + '</div>').join('') + '</div>';
+
+  const sy01 = v => PT + (1 - v) * (plotB - PT);
+  const syLog = v => PT + (1 - Math.log(v) / Math.log(21)) * (plotB - PT);
+  const syChroma = v => PT + (1 - v / 0.4) * (plotB - PT);
+  const ticks01 = [0, 0.25, 0.5, 0.75, 1].map(v => ({ y: sy01(v), label: v.toFixed(2) }));
+  const ticksLog = [1, 1.5, 3, 4.5, 7, 12, 21].map(v => ({ y: syLog(v), label: String(v) }));
+  const shadeTicks = [0, 50, 100, 150, 200].map(sh => ({ y: syLog(Math.exp((sh / 200) * Math.log(21))), label: 's' + sh }));
+  const ticksChroma = [0, 0.1, 0.2, 0.3, 0.4].map(v => ({ y: syChroma(v), label: v.toFixed(1) }));
+
+  const mv = (r, m, i, f) => (r.meta[m][i] ? f(r.meta[m][i]) : null);
+  let h = '';
+
+  h += chartGroup(T('1 · Distribution de la luminosité (OKLCH L) par step', '1 · Lightness distribution (OKLCH L) per step'),
+    T('La « forme » de chaque méthode. OKLCH à luminosité fixe : toutes les rampes exactement superposées, par construction. '
+    + '<code>' + esc(MS('fusilier')) + '</code> : presque superposées, avec un léger éventail — à contraste égal, chaque teinte demande un L un peu différent — '
+    + 'et une courbe logarithmique, plus serrée dans les clairs, comme la perception du contraste. '
+    + 'Quand les courbes divergent, c\'est qu\'à rang égal chaque teinte a sa propre luminosité : le contraste d\'un même cran varie alors d\'une teinte à l\'autre.',
+    'The “shape” of each method. OKLCH at fixed lightness: all ramps exactly superimposed, by construction. '
+    + '<code>' + esc(MS('fusilier')) + '</code>: almost superimposed, with a slight fan — at equal contrast, each hue needs a slightly different L — '
+    + 'and a logarithmic curve, tighter in the lights, like the perception of contrast. '
+    + 'When the curves diverge, each hue has its own lightness at equal rank: the contrast of a given step then varies from one hue to another.'),
+    m => svgPanel(ML(m), lineBody(m, (r, mm, i) => mv(r, mm, i, s => s.oklch[0]), sy01), ticks01));
+
+  h += chartGroup(T('2 · Contraste vs noir, échelle logarithmique — la signature de chaque méthode', '2 · Contrast vs black, logarithmic scale — the signature of each method'),
+    T('Le graphique qui montre ce qu\'un écart de crans garantit. En échelle log du contraste face au noir, deux couleurs sont AA si elles sont distantes '
+    + 'd\'au moins la moitié de la hauteur totale (4.58² ≈ 21). <code>' + esc(MS('fusilier')) + '</code> : une droite unique, toutes teintes confondues — '
+    + 'la distance verticale se lit directement dans les noms de steps (axe de droite : shades 0–200). Un faisceau dispersé signifie au contraire '
+    + 'que la distance entre deux steps dépend de la teinte : un même écart de crans ne garantit pas le même contraste partout, et chaque paire se vérifie teinte par teinte.',
+    'The chart that shows what a step gap guarantees. On a log scale of contrast against black, two colours pass AA if they are at least '
+    + 'half the total height apart (4.58² ≈ 21). <code>' + esc(MS('fusilier')) + '</code>: a single straight line, whatever the hue — '
+    + 'the vertical distance can be read straight from the step names (right-hand axis: shades 0–200). A scattered bundle means, on the contrary, '
+    + 'that the distance between two steps depends on the hue: the same step gap does not guarantee the same contrast everywhere, and each pair is checked hue by hue.'),
+    m => svgPanel(ML(m), lineBody(m, (r, mm, i) => mv(r, mm, i, s => s.cvb), syLog), ticksLog, { rightTicks: shadeTicks }));
+
+  h += chartGroup(T('3 · Interchangeabilité : contraste sur blanc à rang égal', '3 · Interchangeability: contrast on white at equal rank'),
+    T('Chaque point = un nuancier chromatique. Plus une colonne est compacte, plus on peut remplacer une teinte par une autre au même step '
+    + 'sans casser une paire accessible — c\'est la condition pour qu\'un composant multi-marque puisse simplement changer de teinte. '
+    + 'La ligne verte : seuil AA sur blanc.',
+    'Each point is a chromatic ramp. The more compact a column, the more you can swap one hue for another at the same step '
+    + 'without breaking an accessible pair — the condition for a multi-brand component to simply change hue. '
+    + 'The green line: AA threshold on white.'),
+    m => svgPanel(ML(m), dotBody(m, (r, mm, i) => mv(r, mm, i, s => s.cvw), syLog), ticksLog,
+      { refs: [{ y: syLog(4.5), color: 'var(--ok)', label: T('4.5 (AA sur blanc)', '4.5 (AA on white)') }] }));
+
+  const drift = (r, m, i) => {
+    const seedMeta = r.meta[m][r.seedIndex], sw = r.meta[m][i];
+    if (!seedMeta || !sw) return null;
+    if (r.kind === 'neutral' || seedMeta.oklch[1] < 0.03 || sw.oklch[1] < 0.03) return null;
+    return ((sw.oklch[2] - seedMeta.oklch[2] + 540) % 360) - 180;
+  };
+  let maxDrift = 10;
+  for (const m of METHODS) for (const r of CHROM) for (let i = 0; i < NSTEP; i++) {
+    const v = drift(r, m, i);
+    if (v !== null) maxDrift = Math.max(maxDrift, Math.abs(v));
+  }
+  maxDrift = Math.ceil(maxDrift / 10) * 10;
+  const syDrift = v => PT + (1 - (v + maxDrift) / (2 * maxDrift)) * (plotB - PT);
+  const ticksDrift = [-maxDrift, -maxDrift / 2, 0, maxDrift / 2, maxDrift].map(v => ({ y: syDrift(v), label: (v > 0 ? '+' : '') + v + '°' }));
+  h += chartGroup(T('4 · Dérive de la teinte perçue (hue OKLCH) vs le step d\'ancrage', '4 · Perceived hue drift (OKLCH hue) vs the anchor step'),
+    T('Éclaircir ou assombrir une couleur ne doit pas la faire changer de teinte. Les méthodes OKLCH verrouillent la hue (résidu ≤ ~2°, dû à la quantification hex) ; '
+    + 'les autres laissent les jaunes brunir, les bleus virer au violet. Les nuanciers gris (chroma &lt; 0.03) sont omis : leur teinte n\'a pas de sens.',
+    'Lightening or darkening a colour should not change its hue. The OKLCH methods lock the hue (residual ≤ ~2°, due to hex quantisation); '
+    + 'the others let yellows turn brown and blues drift to violet. Grey ramps (chroma &lt; 0.03) are left out: their hue is meaningless.'),
+    m => svgPanel(ML(m), lineBody(m, drift, syDrift, true), ticksDrift, { refs: [{ y: syDrift(0), color: 'var(--muted)', label: '' }] }));
+
+  h += chartGroup(T('5 · Chroma OKLCH par step — saturation et limites du gamut', '5 · OKLCH chroma per step — saturation and gamut limits'),
+    T('Où vit la saturation, et où le gamut sRGB la contraint. Les méthodes générées maintiennent la chroma du seed tant que le gamut le permet, '
+    + 'puis la réduisent aux extrémités — c\'est ce qui rend les steps foncés générés plus saturés qu\'une palette dessinée à la main, '
+    + 'où le designer désature volontairement.',
+    'Where saturation lives, and where the sRGB gamut constrains it. Generated methods keep the seed chroma as long as the gamut allows, '
+    + 'then reduce it at the ends — which is what makes generated dark steps more saturated than a hand-drawn palette, '
+    + 'where the designer desaturates on purpose.'),
+    m => svgPanel(ML(m), lineBody(m, (r, mm, i) => mv(r, mm, i, s => s.oklch[1]), syChroma), ticksChroma));
+
+  document.getElementById('charts').innerHTML = h;
+})();
+
+// ---------- testeur ----------
+const state = { bg: { hex: '#ffffff', label: T('blanc', 'white') }, fg: { hex: '#000000', label: T('noir', 'black') }, clickPhase: 0 };
+const BW_OPTIONS = '<option value="#ffffff|' + T('blanc', 'white') + '">' + T('blanc', 'white') + ' (#ffffff)</option>'
+  + '<option value="#000000|' + T('noir', 'black') + '">' + T('noir', 'black') + ' (#000000)</option>';
+function colorOptions() {
+  const vis = window.visibleMethods();
+  let h = '';
+  for (const m of METHODS) {
+    if (!vis.includes(m)) continue;
+    for (const r of DATA.ramps) {
+      r.colors[m].forEach((hex, i) => {
+        if (!hex) return;
+        const label = MS(m) + ' · ' + r.label + '/' + STEPS[i];
+        h += '<option value="' + hex + '|' + esc(label) + '">' + esc(label) + ' (' + hex + ')</option>';
+      });
+    }
+  }
+  return h;
+}
+function renderTester() {
+  const el = document.getElementById('tester');
+  el.innerHTML =
+    '<div class="col"><label>' + T('Fond (background)', 'Background') + '</label><select id="sel-bg" size="9" style="width:100%">'
+    + BW_OPTIONS + colorOptions() + '</select></div>'
+    + '<div class="col"><label>' + T('Texte (foreground)', 'Text (foreground)') + '</label><select id="sel-fg" size="9" style="width:100%">'
+    + BW_OPTIONS + colorOptions() + '</select></div>'
+    + '<div class="col"><label>' + T('Aperçu par usage', 'Preview by usage') + '</label><div id="preview"></div><div class="verdict" id="pair-verdict"></div>'
+    + '<div class="apca-line" id="pair-apca"></div><div class="hint" id="pair-names"></div></div>';
+  document.getElementById('sel-bg').onchange = e => { const [hex, label] = e.target.value.split('|'); state.bg = { hex, label }; updatePair(); };
+  document.getElementById('sel-fg').onchange = e => { const [hex, label] = e.target.value.split('|'); state.fg = { hex, label }; updatePair(); };
+  updatePair();
+}
+// apcaBand (lib/apca.mjs) décrit les bandes en français ; mêmes seuils, en anglais
+function apcaBandEn(lc) {
+  const abs = Math.abs(Number(lc));
+  const bands = [
+    [90, 'optimal body text (down to 14 px)'],
+    [75, 'minimum for body text (>= 16 px, or 12 px bold)'],
+    [60, 'minimum for fluent text (>= 24 px, or 16 px semi-bold)'],
+    [45, 'large headings (>= 36 px, or >= 24 px bold)'],
+    [30, 'non-essential text / placeholders'],
+    [15, 'discernible non-text elements only'],
+  ];
+  for (const [t, label] of bands) if (abs >= t) return label;
+  return 'insufficient for any use';
+}
+function updatePair() {
+  const bg = state.bg.hex, fg = state.fg.hex;
+  const r = ratio(bg, fg);
+  const chip = (pass, label) => '<span class="chip ' + (pass ? 'ok' : 'ko') + '">' + (pass ? '✓ ' : '✗ ') + label + '</span>';
+  const sample = inner => '<div class="spec-sample" style="background:' + bg + ';color:' + fg + '">' + inner + '</div>';
+  document.getElementById('preview').innerHTML =
+    '<div class="spec-row">' + sample('<span style="font-size:14px">' + T('Texte courant 14 px', 'Body text 14 px') + '</span>')
+      + '<div>' + chip(r >= 4.5, 'AA 4.5') + chip(r >= 7, 'AAA 7') + '</div></div>'
+    + '<div class="spec-row">' + sample('<span style="font-size:18.7px;font-weight:700">' + T('Gros texte 18.7 px bold', 'Large text 18.7 px bold') + '</span>')
+      + '<div>' + chip(r >= 3, 'AA 3') + chip(r >= 4.5, 'AAA 4.5') + '</div></div>'
+    + '<div class="spec-row">' + sample('<span style="font-size:24px">' + T('Gros texte 24 px', 'Large text 24 px') + '</span>')
+      + '<div>' + chip(r >= 3, 'AA 3') + chip(r >= 4.5, 'AAA 4.5') + '</div></div>'
+    + '<div class="spec-row">' + sample('<span class="ipt" style="border:2px solid ' + fg + ';color:' + fg + '">' + T('Champ', 'Field') + '</span>'
+      + '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="' + fg + '"/></svg>'
+      + '<span class="ipt" style="outline:2px solid ' + fg + ';outline-offset:2px;border:1px solid var(--line)">focus</span>')
+      + '<div>' + chip(r >= 3, 'UI 3 (1.4.11)') + '</div></div>';
+  document.getElementById('pair-verdict').innerHTML = '<span class="ratio">' + fmt(r) + '</span>' + pillFor(r);
+  const lc = apcaLc(fg, bg);
+  document.getElementById('pair-apca').innerHTML = '<b>' + T('APCA (WCAG 3, indicatif)', 'APCA (WCAG 3, indicative)') + '</b>' + T(' : ', ': ') + 'Lc ' + (Math.round(Math.abs(lc) * 10) / 10)
+    + (lc < 0 ? T(' (polarité claire sur sombre)', ' (light-on-dark polarity)') : '') + ' — ' + T(apcaBand(lc), apcaBandEn(lc));
+  document.getElementById('pair-names').textContent = T('Fond : ', 'Background: ') + state.bg.label + ' (' + bg + ') · ' + T('Texte : ', 'Text: ') + state.fg.label + ' (' + fg + ')';
+}
+renderTester();
+window.refreshTester = renderTester;
+
+// ---------- couleurs déjà choisies ----------
+(function renderAnchors() {
+  // l'exemple n'a pas de couleurs déjà choisies : ses couleurs de départ sont les siennes
+  if (DATA.meta.demo) { ['anchors-title', 'anchors-sub', 'anchors'].forEach(id => (document.getElementById(id).hidden = true)); return; }
+  const gen = METHODS.filter(m => m !== 'existing');
+  document.getElementById('anchors-sub').innerHTML = T(
+    'Chacune des ' + DATA.meta.anchorCount + ' couleurs déjà choisies, et le step sur lequel elle tomberait dans chaque méthode. '
+    + 'Le <b>rang mérité</b> ne dépend d\'aucune méthode : il est déduit du seul contraste de la couleur face au noir '
+    + '(shade = 200 · ln(contraste)/ln 21), c\'est-à-dire de sa clarté réelle. Le <b>rang occupé</b> est celui que son nom lui donne aujourd\'hui. '
+    + 'Quand les deux divergent, le nom ment sur la couleur. Les colonnes suivantes donnent le step perceptuellement le plus proche dans chaque '
+    + 'échelle générée, avec l\'écart ΔE2000 : sous ~2 c\'est invisible à l\'œil nu, au-delà de ~5 c\'est une autre couleur.',
+    'Each of the ' + DATA.meta.anchorCount + ' colours already chosen, and the step it would land on in each method. '
+    + 'The <b>earned rank</b> depends on no method: it is derived solely from the colour\'s contrast against black '
+    + '(shade = 200 · ln(contrast)/ln 21), that is, from its actual lightness. The <b>held rank</b> is the one its name gives it today. '
+    + 'When the two differ, the name misrepresents the colour. The following columns give the perceptually closest step in each '
+    + 'generated scale, with the ΔE2000 gap: below ~2 it is invisible to the naked eye, beyond ~5 it is a different colour.');
+
+  const gaps = DATA.anchorMap.filter(a => Math.abs(a.rankGap) >= 2);
+
+  let h = '';
+  if (gaps.length) {
+    h += '<div class="note"><b>⚠ ' + gaps.length + T(' couleur' + (gaps.length > 1 ? 's' : '') + ' porte' + (gaps.length > 1 ? 'nt' : '')
+      + ' un nom qui ne correspond pas à sa clarté.', ' colour' + (gaps.length > 1 ? 's carry names that do' : ' carries a name that does')
+      + ' not match its lightness.') + '</b><br>'
+      + gaps.map(a => '<code>' + esc(a.rampLabel) + ' / ' + esc(roleLabel(a.role)) + '</code> ' + a.hex
+        + T(' est nommée <b>', ' is named <b>') + a.placedStep + T('</b> mais sa clarté en fait un <b>', '</b> but its lightness makes it a <b>') + a.naturalStep + '</b> '
+        + T('(contraste ' + a.cvb + ':1 face au noir, seulement ' + a.cvw + ':1 face au blanc',
+          '(contrast ' + a.cvb + ':1 against black, only ' + a.cvw + ':1 against white')
+        + (a.cvw < 3 ? T(' — <b>du texte blanc dessus échoue</b>', ' — <b>white text on it fails</b>') : '') + ').').join('<br>')
+      + T('<br><br>C\'est le diagnostic le plus actionnable de cette page : ces couleurs sont utilisables, mais pas sous ce nom-là. '
+      + 'Soit on les renomme au rang qu\'elles méritent, soit on les remplace par la valeur générée au rang qu\'elles occupent.',
+        '<br><br>This is the most actionable finding on this page: these colours are usable, just not under that name. '
+      + 'Either rename them to the rank they earn, or replace them with the generated value at the rank they hold.') + '</div>';
+  }
+
+  h += '<table><tr><th>' + T('Nuancier', 'Ramp') + '</th><th>' + T('Rôle', 'Role') + '</th><th>' + T('Valeur', 'Value') + '</th><th>Shade</th><th>'
+    + T('Rang occupé', 'Held rank') + '</th><th>' + T('Rang mérité', 'Earned rank') + '</th>'
+    + gen.map(m => '<th data-method="' + m + '">' + esc(MS(m)) + '</th>').join('') + '</tr>';
+  for (const a of DATA.anchorMap) {
+    const gap = Math.abs(a.rankGap) >= 2;
+    h += '<tr><td><span class="kindpill ' + a.kind + '">' + a.kind + '</span> ' + esc(a.rampLabel) + '</td>'
+      + '<td>' + esc(roleLabel(a.role)) + (a.pinned ? ' <span style="color:var(--muted);font-size:11px">' + T('(ancré)', '(pinned)') + '</span>' : '') + '</td>'
+      + '<td><span class="dot" style="background:' + a.hex + '"></span><code>' + a.hex + '</code></td>'
+      + '<td class="num">s' + Math.round(a.shade) + '</td>'
+      + '<td class="num">' + a.placedStep + (a.moved ? ' <span title="' + T('rang naturel déjà occupé par une autre couleur du nuancier', 'natural rank already taken by another colour of the ramp') + '" style="color:var(--warn)">↕</span>' : '') + '</td>'
+      + '<td class="num' + (gap ? ' worst' : '') + '"><b>' + a.naturalStep + '</b>'
+      + (gap ? ' <span title="' + T('écart de ' + Math.abs(a.rankGap) + ' rangs', Math.abs(a.rankGap) + '-rank gap') + '">⚠</span>' : '') + '</td>';
+    for (const m of gen) {
+      const p = a.perMethod[m];
+      const cls = p.deltaE <= 2 ? ' best' : p.deltaE >= 8 ? ' worst' : '';
+      h += '<td data-method="' + m + '" class="num' + cls + '" title="' + p.hex + '">'
+        + '<span class="dot" style="background:' + p.hex + '"></span>' + p.step + ' <span style="color:var(--muted);font-size:11px">ΔE ' + p.deltaE + '</span></td>';
+    }
+    h += '</tr>';
+  }
+  h += '</table>';
+  h += '<div class="note">' + T('<b>Lecture.</b> Les colonnes <code>Rang occupé</code> et <code>Rang mérité</code> devraient concorder : '
+    + 'c\'est le cas quand la couleur choisie à la main tombait déjà, sans le savoir, sur un cran régulier de l\'échelle. '
+    + 'Là où elles divergent, il faut trancher entre conserver la couleur telle quelle '
+    + '(méthode <code>' + esc(MS('anchored')) + '</code>, ΔE 0 partout, mais un même écart de crans ne garantit plus le même contraste d\'une teinte à l\'autre) '
+    + 'et la réaligner sur la grille (méthode <code>' + esc(MS(CORE)) + '</code>, au prix d\'un écart de couleur visible). '
+    + 'C\'est exactement la décision que cet artefact doit permettre de prendre — et elle peut se prendre nuancier par nuancier.',
+    '<b>How to read this.</b> The <code>Held rank</code> and <code>Earned rank</code> columns should agree: '
+    + 'they do when the hand-picked colour already happened to fall on a regular step of the scale. '
+    + 'Where they differ, you have to choose between keeping the colour as is '
+    + '(the <code>' + esc(MS('anchored')) + '</code> method, ΔE 0 everywhere, but the same step gap no longer guarantees the same contrast from one hue to another) '
+    + 'and realigning it to the grid (the <code>' + esc(MS(CORE)) + '</code> method, at the cost of a visible colour shift). '
+    + 'This is exactly the decision this report is meant to support — and it can be made ramp by ramp.') + '</div>';
+  document.getElementById('anchors').innerHTML = h;
+})();
+
+// ---------- usages ----------
+(function renderUsages() {
+  const nR = DATA.meta.rampCount;
+  let h = '<table><tr><th>' + T('Usage', 'Usage') + '</th><th>' + T('Seuil', 'Threshold') + '</th>' + METHODS.map(m => '<th data-method="' + m + '">' + esc(MS(m)) + '</th>').join('') + '</tr>';
+  for (const p of DATA.usages) {
+    h += '<tr><td>' + p.label + '</td><td class="num">≥ ' + p.threshold + ' <span style="color:var(--muted);font-size:11px">' + p.ref + '</span></td>';
+    for (const m of METHODS) {
+      const s = p.byMethod[m];
+      const cls = s.applicable === 0 ? '' : s.pass === s.applicable ? ' score-best' : s.pass <= s.applicable / 2 ? ' score-bad' : '';
+      const title = s.applicable === 0 ? T('ce pattern n\'existe pas dans cette méthode (steps manquants)', 'this pattern does not exist in this method (missing steps)')
+        : (s.fails.length ? T('échecs : ', 'failures: ') + s.fails.join(', ') : T('tous les nuanciers passent', 'every ramp passes'));
+      h += '<td data-method="' + m + '" class="num' + cls + '" title="' + esc(title) + '">'
+        + (s.applicable === 0 ? '—' : s.pass + '/' + s.applicable) + '</td>';
+    }
+    h += '</tr>';
+  }
+  h += '</table>';
+  h += '<div class="note">' + T('<b>Lecture.</b> Avec une méthode à contraste ciblé, chaque pattern est soit tout-passe soit tout-échoue : '
+    + 'le contraste d\'une paire de steps est le même pour toutes les teintes, par construction. Quand un pattern échoue, il échoue partout, '
+    + 'et le même remplacement (un cran plus loin) vaut pour toutes les teintes. Avec une méthode qui n\'égalise pas la luminance entre teintes, le même pattern passe '
+    + 'sur certains nuanciers et pas d\'autres : chaque usage doit être vérifié teinte par teinte, et les exceptions mémorisées. '
+    + (METHODS.includes('existing') ? 'Les colonnes de l\'existant sont partielles (« — » quand le step n\'existe pas) : c\'est précisément le vide que le core doit combler.' : ''),
+    '<b>How to read this.</b> With a contrast-targeted method, each pattern either passes everywhere or fails everywhere: '
+    + 'the contrast of a pair of steps is the same for every hue, by construction. When a pattern fails, it fails everywhere, '
+    + 'and the same replacement (one step further) works for every hue. With a method that does not equalise luminance between hues, the same pattern passes '
+    + 'on some ramps and not on others: every usage has to be checked hue by hue, and the exceptions remembered. '
+    + (METHODS.includes('existing') ? 'The existing columns are partial (“—” when the step does not exist): that is precisely the gap the core has to fill.' : '')) + '</div>';
+  document.getElementById('usages').innerHTML = h;
+})();
+
+// ---------- nuanciers ----------
+
+/** Un swatch. `label` est ce que le testeur de paires affichera si on clique dessus. */
+function swatchHTML(meta, step, label, opts) {
+  opts = opts || {};
+  if (!meta) return '<div class="sw-none" title="' + esc(label) + T(' : aucune couleur à ce rang', ': no colour at this rank') + '"></div>';
+  const wOk = ratio(meta.hex, '#ffffff') >= 4.5, bOk = ratio(meta.hex, '#000000') >= 4.5;
+  return '<div class="sw' + (opts.cls || '') + '" style="background:' + meta.hex + ';color:' + readableOn(meta.hex) + '"'
+    + ' data-hex="' + meta.hex + '" data-label="' + esc(label) + '"'
+    + ' title="' + meta.hex + ' · oklch(' + meta.oklch.join(' ') + ') · L* ' + meta.lstar
+    + T(' · vs blanc ', ' · vs white ') + meta.cvw + T(' · vs noir ', ' · vs black ') + meta.cvb + ' · shade s' + Math.round(meta.shade)
+    + T(' · APCA sur blanc Lc ', ' · APCA on white Lc ') + meta.apcaOnWhite + '">'
+    + '<span class="st">' + step + (opts.shade ? ' <span style="opacity:.6">s' + Math.round(meta.shade) + '</span>' : '') + '</span>'
+    + '<span class="marks">' + (wOk ? 'W' : '') + (bOk ? 'B' : '') + '</span>'
+    + '<span class="hx">' + meta.hex.slice(1) + '</span></div>';
+}
+
+(function renderRamps() {
+  let h = '';
+  for (const r of DATA.ramps) {
+    const anchorAt = {};
+    for (const p of r.anchorPlacement.placements) {
+      anchorAt[p.index] = (anchorAt[p.index] ? anchorAt[p.index] + '+' : '') + roleShort(p.role);
+    }
+    h += '<div class="ramp' + (r.derived ? ' is-derived' : '') + '" id="ramp-' + r.name + '"><div class="ramp-head">'
+      + (r.derived
+          ? '<span class="kindpill derivedpill">' + (r.hueOffset > 0 ? '+' : '−') + Math.abs(r.hueOffset) + T('° hypothèse', '° hypothesis') + '</span>'
+          : '<span class="kindpill ' + r.kind + '">' + r.kind + '</span>')
+      + '<b>' + esc(r.label) + '</b>'
+      + '<span class="seed"><span class="dot" style="background:' + r.seed + '"></span>seed <code>' + r.seed + '</code>'
+      + ' · H ' + r.hue + '°'
+      + (r.derived && r.chromaLoss > 0.005 ? ' · <span class="hue-loss">chroma −' + r.chromaLoss + '</span>' : '')
+      + (r.seedProvided ? '' : ' <span style="color:var(--warn)">' + T('(synthétique — aucune couleur « ' + esc(DATA.meta.seedStep) + ' » fournie)', '(synthetic — no “' + esc(DATA.meta.seedStep) + '” colour supplied)') + '</span>')
+      + (r.consistency ? T(' · cohérence des couleurs fournies : Δhue ', ' · consistency of supplied colours: Δhue ') + r.consistency.hueRange + '° Δchroma ' + r.consistency.chromaRange : '')
+      + '<span data-method="tailwind"> · tailwind : <b>' + r.tailwindFamily + '</b> (ΔE ' + r.tailwindDeltaE + ')</span>'
+      + '</span>'
+      + '<button onclick="toggleMatrix(\'' + r.name + '\')">matrices ▾</button></div>'
+      + '<p class="ramp-src">' + T('Source : ', 'Source: ') + esc(r.source) + (r.note ? ' · ' + esc(r.note) : '') + '</p>';
+
+    const cols = 'grid-template-columns:repeat(' + NSTEP + ',1fr)';
+    for (const m of METHODS) {
+      h += '<div class="mrow' + (m === CORE ? ' is-core' : '') + '" data-method="' + m + '">'
+        + '<div class="mname">' + esc(m === 'tailwind' ? MS(m) + ' (' + r.tailwindFamily + ')' : ML(m)) + '</div>'
+        + '<div><div class="sw-strip" style="' + cols + '">';
+      for (let i = 0; i < NSTEP; i++) {
+        h += swatchHTML(r.meta[m][i], STEPS[i], MS(m) + ' · ' + r.label + '/' + STEPS[i],
+          { cls: anchorAt[i] ? ' anchored-at' : '', shade: m === CORE });
+      }
+      h += '</div>';
+      if (Object.keys(anchorAt).length) {
+        h += '<div class="anchor-rail" style="' + cols + '">'
+          + Array.from({ length: NSTEP }, (_, i) => '<span>' + (anchorAt[i] || '') + '</span>').join('') + '</div>';
+      }
+      h += '</div></div>';
+    }
+    h += '<div class="matrices" id="mx-' + r.name + '"></div></div>';
+  }
+  document.getElementById('ramps').innerHTML = h;
+
+  document.querySelectorAll('#ramps .sw').forEach(sw => sw.addEventListener('click', () => {
+    const hex = sw.dataset.hex, label = sw.dataset.label;
+    if (state.clickPhase === 0) { state.bg = { hex, label }; state.clickPhase = 1; }
+    else { state.fg = { hex, label }; state.clickPhase = 0; }
+    document.querySelectorAll('.sw.sel-bg').forEach(x => x.classList.remove('sel-bg'));
+    document.querySelectorAll('.sw.sel-fg').forEach(x => x.classList.remove('sel-fg'));
+    document.querySelectorAll('.sw').forEach(x => {
+      if (x.dataset.hex === state.bg.hex && x.dataset.label === state.bg.label) x.classList.add('sel-bg');
+      if (x.dataset.hex === state.fg.hex && x.dataset.label === state.fg.label) x.classList.add('sel-fg');
+    });
+    updatePair();
+    document.getElementById('tester').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }));
+})();
+
+function toggleMatrix(name) {
+  const el = document.getElementById('mx-' + name);
+  if (!el.innerHTML) {
+    const r = DATA.ramps.find(x => x.name === name);
+    el.innerHTML = METHODS.map(m => {
+      let t = '<div class="mx" data-method="' + m + '"><b>' + esc(MS(m)) + '</b><table><tr><th></th>'
+        + STEPS.map(s => '<th>' + s + '</th>').join('') + '</tr>';
+      STEPS.forEach((s, i) => {
+        t += '<tr><th>' + s + '</th>' + STEPS.map((_, j) => {
+          const v = r.matrix[m][i][j];
+          if (v === null) return '<td class="no">·</td>';
+          const cls = v >= 7 ? 'aaa' : v >= 4.5 ? 'aa' : v >= 3 ? 'ui' : 'no';
+          return '<td class="' + cls + '">' + (i === j ? '·' : (Math.floor(v * 10) / 10).toFixed(1)) + '</td>';
+        }).join('') + '</tr>';
+      });
+      return t + '</table></div>';
+    }).join('');
+  }
+  el.classList.toggle('open');
+}
+
+// ---------- voisinage de teinte ----------
+(function renderHueMap() {
+  const offs = DATA.meta.hueOffsets || [];
+  const sect = [document.getElementById('hue-title'), document.getElementById('hue-sub'), document.getElementById('huemap')];
+
+  const sorted = offs.slice().sort((a, b) => a - b);
+  const cols = sorted.filter(o => o < 0).concat([0]).concat(sorted.filter(o => o > 0));
+  const anchorStep = DATA.meta.seedStep;
+  const parents = DATA.ramps.filter(r => !r.derived && DATA.ramps.some(x => x.derivedFrom === r.name));
+  const variantOf = (parent, o) => DATA.ramps.find(x => x.derivedFrom === parent.name && x.hueOffset === o);
+
+  // ---- d'abord les couleurs RÉELLES : qui partage quelle teinte, et qu'en reste-t-il une fois
+  // régénéré ? Règle des teintes, nuanciers regroupés par zone de la roue, puis les paires.
+  const CHROMATIC = (DATA.proximity && DATA.proximity.minChroma) || 0.05;
+  const real = DATA.ramps.filter(r => !r.derived);
+  const byName = Object.fromEntries(real.map(r => [r.name, r]));
+  const BANDS = [
+    [T('Rouges', 'Reds'), 0, 35], [T('Orangés', 'Oranges'), 35, 70], [T('Jaunes', 'Yellows'), 70, 100], [T('Verts', 'Greens'), 100, 170],
+    [T('Cyans', 'Cyans'), 170, 235], [T('Bleus', 'Blues'), 235, 290], [T('Violets', 'Violets'), 290, 340], [T('Magentas', 'Magentas'), 340, 360],
+  ];
+  const isNeutral = r => r.kind === 'neutral' || r.chroma < CHROMATIC;
+  const hpMethods = [...new Set(['existing', CORE])].filter(m => METHODS.includes(m));
+  let hpMethod = hpMethods[0];
+
+  function hpRow(r, m) {
+    return '<div class="hp-row" style="--n:' + NSTEP + '"><div class="lbl">' + esc(r.label)
+      + '<small><span class="kindpill ' + r.kind + '">' + r.kind + '</span> ' + (isNeutral(r) ? T('neutre', 'neutral') : 'H ' + Math.round(r.hue) + '°')
+      + (!isNeutral(r) && r.chroma < 0.1 ? T(' · peu saturée', ' · low saturation') : '') + '</small></div>'
+      + STEPS.map((st, i) => {
+        const hex = r.colors[m][i];
+        return hex ? '<div class="c' + (i === DATA.meta.seedIndex ? ' seed' : '') + '" style="background:' + hex + '" title="'
+          + esc(r.label) + ' ' + st + ' · ' + hex + '"></div>' : '<div class="c none" title="' + esc(r.label) + ' ' + st + T(' : absent', ': missing') + '"></div>';
+      }).join('') + '</div>';
+  }
+  function hpBands(m) {
+    const head = '<div class="hp-row head" style="--n:' + NSTEP + '"><div></div>' + STEPS.map(st => '<div class="c">' + st + '</div>').join('') + '</div>';
+    const band = (title, sub, list) => list.length
+      ? '<div class="hp-band"><h3>' + title + ' <span>' + sub + '</span></h3><div class="hp-scroll">' + head + list.map(r => hpRow(r, m)).join('') + '</div></div>' : '';
+    const chrom = real.filter(r => !isNeutral(r)).sort((a, b) => a.hue - b.hue);
+    return BANDS.map(([t, lo, hi]) => band(t, lo + T('° à ', '° to ') + hi + '°', chrom.filter(r => r.hue >= lo && r.hue < hi))).join('')
+      + band(T('Neutres', 'Neutrals'), T('teinte sans signification perceptive', 'hue without perceptual meaning'), real.filter(isNeutral));
+  }
+
+  const P = DATA.proximity;
+  const VERDICT = {
+    factorisable: '<b style="color:var(--ok)">' + T('factorisable', 'mergeable') + '</b>',
+    voisines: '<b style="color:var(--warn)">' + T('voisines', 'neighbours') + '</b>',
+    saturation: '<span style="color:var(--muted)">' + T('fausse proximité', 'false proximity') + '</span>',
+  };
+  const chip = (r, m) => '<span class="hp-pair">' + r.colors[m].filter(Boolean).map(h => '<i style="background:' + h + '"></i>').join('') + '</span>';
+  let pairsHTML = '';
+  if (P && P.pairs.length) {
+    pairsHTML = '<table><tr><th>' + T('Paire', 'Pair') + '</th><th>' + T('Écart de teinte', 'Hue gap') + '</th><th>' + T('Rapport de saturation', 'Saturation ratio') + '</th>'
+      + '<th>' + T('ΔE2000 à l\'ancrage (aujourd\'hui)', 'ΔE2000 at the anchor (today)') + '</th><th>' + T('ΔE2000 moyen une fois régénérés (', 'Mean ΔE2000 once regenerated (') + esc(MS(P.coreMethod)) + ')</th><th>Verdict</th></tr>'
+      + P.pairs.map(p => {
+        const a = byName[p.a], b = byName[p.b];
+        return '<tr><td>' + esc(a.label) + ' <span style="color:var(--muted)">≈</span> ' + esc(b.label)
+          + (p.kinds.includes('brand') && p.kinds.includes('system') ? ' <span style="color:var(--bad)">' + T('marque × système', 'brand × system') + '</span>' : '')
+          + '<br>' + chip(a, P.coreMethod) + '<br>' + chip(b, P.coreMethod) + '</td>'
+          + '<td>' + p.hueGap + '°</td><td>' + Math.round(p.chromaRatio * 100) + T(' %', '%') + '</td><td>' + p.seedDE + '</td>'
+          + '<td>' + (p.coreDE === null ? '—' : p.coreDE + ' <span style="color:var(--muted)">(max ' + p.coreMaxDE + ')</span>') + '</td>'
+          + '<td>' + VERDICT[p.verdict] + '</td></tr>';
+      }).join('') + '</table>'
+      + '<div class="note">' + T('<b>Comment lire.</b> Les paires retenues partagent une teinte à moins de ' + P.maxHueGap + '°. '
+      + '<b>Factorisable</b> : saturation comparable, et une fois régénérées par <code>' + esc(MS(P.coreMethod)) + '</code> les deux rampes sont quasi indiscernables '
+      + '(ΔE2000 moyen sous ' + P.maxCoreDE + ') : la méthode efface l\'écart que la clarté et la saturation d\'origine maintenaient. Adopter la méthode sans fusionner, '
+      + 'c\'est garder deux noms pour une même couleur. Une famille métier peut rester un nom sémantique qui pointe vers la rampe commune. '
+      + '<b>Voisines</b> : même teinte, mais encore distinctes après régénération, donc un choix à faire en conscience. '
+      + '<b>Fausse proximité</b> : l\'une a moins de ' + Math.round(P.minChromaRatio * 100) + ' % de la saturation de l\'autre, elles se lisent comme deux couleurs différentes. '
+      + 'Le ΔE seul trompe dans ce cas : c\'est pourquoi le rapport de saturation passe avant. '
+      + 'Une paire <b>marque × système</b> est à regarder en priorité : un bouton principal et un état d\'erreur à la même teinte se séparent mal, '
+      + 'et plus du tout pour une personne daltonienne si la clarté est proche elle aussi. '
+      + 'Dans tous les cas, ces verdicts se valident à l\'œil sur les rampes ci-dessus avant d\'être proposés.',
+      '<b>How to read this.</b> The pairs listed share a hue within ' + P.maxHueGap + '°. '
+      + '<b>Mergeable</b>: comparable saturation, and once regenerated by <code>' + esc(MS(P.coreMethod)) + '</code> the two ramps are nearly indistinguishable '
+      + '(mean ΔE2000 below ' + P.maxCoreDE + '): the method erases the gap that the original lightness and saturation kept. Adopting the method without merging '
+      + 'means keeping two names for one colour. A business family can remain a semantic name pointing to the shared ramp. '
+      + '<b>Neighbours</b>: same hue, but still distinct after regeneration, so a choice to make deliberately. '
+      + '<b>False proximity</b>: one has less than ' + Math.round(P.minChromaRatio * 100) + '% of the other\'s saturation, they read as two different colours. '
+      + 'ΔE alone is misleading here: that is why the saturation ratio comes first. '
+      + 'A <b>brand × system</b> pair deserves attention first: a primary button and an error state at the same hue are hard to tell apart, '
+      + 'and not at all for a colour-blind person if their lightness is close too. '
+      + 'In every case, check these verdicts by eye on the ramps above before proposing them.') + '</div>';
+  } else if (P) {
+    pairsHTML = '<div class="note">' + T('Aucune paire de nuanciers chromatiques ne partage une teinte à moins de ' + P.maxHueGap + '° : rien à factoriser.',
+      'No pair of chromatic ramps shares a hue within ' + P.maxHueGap + '°: nothing to merge.') + '</div>';
+  }
+
+  const realNote = real.length < 2 ? '' : '<h3 style="margin-top:4px">' + T('Les couleurs réelles, par teinte', 'The actual colours, by hue') + '</h3>'
+    + '<p class="sub">' + T('Chaque nuancier placé selon la teinte OKLCH de sa couleur d\'ancrage. Deux pastilles collées sur la règle : même teinte, '
+    + 'donc candidates à factoriser si la saturation suit. Le cran d\'ancrage est cerclé.',
+      'Each ramp placed by the OKLCH hue of its anchor colour. Two dots touching on the ruler: same hue, '
+    + 'so candidates for merging if saturation follows. The anchor step is outlined.') + '</p>'
+    + '<div class="hp-ruler"><div class="bar"></div>'
+    + [0, 60, 120, 180, 240, 300, 360].map(t => '<span class="tick" style="left:' + (t / 3.6) + '%">' + t + '°</span>').join('')
+    + real.filter(r => !isNeutral(r)).map(r => '<span class="pin" style="left:' + (r.hue / 3.6) + '%;background:' + r.seed
+      + '" title="' + esc(r.label) + ' · H ' + Math.round(r.hue) + '°"></span>').join('') + '</div>'
+    + (hpMethods.length > 1 ? '<p class="hp-switch">' + T('Nuanciers : ', 'Ramps: ') + hpMethods.map(m => '<button data-hp="' + m + '" aria-pressed="'
+      + (m === hpMethod) + '">' + (m === 'existing' ? T('couleurs actuelles', 'current colours') : esc(MS(m))) + '</button>').join(' ') + '</p>' : '')
+    + '<div id="hp-bands">' + hpBands(hpMethod) + '</div>'
+    + (P && P.pairs.length ? '<h3>' + T('Familles à la même teinte : factoriser ?', 'Families sharing a hue: merge them?') + '</h3>' : '') + pairsHTML;
+  const wireSwitch = () => document.querySelectorAll('[data-hp]').forEach(btn => btn.addEventListener('click', () => {
+    hpMethod = btn.dataset.hp;
+    document.querySelectorAll('[data-hp]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.hp === hpMethod)));
+    document.getElementById('hp-bands').innerHTML = hpBands(hpMethod);
+  }));
+
+  if (!parents.length) {
+    // pas de déclinaisons configurées : la section se réduit aux couleurs réelles
+    if (!realNote) { sect.forEach(e => e && e.remove()); return; }
+    document.getElementById('hue-title').textContent = T('Voisinage de teinte', 'Hue neighbourhood');
+    document.getElementById('hue-sub').innerHTML = T(
+      'Où les teintes de la marque se situent les unes par rapport aux autres sur la roue OKLCH, et lesquelles pourraient être factorisées.',
+      'Where the brand hues sit relative to each other on the OKLCH wheel, and which ones could be merged.');
+    document.getElementById('huemap').innerHTML = realNote;
+    wireSwitch();
+    return;
+  }
+
+  document.getElementById('hue-sub').innerHTML = T(
+    'Pour ' + parents.length + ' nuanciers, la couleur d\'ancrage tournée de '
+    + sorted.map(o => '<b>' + (o > 0 ? '+' : '−') + Math.abs(o) + '°</b>').join(' et ')
+    + ' sur la roue OKLCH — luminosité et saturation inchangées, seule la teinte bouge. '
+    + 'Chaque déclinaison est un nuancier complet, affiché en retrait de part et d\'autre du sien plus bas. '
+    + 'Ce tableau n\'en montre que le step <code>' + anchorStep + '</code>, pour lire le voisinage d\'un coup d\'œil.'
+    + '<br><br>La question à laquelle ça répond : <b>la teinte retenue est-elle la bonne, et que reste-t-il de libre autour ?</b> '
+    + 'C\'est ce qu\'il faut savoir avant d\'ajouter une ligne produit ou une série de catégories de data-viz. '
+    + 'L\'exercice ne vaut que là où la teinte est un choix ouvert : une couleur système ne peut pas tourner de 30° '
+    + 'sans cesser de signifier ce qu\'elle signifie, et une couleur de marque n\'est pas négociable.'
+    + '<br><br><b>La perte de chroma n\'est pas un défaut de calcul</b> : le gamut sRGB n\'est pas isotrope. À luminosité égale, '
+    + 'un jaune tient bien moins de saturation qu\'un bleu — tourner vers l\'orange coûte donc de l\'éclat, et le chiffre dit combien. '
+    + 'Enfin, ces déclinaisons sont des <b>hypothèses</b> : elles n\'entrent pas dans les métriques comparatives ci-dessus, '
+    + 'qui ne portent que sur les ' + DATA.meta.rampCount + ' nuanciers réels de la marque.',
+    'For ' + parents.length + ' ramps, the anchor colour rotated by '
+    + sorted.map(o => '<b>' + (o > 0 ? '+' : '−') + Math.abs(o) + '°</b>').join(' and ')
+    + ' on the OKLCH wheel — lightness and saturation unchanged, only the hue moves. '
+    + 'Each variant is a complete ramp, shown indented on either side of its own further down. '
+    + 'This table only shows its step <code>' + anchorStep + '</code>, to read the neighbourhood at a glance.'
+    + '<br><br>The question it answers: <b>is the chosen hue the right one, and what is still free around it?</b> '
+    + 'That is what you need to know before adding a product line or a set of data-viz categories. '
+    + 'The exercise only makes sense where the hue is an open choice: a system colour cannot turn by 30° '
+    + 'without ceasing to mean what it means, and a brand colour is not negotiable.'
+    + '<br><br><b>The chroma loss is not a calculation flaw</b>: the sRGB gamut is not isotropic. At equal lightness, '
+    + 'a yellow holds far less saturation than a blue — so turning towards orange costs vividness, and the figure says how much. '
+    + 'Finally, these variants are <b>hypotheses</b>: they are not included in the comparative metrics above, '
+    + 'which only cover the brand\'s ' + DATA.meta.rampCount + ' actual ramps.');
+
+  let h = realNote;
+  h += '<table class="hue-map"><tr><th>' + T('Nuancier', 'Ramp') + '</th>'
+    + cols.map(o => '<th>' + (o === 0 ? T('référence', 'reference') : (o > 0 ? '+' : '−') + Math.abs(o) + '°') + '</th>').join('')
+    + '</tr>';
+  for (const r of parents) {
+    h += '<tr><td><span class="kindpill ' + r.kind + '">' + r.kind + '</span> ' + esc(r.label) + '</td>';
+    for (const o of cols) {
+      const target = o === 0 ? r : variantOf(r, o);
+      if (!target) { h += '<td>—</td>'; continue; }
+      const meta = target.meta[DATA.meta.variantMethod][DATA.meta.seedIndex];
+      const loss = o === 0 ? 0 : (target.chromaLoss || 0);
+      h += '<td><div class="hue-cell' + (o === 0 ? ' is-ref' : '') + '">'
+        + '<span class="hue-chip" style="background:' + meta.hex + '"></span>'
+        + '<span><code>' + meta.hex + '</code><br><span style="color:var(--muted);font-size:11px">H ' + target.hue + '°'
+        + (loss > 0.005 ? ' · <span class="hue-loss">chroma −' + loss + '</span>' : '')
+        + (o !== 0 && target.hueSpace === 'hsl' && target.perceivedRotation !== null
+            ? '<br><span class="hue-loss">' + T('perçu ', 'perceived ') + (target.perceivedRotation > 0 ? '+' : '')
+              + target.perceivedRotation + '°</span>' : '')
+        + '</span></span>'
+        + '</div></td>';
+    }
+    h += '</tr>';
+  }
+  h += '</table>';
+
+  // les collisions sont le vrai signal : une déclinaison qui tombe sur une teinte déjà prise
+  const clashes = [];
+  for (const v of DATA.ramps.filter(x => x.derived)) {
+    for (const other of DATA.ramps) {
+      if (other.derived || other.name === v.derivedFrom) continue;
+      const d = Math.abs(((v.hue - other.hue + 540) % 360) - 180);
+      if (d < 12) clashes.push({ from: v.label, hue: v.hue, onto: other.label, d: Math.round(d) });
+    }
+  }
+  if (clashes.length) {
+    h += '<div class="note"><b>' + clashes.length + T(' déclinaison' + (clashes.length > 1 ? 's tombent' : ' tombe')
+      + ' sur la teinte d\'un nuancier déjà existant</b> (moins de 12° d\'écart) :<br>',
+        ' variant' + (clashes.length > 1 ? 's land' : ' lands') + ' on the hue of an existing ramp</b> (less than 12° apart):<br>')
+      + clashes.map(c => '<code>' + esc(c.from) + '</code> (H ' + c.hue + '°) ≈ <code>'
+        + esc(c.onto) + '</code> — ' + c.d + T('° d\'écart', '° apart')).join('<br>')
+      + T('<br><br>C\'est l\'information la plus utile de cette section : ces zones de la roue sont déjà prises. '
+      + 'Une nouvelle ligne produit qui viendrait s\'y loger serait confondue avec l\'existante. '
+      + 'À l\'inverse, les déclinaisons qui n\'apparaissent pas ici pointent les zones libres.',
+        '<br><br>This is the most useful information in this section: these areas of the wheel are already taken. '
+      + 'A new product line placed there would be confused with the existing one. '
+      + 'Conversely, the variants that do not appear here point to the free areas.') + '</div>';
+  } else {
+    h += '<div class="note">' + T('Aucune déclinaison ne tombe à moins de 12° d\'un nuancier existant : '
+      + 'les teintes produit sont bien réparties sur la roue, et le voisinage immédiat de chacune est libre.',
+        'No variant lands within 12° of an existing ramp: '
+      + 'the product hues are well spread around the wheel, and the immediate neighbourhood of each one is free.') + '</div>';
+  }
+  document.getElementById('huemap').innerHTML = h;
+  wireSwitch();
+})();
+
+// ---------- interchangeabilité ----------
+(function renderSpread() {
+  // Le verdict formel d'abord, le détail cran par cran ensuite. Le chiffre qui engage n'est
+  // pas l'écart — il ne vaut jamais zéro, la grille hex étant discrète — mais le nombre de
+  // paires qui, à rang égal, ne donnent pas la même réponse à « est-ce que ça passe ».
+  const MODES = [['light', T('Clair', 'Light')], ['dark', T('Sombre', 'Dark')]]
+    .filter(([k]) => METHODS.some(m => DATA.metrics[m].interchangeability && DATA.metrics[m].interchangeability[k]));
+  let h = '';
+  if (MODES.length) {
+    h += '<table><tr><th>' + T('Verdict', 'Verdict') + '</th>'
+      + METHODS.map(m => '<th data-method="' + m + '">' + esc(MS(m)) + '</th>').join('') + '</tr>';
+    for (const [key, label] of MODES) {
+      const bg = key === 'dark' ? (DATA.meta.dark ? DATA.meta.dark.background : '—') : DATA.meta.lightBackground;
+      h += '<tr><td>' + label + T(' — franchissements de seuil<br><span class="sub">sur fond <code>', ' — threshold crossings<br><span class="sub">on background <code>') + bg + '</code></span></td>'
+        + METHODS.map(m => {
+          const I = DATA.metrics[m].interchangeability && DATA.metrics[m].interchangeability[key];
+          if (!I) return '<td data-method="' + m + '" class="num">—</td>';
+          const cls = I.crossingPairs === 0 ? ' num best' : ' num worst';
+          return '<td data-method="' + m + '" class="' + cls + '">' + I.crossingPairs + ' / ' + I.totalPairs
+            + '<br><span class="sub">' + T('écart max ', 'max spread ') + I.maxSpread + T(' au ', ' at ') + I.worstStep + '</span></td>';
+        }).join('') + '</tr>';
+    }
+    for (const [key, label] of MODES) {
+      h += '<tr><td>' + label + T(' — dérive de teinte intra-rampe', ' — within-ramp hue drift') + '</td>'
+        + METHODS.map(m => {
+          const D = DATA.metrics[m].hueDrift && DATA.metrics[m].hueDrift[key];
+          if (!D) return '<td data-method="' + m + '" class="num">—</td>';
+          return '<td data-method="' + m + '" class="num">' + D.maxDrift + '°'
+            + (D.worst ? '<br><span class="sub">' + esc(D.worst.ramp) + '/' + D.worst.step + '</span>' : '') + '</td>';
+        }).join('') + '</tr>';
+    }
+    h += '</table>';
+  }
+  h += '<table><tr><th>Step</th>' + METHODS.map(m => '<th data-method="' + m + '">' + esc(MS(m)) + ' (min – max, Δ)</th>').join('') + '</tr>';
+  for (const s of STEPS) {
+    h += '<tr><td>' + s + '</td>' + METHODS.map(m => {
+      const v = DATA.metrics[m].stepSpread[s];
+      if (!v) return '<td data-method="' + m + '" class="num">—</td>';
+      const cls = v.spread <= 0.3 ? ' num best' : v.spread >= 2 ? ' num worst' : ' num';
+      return '<td data-method="' + m + '" class="' + cls + '">' + v.min + ' – ' + v.max + ' (Δ ' + v.spread + ')</td>';
+    }).join('') + '</tr>';
+  }
+  document.getElementById('spread').innerHTML = h + '</table>';
+})();
+
+// ---------- annexe ----------
+(function renderAnnex() {
+  const M = DATA.metrics, L = DATA.ladders, R = DATA.rules;
+  const RT = R.grain ? R.rankTable.filter(t => t.rank % 5 === 0) : R.rankTable;
+  let h = '';
+
+  h += '<details open><summary>' + T('La règle de contraste offerte par l\'échelle', 'The contrast rule the scale provides') + '</summary>'
+    + '<p>' + T('Le barreau de shades vaut <code>', 'The shade ladder is <code>') + L.shade.map(s => Math.round(s)).join(', ') + T('</code>, soit ', '</code>, that is ')
+    + (Math.round(R.shadePerRank * 10) / 10) + T(' shades par cran. Comme le contraste entre deux couleurs vaut ≈ 21^(Δshade/200), '
+    + 'l\'écart de rang détermine le contraste <b>par construction</b> :', ' shades per step. Since the contrast between two colours is ≈ 21^(Δshade/200), '
+    + 'the rank gap determines the contrast <b>by construction</b>:') + '</p>'
+    // une nomenclature par contraste a une grille fine (40 rangs) : on n'en montre qu'un sur cinq
+    + '<table><tr><th>' + (R.grain ? T('Δ nom', 'Δ name') : T('Δrang', 'Δrank')) + '</th>' + RT.map(t => '<th>' + RN(t.rank) + '</th>').join('') + '</tr>'
+    + '<tr><td>' + T('contraste garanti', 'guaranteed contrast') + '</td>' + RT.map(t => '<td class="num">' + fmt(t.ratio) + '</td>').join('') + '</tr></table>'
+    + '<p>' + T('D\'où : <b>' + RG(R.rankForUI) + ' ⇒ 3.0</b> (éléments non textuels, 1.4.11) · <b>' + RG(R.rankForAA) + ' ⇒ 4.5</b> (AA texte, 1.4.3) · '
+    + '<b>' + RG(R.rankForAAA) + ' ⇒ 7.0</b> (AAA, 1.4.6). Sur cette échelle de ' + NSTEP + ' crans, cela se lit : ',
+      'Hence: <b>' + RG(R.rankForUI) + ' ⇒ 3.0</b> (non-text elements, 1.4.11) · <b>' + RG(R.rankForAA) + ' ⇒ 4.5</b> (AA text, 1.4.3) · '
+    + '<b>' + RG(R.rankForAAA) + ' ⇒ 7.0</b> (AAA, 1.4.6). On this ' + NSTEP + '-step scale, that reads: ')
+    + STEPS.map((s, i) => { const rk = DATA.meta.rankOf || STEPS.map((_, k) => k); if (rk[i] == null) return null; const j = STEPS.findIndex((_, k) => rk[k] != null && rk[k] - rk[i] >= R.rankForAA); return j > i ? '<code>' + s + '</code>↔<code>' + STEPS[j] + '</code>' : null; }).filter(Boolean).join(', ') + T(' passent AA.', ' pass AA.') + '</p>'
+    + '<p>' + T('Ce n\'est pas une faiblesse de la méthode mais une contrainte WCAG : le budget total noir→blanc est de 21:1, et 4.58² ≈ 21 — '
+    + '<b>aucune échelle, quelle que soit la méthode, ne peut offrir plus de trois niveaux mutuellement AA</b>. '
+    + 'L\'apport d\'une méthode à contraste ciblé est de rendre la garantie lisible dans le nom du step.',
+      'This is not a weakness of the method but a WCAG constraint: the total black→white budget is 21:1, and 4.58² ≈ 21 — '
+    + '<b>no scale, whatever the method, can offer more than three mutually AA levels</b>. '
+    + 'What a contrast-targeted method adds is making the guarantee readable in the step name.') + '</p></details>';
+
+  h += '<details><summary>' + T('Échelles cibles utilisées par chaque méthode', 'Target scales used by each method') + '</summary><table>'
+    + '<tr><th>Step</th>' + STEPS.map(s => '<th>' + s + '</th>').join('') + '</tr>'
+    + '<tr><td>shade (Fusilier)</td>' + L.shade.map(v => '<td class="num">' + Math.round(v) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('contraste cible vs noir', 'target contrast vs black') + '</td>' + L.shade.map(v => '<td class="num">' + fmt(Math.pow(21, v / 200)) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('L OKLCH (luminosité fixe)', 'OKLCH L (fixed lightness)') + '</td>' + L.oklchL.map(v => '<td class="num">' + (Math.round(v * 1000) / 1000) + '</td>').join('') + '</tr>'
+    + '<tr><td>tone (HCT)</td>' + L.tone.map(v => '<td class="num">' + (Math.round(v * 10) / 10) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('ratio vs blanc (Leonardo)', 'ratio vs white (Leonardo)') + '</td>' + L.leonardo.map(v => '<td class="num">' + fmt(v) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('Lc cible (APCA)', 'target Lc (APCA)') + '</td>' + L.apca.map(v => '<td class="num">' + Math.round(v) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('L* (interpolation Lab)', 'L* (Lab interpolation)') + '</td>' + L.easingL.map(v => '<td class="num">' + (Math.round(v * 10) / 10) + '</td>').join('') + '</tr>'
+    + '</table><p class="hint">' + (L.leonardoReference
+      ? T('Les ratios Leonardo sont copiés de la rampe Tailwind <code>', 'The Leonardo ratios are copied from the Tailwind ramp <code>') + L.leonardoReference + '</code>.'
+      : T('Les ratios Leonardo sont ceux du barreau de l\'échelle : à ratios égaux, Leonardo et Fusilier ne diffèrent que par le chemin de couleur.', 'The Leonardo ratios are those of the scale\'s ladder: at equal ratios, Leonardo and Fusilier differ only by their colour path.')) + '</p></details>';
+
+  for (const m of METHODS) {
+    const v = M[m].violationSample;
+    if (!v || !v.length) continue;
+    h += '<details data-method="' + m + '"><summary>' + T('Paires à ' + RG(R.rankForAA) + ' sous 4,5:1 (la règle du nom de Fusilier : ' + RG(R.rankForAA) + ' ⇒ AA, mesurée sur cette méthode) — pires cas, ', 'Pairs at ' + RG(R.rankForAA) + ' below 4.5:1 (Fusilier\'s naming rule: ' + RG(R.rankForAA) + ' ⇒ AA, measured on this method) — worst cases, ') + esc(ML(m)) + ' ('
+      + M[m].violationCount + T(' au total)', ' in total)') + '</summary><p class="viol">'
+      + v.map(x => x.a + ' ↔ ' + x.b + ' (' + (DATA.rules.grain ? 'Δ ' + x.rank * DATA.rules.grain : T('Δrang ', 'Δrank ') + x.rank) + ') : ' + x.ratio).join('<br>') + '</p></details>';
+  }
+
+  const driftM = METHODS.filter(m => M[m].drift);
+  h += '<details><summary>' + T('Dérive vs identité au step ', 'Drift from identity at step ') + DATA.meta.seedStep + T(' (ΔE2000, par nuancier)', ' (ΔE2000, per ramp)')
+    + '</summary><table><tr><th>' + T('Nuancier', 'Ramp') + '</th>'
+    + driftM.map(m => '<th data-method="' + m + '">' + esc(MS(m)) + '</th>').join('') + '</tr>'
+    + DATA.ramps.map(r => '<tr><td>' + esc(r.label) + '</td>' + driftM.map(m => {
+      const e = M[m].drift.perRamp.find(x => x.ramp === r.name);
+      return '<td data-method="' + m + '" class="num">' + (e ? e.dE : '—') + '</td>';
+    }).join('') + '</tr>').join('') + '</table>'
+    + '<p class="hint">' + T('Un ΔE2000 sous ~2 est imperceptible, sous ~5 reste « la même couleur », au-delà de ~10 c\'est une couleur différente. '
+    + 'Les nuanciers sans couleur d\'ancrage fournie n\'ont pas de dérive mesurable.',
+      'A ΔE2000 below ~2 is imperceptible, below ~5 it is still “the same colour”, beyond ~10 it is a different colour. '
+    + 'Ramps with no anchor colour supplied have no measurable drift.') + '</p></details>';
+
+  h += '<details><summary>' + T('Conventions de calcul', 'Calculation conventions') + '</summary><p>'
+    + T('Luminance relative et ratios WCAG avec les coefficients sRGB→XYZ haute précision (0.2126729 / 0.7151522 / 0.0721750) ; '
+    + 'les coefficients tronqués du texte WCAG 2.1 peuvent déplacer une paire ou deux lorsqu\'un ratio frôle un seuil, sans impact sur les classements. '
+    + 'Les ratios sont <b>tronqués</b> et non arrondis à l\'affichage : on n\'écrit jamais « 3.00 » pour un ratio réel de 2.998, qui échoue. '
+    + 'ΔE2000 calculé sur Lab D65, implémentation validée contre les 24 paires de test de Sharma, Wu &amp; Dalal (écart max 1e-4). '
+    + 'APCA 0.0.98G-4g validé contre les vecteurs de test apca-w3 (écart max 0.001 Lc) ; son clamp bas crée une zone morte sous Lc ≈ 7.3. '
+    + 'HCT via une implémentation CAM16 validée contre material-color-utilities (hue ±0.5°, chroma ±0.5, tone ±0.3). '
+    + 'La réduction de gamut se fait toujours par recherche binaire sur la chroma, à luminosité et teinte constantes : '
+    + 'une couleur hors gamut perd de la saturation, jamais sa place dans l\'échelle ni sa teinte.',
+      'Relative luminance and WCAG ratios use the high-precision sRGB→XYZ coefficients (0.2126729 / 0.7151522 / 0.0721750); '
+    + 'the truncated coefficients in the WCAG 2.1 text can move a pair or two when a ratio sits right at a threshold, with no impact on the rankings. '
+    + 'Ratios are <b>truncated</b>, not rounded, for display: we never write “3.00” for an actual ratio of 2.998, which fails. '
+    + 'ΔE2000 is computed on Lab D65, implementation validated against the 24 test pairs of Sharma, Wu &amp; Dalal (max error 1e-4). '
+    + 'APCA 0.0.98G-4g validated against the apca-w3 test vectors (max error 0.001 Lc); its low clamp creates a dead zone below Lc ≈ 7.3. '
+    + 'HCT via a CAM16 implementation validated against material-color-utilities (hue ±0.5°, chroma ±0.5, tone ±0.3). '
+    + 'Gamut reduction is always done by binary search on chroma, at constant lightness and hue: '
+    + 'an out-of-gamut colour loses saturation, never its place in the scale nor its hue.')
+    + '</p></details>';
+
+  if (DATA.notes && Object.keys(DATA.notes).length) {
+    h += '<details><summary>' + T('Notes sur la source', 'Notes on the source') + '</summary>'
+      + Object.values(DATA.notes).map(n => '<p>' + n + '</p>').join('') + '</details>';
+  }
+
+  document.getElementById('annex').innerHTML = h;
+})();
+</script>
+</body>
+</html>

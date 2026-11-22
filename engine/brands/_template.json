@@ -1,0 +1,92 @@
+{
+  "_comment": "Gabarit de spécification. Copier en <marque>.json, remplir, supprimer les clés _comment. Tout ce qui est marqué OPTIONNEL peut être omis.",
+
+  "id": "macorp",
+  "brand": "MaCorp",
+  "title": "Comparaison des méthodes de génération — scales core MaCorp",
+  "subtitle": "OPTIONNEL — une phrase de contexte, affichée sous le titre. Dire d'où viennent les couleurs et quelle décision l'artefact doit permettre de prendre. Le HTML simple est accepté.",
+  "source": "OPTIONNEL — d'où viennent les couleurs (fichier Figma, page, section)",
+  "accent": "#2f5bd3",
+
+  "_comment_steps": "Les crans de l'échelle, du plus clair au plus foncé. Le nombre est libre : les garanties de contraste se recalculent (11 steps → Δrang ≥ 6 ⇒ AA ; 9 steps → Δ ≥ 5).",
+  "steps": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+
+  "_comment_seedStep": "Le cran où se pose la couleur portant le rôle defaultRole. Doit figurer dans steps.",
+  "seedStep": "500",
+
+  "_comment_coreMethod": "La méthode qui alimente les tokens DTCG. À arbitrer APRÈS lecture de l'artefact, pas avant.",
+  "coreMethod": "fusilier",
+
+  "defaultRole": "default",
+  "tokenRoot": "core",
+
+  "_comment_anchorRoles": "OPTIONNEL — libellés des rôles. Les noms sont libres : le moteur ne connaît que defaultRole. Un rôle absent d'ici s'affiche sous son nom brut.",
+  "anchorRoles": {
+    "background": { "label": "Background", "short": "bg" },
+    "light": { "label": "Light", "short": "light" },
+    "default": { "label": "Default", "short": "default" },
+    "dark": { "label": "Dark", "short": "dark" }
+  },
+
+  "_comment_ladders": "OPTIONNEL — réglages fins. leonardoReference : rejouer avec Leonardo les ratios d'une rampe Tailwind (slate, gray, zinc, neutral, stone…) au lieu de ceux du barreau de l'échelle. On peut aussi forcer oklchLMin/Max, toneMin/Max, easingLMin/Max. shadeLadder impose ses propres cibles de contraste : la bonne recette est la MÉDIANE des Y existants par cran, qui recale les familles déviantes sans déplacer la palette validée. Vérifier d'abord l'écart au barreau par défaut — sur une palette dessinée avec soin il est souvent négligeable.",
+  "ladders": {},
+
+  "_comment_darkMode": "OPTIONNEL — dérive une seconde rampe par égalité de contraste : Y_sombre = C_clair × (Y_fond + 0,05) − 0,05. CHOISIR LE FOND AVANT LES CIBLES : un fond non noir ne porte pas 21:1 (#121212 plafonne à 18,73:1) et les crans au-delà sortiront en blanc pur. method : 'mirror-wcag' par défaut (seule méthode qui transporte la règle du nom), sinon 'mirror-apca', 'budget-share', 'tone-flip', 'index-flip'. chromaProfile : absent = chroma du clair (défaut, mesuré sur 8 systèmes) · 'bell' = profil en cloche · un tableau de fractions. desaturate : 0 par défaut, sur les seules surfaces. JAMAIS une constante de chroma : aux luminances extrêmes le gamut est très large, précisément là où la couleur ne doit pas s'en servir.",
+  "darkMode": {
+    "background": "#0e0d0d",
+    "gamutCeiling": 0.96
+  },
+
+  "_comment_staticTokens": "OPTIONNEL mais quasi toujours nécessaire dès qu'il y a un mode sombre — les couleurs LITTÉRALES, identiques dans tous les modes. La rampe sombre étant inversée, aucun cran ne garde sa valeur d'un mode à l'autre : sans ce groupe, rien n'exprime « ce blanc doit rester blanc » (texte sur photo, logo, illustration) et les équipes se rabattront sur le cran extrême de la rampe neutre — qui est un rôle, et qui s'inverse.",
+  "staticTokens": {
+    "white": "#ffffff",
+    "black": "#000000"
+  },
+
+  "_comment_contract": "OPTIONNEL — les budgets que check.mjs fait respecter (section 6). Ne changent aucun calcul. maxRelativeSpread est l'écart de contraste toléré à rang égal, EN RELATIF : ne jamais viser zéro, la grille hex ne le permet pas (~1 % au mieux sur 20 familles). Le chiffre qui compte est ailleurs, et il est absolu : zéro franchissement de seuil.",
+  "contract": {
+    "maxHueDrift": 25,
+    "maxRelativeSpread": 0.03,
+    "thresholds": [3, 4.5, 7]
+  },
+
+  "_comment_ramps": "Un objet par nuancier. kind ∈ brand | product | system | neutral (libre, sert au classement visuel). anchors : autant de couleurs que la marque en a déjà arbitrées — une seule suffit, et un nuancier sans 'default' est accepté (le seed est alors synthétisé).",
+  "ramps": [
+    {
+      "name": "brand",
+      "label": "Couleur de marque",
+      "kind": "brand",
+      "source": "OPTIONNEL — chemin exact dans le fichier source",
+      "note": "OPTIONNEL — à quoi elle sert",
+      "anchors": { "default": "#2f5bd3" }
+    },
+    {
+      "name": "error",
+      "label": "Error",
+      "kind": "system",
+      "anchors": {
+        "background": "#ffeeed",
+        "light": "#f1584c",
+        "default": "#d92d20",
+        "dark": "#a60b00"
+      }
+    },
+    {
+      "name": "neutral",
+      "label": "Neutral",
+      "kind": "neutral",
+      "note": "Exemple de nuancier sans couleur par défaut : seul l'encre et les fonds sont connus.",
+      "anchors": {
+        "white": "#ffffff",
+        "ink": "#0f172a"
+      }
+    }
+  ],
+
+  "_comment_usagePatterns": "OPTIONNEL — remplace les 14 patterns d'usage par défaut. fg/bg = nom d'un step, ou 'W' (blanc) / 'B' (noir).",
+
+  "_comment_notes": "OPTIONNEL — paragraphes libres affichés dans l'annexe, sous « Notes sur la source ». Y consigner ce qui a été exclu et pourquoi.",
+  "notes": {
+    "excluded": "Ce qui a été écarté du périmètre, et pour quelle raison."
+  }
+}

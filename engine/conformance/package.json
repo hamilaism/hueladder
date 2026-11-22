@@ -1,0 +1,14 @@
+{
+  "name": "hueladder-conformance",
+  "private": true,
+  "description": "Chaque méthode de Hueladder comparée à sa librairie d'origine. Hors du moteur, qui reste sans dépendance.",
+  "type": "module",
+  "scripts": { "test": "node run.mjs" },
+  "devDependencies": {
+    "@adobe/leonardo-contrast-colors": "1.1.0",
+    "@material/material-color-utilities": "0.4.0",
+    "chroma-js": "3.2.0",
+    "colorjs.io": "0.6.1",
+    "tailwindcss": "4.3.0"
+  }
+}

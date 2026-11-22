@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__TUNER_TITLE__</title>
+<style>
+  :root {
+    --bg: #f5f5f5; --fg: #1a1a1a; --card: #fff; --line: #e0e0e0; --muted: #6b6b6b;
+    --ok: #0a7a3d; --warn: #ad4e00; --bad: #a81f0b; --accent: __ACCENT__;
+  }
+  body.dark { --bg: #141414; --fg: #ececec; --card: #1f1f1f; --line: #3a3a3a; --muted: #9a9a9a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 70px; }
+  h1 { font-size: 19px; margin: 0 0 2px; }
+  .sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
+  code { font-family: ui-monospace, monospace; font-size: 12px;
+         background: color-mix(in srgb, var(--card) 80%, var(--fg) 20%); padding: 1px 5px; border-radius: 4px; }
+  button, select { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 6px;
+                   border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+
+  .bar { position: sticky; top: 0; z-index: 30; background: var(--bg); padding: 9px 0 10px;
+         border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .bar .grow { flex: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+          color: var(--ok); border: 1px solid var(--ok); border-radius: 20px; padding: 2px 11px; }
+  .pill.broken { color: var(--bad); border-color: var(--bad); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .card > h2 { font-size: 13px; margin: 0 0 2px; }
+  .card > .why { font-size: 12px; color: var(--muted); margin: 0 0 13px; }
+
+  /* --- comparaison avant / après --- */
+  .cmp-row { display: grid; align-items: center; gap: 3px; margin-bottom: 3px; }
+  .cmp-lab { font-size: 11px; font-weight: 700; text-align: right; padding-right: 10px; color: var(--muted); }
+  .cmp-lab small { display: block; font-weight: 400; font-size: 10px; opacity: .85; }
+  .cell { height: 104px; border-radius: 5px; border: 1px solid rgba(0,0,0,.1); padding: 4px 5px;
+          display: flex; flex-direction: column; justify-content: space-between; }
+  .cell .n { font-size: 10px; font-weight: 700; }
+  .cell .h { font-size: 8.5px; font-family: ui-monospace, monospace; opacity: .82; }
+  .cell.pick { cursor: pointer; }
+  .cell.sel { outline: 3px solid var(--accent); outline-offset: 2px; z-index: 2; }
+  .cell.pinned { box-shadow: inset 0 0 0 2px var(--bad); }
+  .void { height: 104px; border-radius: 5px; border: 1px dashed var(--line); opacity: .5;
+          background: repeating-linear-gradient(45deg, transparent, transparent 5px, var(--line) 5px, var(--line) 6px); }
+  .de { text-align: center; font-size: 10px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .de.far { color: var(--bad); font-weight: 700; } .de.mid { color: var(--warn); } .de.near { color: var(--muted); }
+
+  /* --- pavé de réglage --- */
+  .edit { display: grid; grid-template-columns: 1fr 250px; gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .edit { grid-template-columns: 1fr; } }
+  #pad { width: 100%; height: auto; border-radius: 8px; display: block; touch-action: none; cursor: crosshair; }
+  .axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .vaxis { font-size: 10px; color: var(--muted); }
+  .kv { font-size: 12px; line-height: 1.95; }
+  .kv b { font-variant-numeric: tabular-nums; }
+  .kv .row { display: flex; justify-content: space-between; gap: 10px; }
+  .kv hr { border: 0; border-top: 1px dashed var(--line); margin: 9px 0; }
+  .sq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px;
+        margin-right: 6px; border: 1px solid rgba(0,0,0,.2); }
+  .warnline { color: var(--warn); font-size: 11px; line-height: 1.5; margin-top: 5px; }
+
+  .cmpbar { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 11px;
+            border-top: 1px dashed var(--line); flex-wrap: wrap; }
+  .cmpbar label { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .cmpbar .hint { font-size: 11px; color: var(--muted); }
+  .cmp-row.ghost .cell { height: 60px; opacity: .92; }
+  .cmp-row.ghost .cell .h { display: none; }
+  .cmp-row.ghost .cmp-lab { font-weight: 400; font-style: italic; }
+  /* palette complète */
+  #sys-toggles { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 11px; }
+  .tog { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 8px 2px 5px;
+         border: 1px solid var(--line); border-radius: 20px; cursor: pointer; user-select: none;
+         background: var(--card); color: var(--fg); }
+  .tog .dot2 { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); }
+  .tog.off { opacity: .4; text-decoration: line-through; }
+  .tog:hover { border-color: var(--accent); }
+  .sys-row { display: grid; gap: 2px; margin-bottom: 2px; align-items: center; }
+  .sys-lab { font-size: 10px; color: var(--muted); text-align: right; padding-right: 8px; white-space: nowrap;
+             overflow: hidden; text-overflow: ellipsis; }
+  .sys-row.cur .sys-lab { color: var(--accent); font-weight: 700; }
+  .sys-cell { height: 52px; border-radius: 3px; cursor: pointer; }
+  .sys-cell:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .sys-void { height: 52px; border-radius: 3px; border: 1px dashed var(--line); opacity: .4; }
+  .sys-head { font-size: 9px; color: var(--muted); text-align: center; }
+  .prev { border-radius: 8px; padding: 13px; margin-bottom: 7px; }
+  .prev .btn { display: inline-block; padding: 6px 13px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .prev .chip { display: inline-block; padding: 1px 9px; border-radius: 11px; font-size: 11px; border: 1px solid; }
+
+  details { margin-top: 6px; } summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin-top: 9px; }
+  th, td { padding: 4px 8px; text-align: left; font-size: 11px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  textarea { width: 100%; height: 170px; font-family: ui-monospace, monospace; font-size: 11px;
+             border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 8px; }
+  input[type=range] { width: 100%; margin: 2px 0 0; accent-color: var(--accent); }
+  input[type=text] { font: inherit; font-family: ui-monospace, monospace; font-size: 12px; width: 100%;
+                     padding: 4px 7px; border-radius: 5px; border: 1px solid var(--line);
+                     background: var(--bg); color: var(--fg); }
+  body.embedded h1, body.embedded .sub, body.embedded #export-card, body.embedded #btn-export,
+  body.embedded .bgbtns { display: none !important; }
+  body.embedded .wrap { padding-top: 0; }
+  .bgbtns { position: fixed; bottom: 14px; right: 14px; display: flex; gap: 6px; z-index: 40; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>__TUNER_TITLE__</h1>
+  <p class="sub">
+    Le contraste de chaque cran est <b>verrouillé</b> : il ne peut pas bouger, quoi que tu fasses.
+    Tu ajustes seulement la teinte et l'éclat, en gardant un œil sur l'écart avec la couleur déjà en place.
+  </p>
+
+  <div class="bar">
+    <label style="font-size:12px;color:var(--muted)">Nuancier</label>
+    <select id="ramp-select"></select>
+    <span id="lock" class="pill">🔒 contraste verrouillé</span>
+    <span class="grow"></span>
+    <button id="btn-adopt" style="display:none"></button>
+    <button id="btn-reset">tout réinitialiser</button>
+    <button id="btn-export" class="primary">exporter</button>
+  </div>
+
+  <div class="card">
+    <h2 id="cmp-title"></h2>
+    <p class="why">Clique un cran pour le régler. La ligne du haut est ce qui existe aujourd'hui, celle du milieu ce que tu vas exporter.</p>
+    <div id="compare"></div>
+    <div class="cmpbar">
+      <label>Comparer avec</label>
+      <select id="cmp-a"></select>
+      <select id="cmp-b"></select>
+      <span class="hint" id="cmp-hint"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="edit-title"></h2>
+    <p class="why">Chaque point du rectangle est une couleur possible <b>à contraste identique</b>.
+      Horizontalement la teinte, verticalement l'éclat. Clique ou glisse pour choisir.</p>
+    <div class="edit">
+      <div>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <div class="vaxis" style="display:flex;flex-direction:column;justify-content:space-between;text-align:right;width:34px;padding:14px 0">
+            <span>vif</span><span style="opacity:.6">éclat</span><span>gris</span>
+          </div>
+          <svg id="pad" viewBox="0 0 620 320"></svg>
+        </div>
+        <div class="axis" style="margin-left:42px"><span id="ax-l"></span><span>teinte d'origine</span><span id="ax-r"></span></div>
+        <div class="axis" style="margin-left:42px;justify-content:flex-start;gap:16px;margin-top:6px">
+          <span><b style="font-size:13px">●</b> ta proposition</span>
+          <span><b style="font-size:13px">◯</b> la couleur d'aujourd'hui</span>
+          <span id="ax-note" style="color:var(--warn)"></span>
+        </div>
+      </div>
+      <div id="side"></div>
+    </div>
+    <div class="cmpbar" id="offsetbar" style="display:none">
+      <label>Écart de teinte</label>
+      <input type="range" id="off-slider" min="-90" max="90" step="1" style="width:220px">
+      <b id="off-val" style="font-variant-numeric:tabular-nums;min-width:52px"></b>
+      <span class="hint" id="off-hint"></span>
+      <button id="off-reset" style="margin-left:auto">valeur d'origine</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Le système complet</h2>
+    <p class="why">Toutes les rampes générées, réglages compris. Les couleurs d'origine n'y figurent pas :
+      c'est le système tel qu'il sera livré.</p>
+    <details id="sys-details"><summary>afficher la palette complète</summary>
+      <div class="cmpbar" style="border-top:0;padding-top:6px">
+        <label>Trier par</label>
+        <select id="sys-sort">
+          <option value="spec">ordre de la spécification</option>
+          <option value="name">nom</option>
+          <option value="hue">teinte</option>
+        </select>
+        <span class="hint" id="sys-hint"></span>
+        <span style="flex:1"></span>
+        <button id="sys-all">tout</button>
+        <button id="sys-real">réels seulement</button>
+      </div>
+      <div id="sys-toggles"></div>
+      <div id="system"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Aperçu</h2>
+    <p class="why">La rampe proposée, en situation.</p>
+    <div id="preview"></div>
+  </div>
+
+  <div class="card">
+    <h2>Contrôle</h2>
+    <p class="why" id="ctrl-why"></p>
+    <details><summary>voir le détail cran par cran</summary><div id="verify"></div></details>
+  </div>
+
+  <div class="card" id="export-card">
+    <h2>Récupérer le résultat</h2>
+    <p class="why" id="export-why"></p>
+    <div class="cmpbar" style="border-top:0;padding-top:0;margin-top:0">
+      <label>Format</label>
+      <select id="export-fmt">
+        <option value="palette">Palette finale — toutes les couleurs</option>
+        <option value="dtcg">Tokens DTCG — pour Figma</option>
+        <option value="spec">À coller dans la spécification</option>
+      </select>
+      <span class="hint" id="export-note"></span>
+    </div>
+    <textarea id="export-json" readonly></textarea>
+    <div style="margin-top:8px;display:flex;gap:7px">
+      <button id="btn-copy" class="primary">copier</button>
+      <button id="btn-dl">télécharger</button>
+      <span class="hint" id="export-size" style="align-self:center"></span>
+    </div>
+  </div>
+
+<div class="bgbtns">
+  <button onclick="document.body.classList.remove('dark')">☀️</button>
+  <button onclick="document.body.classList.add('dark')">🌙</button>
+</div>
+
+<script>
+const DATA = /*TUNER_DATA*/{};
+/*COLOR_INJECT*/
+/*TUNE_INJECT*/
+
+if (DATA.embedded) document.body.classList.add('embedded');
+// Le studio passe sa langue ; la page autonome reste en français.
+const T = (fr, en) => (DATA.lang === 'en' ? en : fr);
+if (DATA.lang === 'en') {
+  document.documentElement.lang = 'en';
+  const set = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
+  set('.bar label', 'Ramp');
+  set('#btn-reset', 'reset all');
+  set('#compare + .cmpbar label', 'Compare with');
+  set('#edit-title + .why', 'Every point of the rectangle is a possible colour <b>with the same contrast</b>. Horizontally the hue, vertically the vividness. Click or drag to choose.');
+  set('.vaxis', '<span>vivid</span><span style="opacity:.6">vividness</span><span>grey</span>');
+  set('#ax-l + span', 'original hue');
+  set('.axis[style*="flex-start"]', '<span><b style="font-size:13px">●</b> your proposal</span><span><b style="font-size:13px">◯</b> today\'s colour</span><span id="ax-note" style="color:var(--warn)"></span>');
+  set('#offsetbar label', 'Hue offset');
+  set('#off-reset', 'original value');
+  const cards = document.querySelectorAll('.card');
+  cards[2].querySelector('h2').textContent = 'The whole system';
+  cards[2].querySelector('.why').textContent = 'Every generated ramp, tuning included. Original colours are not shown: this is the system as it will ship.';
+  set('#sys-details summary', 'show the full palette');
+  set('#sys-details .cmpbar label', 'Sort by');
+  set('#sys-sort', '<option value="spec">spec order</option><option value="name">name</option><option value="hue">hue</option>');
+  set('#sys-all', 'all'); set('#sys-real', 'real only');
+  cards[3].querySelector('h2').textContent = 'Preview';
+  cards[3].querySelector('.why').textContent = 'The proposed ramp, in context.';
+  cards[4].querySelector('h2').textContent = 'Check';
+  set('#verify', ''); cards[4].querySelector('summary').textContent = 'see the step-by-step detail';
+}
+const STEPS = DATA.steps;
+const N = STEPS.length;
+// L'amplitude de teinte offerte est délibérément étroite : l'enjeu est de rester dans la
+// même famille de couleur, pas d'explorer la roue. Au-delà on ne règle plus, on change de teinte.
+const HUE_SPAN = 18;
+const fmt2 = x => (Math.floor(x * 100) / 100).toFixed(2);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const store = {};
+// Une déclinaison adoptée est une candidate qu'on décide de promouvoir en vraie couleur.
+const adoptedSet = new Set((() => {
+  try { return JSON.parse(localStorage.getItem('adopt-' + DATA.brand)) || []; } catch (e) { return []; }
+})());
+const persistAdopted = () => {
+  try { localStorage.setItem('adopt-' + DATA.brand, JSON.stringify([...adoptedSet])); } catch (e) {}
+};
+let current = DATA.ramps[0].name;
+let selected = DATA.seedIndex;
+// deux rampes de comparaison, affichées de part et d'autre de celle qu'on travaille
+let cmpA = null, cmpB = null;
+try { const c = JSON.parse(localStorage.getItem('cmp-' + DATA.brand)); if (c) { cmpA = c[0]; cmpB = c[1]; } } catch (e) {}
+const persistCmp = () => { try { localStorage.setItem('cmp-' + DATA.brand, JSON.stringify([cmpA, cmpB])); } catch (e) {} };
+
+/**
+ * Écart de teinte effectif d'une déclinaison : celui réglé à la main s'il existe,
+ * sinon celui qu'a produit le build.
+ */
+function offsetOf(name) {
+  const r = rampOf(name);
+  if (!r || !r.derived) return null;
+  const t = tuningOf(name);
+  return t.hueOffset === undefined || t.hueOffset === null ? r.hueOffset : t.hueOffset;
+}
+
+/**
+ * Une déclinaison régénérée à un autre écart de teinte.
+ *
+ * Le barreau de luminance ne bouge pas — c'est lui qui porte l'interchangeabilité — donc
+ * seule la teinte du seed change, et chaque cran est re-résolu à la même luminance. La
+ * frontière du gamut précalculée reste valable : elle a été échantillonnée sur toute la roue.
+ */
+function baseOf(name) {
+  const r = rampOf(name);
+  if (!r.derived) return r.base;
+  const off = offsetOf(name);
+  if (off === r.hueOffset) return r.base;
+  const parent = rampOf(r.derivedFrom);
+  if (!parent) return r.base;
+  const hsl = hexToHsl(parent.seed);
+  const seed = hslToHex({ ...hsl, h: (hsl.h + off + 360) % 360 });
+  const { C, H } = hexToOklch(seed);
+  return r.ladder.map((Y, i) => (Y === null ? null : solveAtLuminance(Y, C, H).hex));
+}
+
+function seedOf(name) {
+  const r = rampOf(name);
+  if (!r.derived) return r.seed;
+  const off = offsetOf(name);
+  if (off === r.hueOffset) return r.seed;
+  const parent = rampOf(r.derivedFrom);
+  const hsl = hexToHsl(parent.seed);
+  return hslToHex({ ...hsl, h: (hsl.h + off + 360) % 360 });
+}
+
+/** La rampe telle qu'elle sera livrée : générée, réglages appliqués. */
+function finalScale(name) {
+  const r = rampOf(name);
+  return applyTuning(baseOf(name), r.ladder, tuningOf(name)).map(t => (t ? t.hex : null));
+}
+
+const blank = () => ({ hueShift: new Array(N).fill(0), chromaFraction: new Array(N).fill(null), pins: {}, hueOffset: null });
+function tuningOf(name) {
+  if (!store[name]) {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('tune2-' + DATA.brand + '-' + name)); } catch (e) {}
+    store[name] = (saved && saved.hueShift && saved.hueShift.length === N && saved.chromaFraction) ? saved : blank();
+  }
+  return store[name];
+}
+const persist = name => {
+  try { localStorage.setItem('tune2-' + DATA.brand + '-' + name, JSON.stringify(store[name])); } catch (e) {}
+  // intégré au studio : on le prévient, c'est lui qui livre
+  if (DATA.embedded && window.parent !== window) window.parent.postMessage({ hueladder: 'tuned' }, '*');
+};
+const rampOf = name => DATA.ramps.find(r => r.name === name);
+const computed = () => { const r = rampOf(current); return applyTuning(baseOf(current), r.ladder, tuningOf(current)); };
+
+/** Rayon du gamut à un angle donné, lu sur la frontière précalculée. */
+function gamutAt(step, hueDeg) {
+  const r = rampOf(current);
+  // le studio ne précalcule pas la frontière (≈ 250 ms par rampe) : on la calcule à l'ouverture
+  if (!r.gamut) r.gamut = r.ladder.map(Y => (Y === null ? null : Array.from({ length: DATA.hueSteps },
+    (_, k) => maxChromaAtLuminance(Y, (k * 360) / DATA.hueSteps, { iters: 14 }))));
+  const g = r.gamut[step];
+  if (!g) return 0.3;
+  const n = g.length, t = (((hueDeg % 360) + 360) % 360) / 360 * n;
+  const a = Math.floor(t) % n, b = (a + 1) % n;
+  return g[a] + (g[b] - g[a]) * (t - Math.floor(t));
+}
+
+// ---------- comparaison avant / après ----------
+function cell(hex, label, cls, title) {
+  const fg = relativeLuminance(hex) < 0.179 ? '#fff' : '#000';
+  return '<div class="cell ' + (cls || '') + '" style="background:' + hex + ';color:' + fg + '"'
+    + (title ? ' title="' + esc(title) + '"' : '') + '>'
+    + '<span class="n">' + label + '</span><span class="h">' + hex.slice(1) + '</span></div>';
+}
+
+function renderCompare() {
+  const r = rampOf(current), tuned = computed();
+  const cols = 'grid-template-columns:118px repeat(' + N + ',1fr)';
+  const nRef = r.reference.filter(Boolean).length;
+
+  document.getElementById('cmp-title').textContent = r.label;
+  document.querySelector('#compare').previousElementSibling.innerHTML = r.derived
+    ? T('Déclinaison de « <b>', 'Variant of « <b>') + esc(rampOf(r.derivedFrom).label) + T('</b> » à ', '</b> » at ')
+      + (r.hueOffset > 0 ? '+' : '−') + Math.abs(r.hueOffset) + T('° de teinte HSL. <b>Cette couleur n\'existe pas encore</b> — la ligne « Aujourd\'hui » est donc vide, c\'est normal. Règle-la, et si elle te convient, adopte-la : l\'export te donnera un nuancier complet à ajouter à la spec.', '° of HSL hue. <b>This colour does not exist yet</b> — the « Today » row is empty, that is expected. Tune it and adopt it if you like it.')
+    : T('Clique un cran pour le régler. La ligne du haut est ce qui existe aujourd\'hui, celle du milieu ce que tu vas exporter.', 'Click a step to tune it. The top row is what exists today, the middle row is what you will export.');
+
+  let h = '';
+  // aujourd'hui
+  h += '<div class="cmp-row" style="' + cols + '">'
+    + '<div class="cmp-lab">' + T('Aujourd\'hui', 'Today') + '<small>' + nRef + T(' couleur' + (nRef > 1 ? 's' : '') + ' déjà en place', ' existing colour' + (nRef > 1 ? 's' : '')) + '</small></div>'
+    + r.reference.map((ref, i) => ref
+        ? cell(ref.hex, STEPS[i], '', ref.role + ' — ' + ref.hex)
+        : '<div class="void" title="' + T('aucune couleur à ce rang aujourd\'hui', 'no colour at this rank today') + '"></div>').join('')
+    + '</div>';
+  // proposition
+  h += '<div class="cmp-row" style="' + cols + '">'
+    + '<div class="cmp-lab" style="color:var(--fg)">' + T('Proposition<small>ce que tu exportes', 'Proposal<small>what you export') + '</small></div>'
+    + tuned.map((t, i) => t
+        ? cell(t.hex, STEPS[i], 'pick' + (i === selected ? ' sel' : '') + (t.pinned ? ' pinned' : ''),
+            T('cliquer pour régler ce cran', 'click to tune this step'))
+        : '<div class="void" title="' + STEPS[i] + ' : ce nuancier n\'utilise pas ce cran"></div>').join('')
+    + '</div>';
+  // écart
+  h += '<div class="cmp-row" style="' + cols + '">'
+    + '<div class="cmp-lab" style="font-weight:400" title="' + T('ΔE2000 : sous 2, invisible ; au-delà de 5, visible', 'ΔE2000: under 2, invisible; above 5, visible') + '">' + T('écart ΔE', 'ΔE gap') + '</div>'
+    + tuned.map((t, i) => {
+        const ref = r.reference[i];
+        if (!ref || !t) return '<div class="de near">·</div>';
+        const d = deltaE2000Hex(ref.hex, t.hex);
+        const c = d > 8 ? 'far' : d > 4 ? 'mid' : 'near';
+        return '<div class="de ' + c + '" title="' + T('écart perceptif avec la couleur d\'aujourd\'hui', 'perceptual gap with today\'s colour') + '">' + d.toFixed(1) + '</div>';
+      }).join('')
+    + '</div>';
+
+  // les deux rampes de comparaison encadrent celle qu'on travaille
+  const ghost = (name, where) => {
+    if (!name || !rampOf(name)) return '';
+    const g = finalScale(name);
+    return '<div class="cmp-row ghost" style="' + cols + '">'
+      + '<div class="cmp-lab">' + esc(rampOf(name).label) + '</div>'
+      + g.map((hex, i) => hex
+          ? '<div class="cell" style="background:' + hex + '" title="' + esc(rampOf(name).label) + ' ' + STEPS[i] + ' — ' + hex + '"></div>'
+          : '<div class="void"></div>').join('')
+      + '</div>';
+  };
+  document.getElementById('compare').innerHTML = ghost(cmpA, 'haut') + h + ghost(cmpB, 'bas');
+  const picks = [];
+  tuned.forEach((t, i) => { if (t) picks.push(i); });
+  document.querySelectorAll('#compare .cell.pick').forEach((el, k) => {
+    el.onclick = () => { selected = picks[k]; renderAll(); };
+  });
+
+  // les sélecteurs
+  const opts = extra => '<option value="">' + extra + '</option>'
+    + DATA.ramps.filter(x => x.name !== current)
+        .map(x => '<option value="' + x.name + '">' + (x.derived ? '↳ ' : '') + esc(x.label) + '</option>').join('');
+  const sa = document.getElementById('cmp-a'), sb = document.getElementById('cmp-b');
+  sa.innerHTML = opts(T('— au-dessus —', '— above —')); sa.value = cmpA || '';
+  sb.innerHTML = opts(T('— en dessous —', '— below —')); sb.value = cmpB || '';
+  sa.onchange = () => { cmpA = sa.value || null; persistCmp(); renderAll(); };
+  sb.onchange = () => { cmpB = sb.value || null; persistCmp(); renderAll(); };
+  document.getElementById('cmp-hint').textContent = (cmpA || cmpB)
+    ? T('les rampes de comparaison sont affichées telles qu\'elles seront livrées', 'comparison ramps are shown as they will ship')
+    : T('pour vérifier qu\'un cran se comporte pareil d\'un nuancier à l\'autre', 'to check that a step behaves the same across ramps');
+}
+
+// ---------- pavé de réglage ----------
+// `inset` réserve la place des pastilles : à 0 % et 100 % d'éclat elles touchent le bord,
+// et sans marge elles seraient rognées.
+const PAD = { w: 620, h: 320, cols: 26, rows: 13, inset: 22 };
+const fieldCache = {};
+
+/** Le champ de couleurs possibles à ce step : teinte en abscisse, éclat en ordonnée. */
+function field(step) {
+  const key = current + ':' + step + ':' + offsetOf(current);
+  if (fieldCache[key]) return fieldCache[key];
+  const r = rampOf(current), t = tuningOf(current);
+  const baseH = hexToOklch(baseOf(current)[step]).H;
+  const Y = r.ladder[step];
+  const grid = [];
+  for (let row = 0; row < PAD.rows; row++) {
+    const frac = 1 - row / (PAD.rows - 1);
+    const line = [];
+    for (let col = 0; col < PAD.cols; col++) {
+      const hue = baseH + (col / (PAD.cols - 1) - 0.5) * 2 * HUE_SPAN;
+      line.push(solveAtLuminance(Y, gamutAt(step, hue) * frac, hue).hex);
+    }
+    grid.push(line);
+  }
+  fieldCache[key] = grid;
+  return grid;
+}
+
+function renderPad() {
+  const r = rampOf(current), tuned = computed(), t = tuningOf(current);
+  const s = tuned[selected];
+  if (!s) {  // le nuancier n'a pas ce cran : on retombe sur le plus proche qu'il possède
+    let best = null, bd = Infinity;
+    tuned.forEach((x, i) => { if (x && Math.abs(i - selected) < bd) { bd = Math.abs(i - selected); best = i; } });
+    if (best === null) { document.getElementById('side').innerHTML = ''; return; }
+    selected = best; return renderPad();
+  }
+  const baseH = hexToOklch(baseOf(current)[selected]).H;
+  const grid = field(selected);
+  const inner = PAD.h - 2 * PAD.inset;
+  const cw = PAD.w / PAD.cols, ch = inner / PAD.rows;
+
+  let h = '';
+  for (let row = 0; row < PAD.rows; row++) {
+    for (let col = 0; col < PAD.cols; col++) {
+      h += '<rect x="' + (col * cw).toFixed(2) + '" y="' + (PAD.inset + row * ch).toFixed(2) + '" width="' + (cw + 0.6).toFixed(2)
+        + '" height="' + (ch + 0.6).toFixed(2) + '" fill="' + grid[row][col] + '"/>';
+    }
+  }
+  // repère de la teinte d'origine
+  h += '<line x1="' + (PAD.w / 2) + '" y1="' + PAD.inset + '" x2="' + (PAD.w / 2) + '" y2="' + (PAD.h - PAD.inset)
+    + '" stroke="rgba(255,255,255,.45)" stroke-dasharray="4 4"/>';
+
+  const xOf = shift => PAD.w * (0.5 + shift / (2 * HUE_SPAN));
+  const yOf = frac => PAD.inset + inner * (1 - frac);
+
+  // la couleur d'aujourd'hui, si elle existe à ce rang
+  const ref = r.reference[selected];
+  let refOut = null;
+  if (ref) {
+    const rc = hexToOklch(ref.hex);
+    let d = ((rc.H - baseH + 540) % 360) - 180;
+    const inside = Math.abs(d) <= HUE_SPAN;
+    const rx = xOf(Math.max(-HUE_SPAN, Math.min(HUE_SPAN, d)));
+    const ry = yOf(Math.min(1, rc.C / Math.max(1e-4, gamutAt(selected, rc.H))));
+    h += '<circle cx="' + rx.toFixed(1) + '" cy="' + ry.toFixed(1) + '" r="11" fill="none" stroke="#fff" stroke-width="3"/>'
+      + '<circle cx="' + rx.toFixed(1) + '" cy="' + ry.toFixed(1) + '" r="11" fill="none" stroke="#000" stroke-width="1.5"/>'
+      + (inside ? '' : '<text x="' + rx.toFixed(1) + '" y="' + (ry + 4).toFixed(1)
+          + '" text-anchor="middle" font-size="13" fill="#fff" stroke="#000" stroke-width="2.5" paint-order="stroke">'
+          + (d < 0 ? '‹' : '›') + '</text>');
+    refOut = inside ? null : Math.round(d);
+  }
+
+  // le point courant
+  const px = xOf(Math.max(-HUE_SPAN, Math.min(HUE_SPAN, t.hueShift[selected] || 0)));
+  const py = yOf(s.fraction ?? 1);
+  h += '<circle id="dot" cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="13" fill="' + s.hex
+    + '" stroke="#fff" stroke-width="3"/>'
+    + '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="13" fill="none" stroke="#000" stroke-width="1.5"/>';
+
+  const pad = document.getElementById('pad');
+  pad.innerHTML = h;
+  document.getElementById('edit-title').textContent = T('Cran ', 'Step ') + STEPS[selected] + T(' — réglage', ' — tuning');
+  document.getElementById('ax-l').textContent = '−' + HUE_SPAN + '°';
+  document.getElementById('ax-r').textContent = '+' + HUE_SPAN + '°';
+  document.getElementById('ax-note').textContent = refOut === null ? ''
+    : T('‹ la couleur d\'aujourd\'hui est hors cadre (', '‹ today\'s colour is out of frame (') + (refOut > 0 ? '+' : '') + refOut + T('° de teinte)', '° of hue)');
+
+  const set = e => {
+    const b = pad.getBoundingClientRect();
+    const fx = Math.max(0, Math.min(1, (e.clientX - b.left) / b.width));
+    const yPx = ((e.clientY - b.top) / b.height) * PAD.h;
+    const fy = Math.max(0, Math.min(1, (yPx - PAD.inset) / inner));
+    t.hueShift[selected] = Math.round((fx - 0.5) * 2 * HUE_SPAN * 10) / 10;
+    t.chromaFraction[selected] = 1 - fy;
+    renderAll();
+  };
+  pad.onpointerdown = ev => {
+    ev.preventDefault();
+    set(ev);
+    const up = () => { window.removeEventListener('pointermove', set); window.removeEventListener('pointerup', up); persist(current); };
+    window.addEventListener('pointermove', set);
+    window.addEventListener('pointerup', up);
+  };
+
+  // ---- panneau latéral ----
+  const c = luminanceToContrasts(s.targetY);
+  const dE = ref ? deltaE2000Hex(ref.hex, s.hex) : null;
+  const pinned = !!t.pins[selected];
+  document.getElementById('side').innerHTML =
+    '<div class="kv">'
+    + '<div class="row"><span><span class="sq" style="background:' + s.hex + '"></span>' + T('proposition', 'proposal') + '</span><code>' + s.hex + '</code></div>'
+    + (ref ? '<div class="row"><span><span class="sq" style="background:' + ref.hex + '"></span>' + T('aujourd\'hui', 'today') + '</span><code>' + ref.hex + '</code></div>'
+           + '<div class="row"><span>' + T('écart perceptif', 'perceptual gap') + '</span><b style="color:' + (dE > 8 ? 'var(--bad)' : dE > 4 ? 'var(--warn)' : 'var(--ok)') + '">ΔE ' + dE.toFixed(1) + '</b></div>'
+           : '<div style="color:var(--muted)">' + T('aucune couleur à ce rang aujourd\'hui', 'no colour at this rank today') + '</div>')
+    + '<hr>'
+    + '<div class="row"><span>' + T('contraste sur noir', 'contrast on black') + '</span><b>' + fmt2(c.vsBlack) + ':1</b></div>'
+    + '<div class="row"><span>' + T('contraste sur blanc', 'contrast on white') + '</span><b>' + fmt2(c.vsWhite) + ':1</b></div>'
+    + '<div style="color:var(--ok);font-size:11px">' + T('verrouillés — ils ne bougent pas', 'locked — they do not move') + '</div>'
+    + '<hr>'
+    + '<div class="row"><span>' + T('teinte', 'hue') + '</span><b>' + (s.hue ?? 0).toFixed(1) + '°</b></div>'
+    + '<div class="row"><span>' + T('éclat', 'vividness') + '</span><b>' + Math.round((s.fraction ?? 1) * 100) + ' %</b></div>'
+    + (Math.abs(s.perceivedShift ?? 0) > 0.02
+        ? '<div class="warnline">' + T('⚠ ce cran <b>paraît</b> plus ' + ((s.perceivedShift > 0) ? 'clair' : 'sombre') + ' que ses homologues d\'autres nuanciers, malgré un contraste identique.', '⚠ this step <b>looks</b> ' + ((s.perceivedShift > 0) ? 'lighter' : 'darker') + ' than its peers in other ramps, despite identical contrast.') + '</div>' : '')
+    + '<hr>'
+    + '<div><input type="text" id="hex" value="' + s.hex + '"></div>'
+    + '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'
+    + (pinned ? '<button id="unpin">' + T('libérer', 'release') + '</button>' : '<button id="pin">' + T('figer cette valeur', 'pin this value') + '</button>')
+    + (ref && !pinned ? '<button id="useref">' + T('reprendre celle d\'aujourd\'hui', 'use today\'s') + '</button>' : '')
+    + '<button id="rst">' + T('réinitialiser', 'reset') + '</button></div>'
+    + (pinned ? '<div class="warnline">' + T('Valeur figée : le contraste de ce cran n\'est plus garanti.', 'Pinned value: this step\'s contrast is no longer guaranteed.') + '</div>' : '')
+    + '</div>';
+
+  // --- barre d'écart de teinte, sur les déclinaisons uniquement ---
+  const bar = document.getElementById('offsetbar');
+  if (r.derived) {
+    bar.style.display = '';
+    const off = offsetOf(current);
+    const sl = document.getElementById('off-slider');
+    sl.value = off;
+    document.getElementById('off-val').textContent = (off > 0 ? '+' : '') + off + '°';
+    // ce que l'écart HSL vaut réellement en teinte perçue, et de quoi il se rapproche
+    const parent = rampOf(r.derivedFrom);
+    const perceived = Math.round(((hexToOklch(seedOf(current)).H - hexToOklch(parent.seed).H + 540) % 360 - 180) * 10) / 10;
+    const mine = hexToOklch(seedOf(current)).H;
+    let near = null;
+    for (const o of DATA.ramps) {
+      if (o.derived || o.name === r.derivedFrom) continue;
+      const dd = Math.abs(((mine - hexToOklch(o.seed).H + 540) % 360) - 180);
+      if (near === null || dd < near.d) near = { d: dd, label: o.label };
+    }
+    const dParent = Math.abs(perceived);
+    document.getElementById('off-hint').innerHTML =
+      'soit <b>' + (perceived > 0 ? '+' : '') + perceived + '°</b> de teinte perçue'
+      + (dParent < 12 ? ' <span style="color:var(--bad)">— trop proche de ' + esc(parent.label) + '</span>' : '')
+      + (near && near.d < 12 ? ' <span style="color:var(--bad)">— à ' + Math.round(near.d) + '° de ' + esc(near.label) + '</span>'
+         : near ? ' · voisin le plus proche : ' + esc(near.label) + ' à ' + Math.round(near.d) + '°' : '');
+    sl.oninput = () => {
+      tuningOf(current).hueOffset = +sl.value;
+      persist(current); renderAll();
+    };
+    document.getElementById('off-reset').onclick = () => {
+      tuningOf(current).hueOffset = null; persist(current); renderAll();
+    };
+  } else bar.style.display = 'none';
+
+  const el = id => document.getElementById(id);
+  el('hex').onchange = () => {
+    const v = el('hex').value.trim().replace(/^#?/, '#').toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(v)) { t.pins[selected] = v; persist(current); }
+    renderAll();
+  };
+  if (el('pin')) el('pin').onclick = () => { t.pins[selected] = s.hex; persist(current); renderAll(); };
+  if (el('unpin')) el('unpin').onclick = () => { delete t.pins[selected]; persist(current); renderAll(); };
+  if (el('useref')) el('useref').onclick = () => { t.pins[selected] = ref.hex; persist(current); renderAll(); };
+  el('rst').onclick = () => {
+    t.hueShift[selected] = 0; t.chromaFraction[selected] = null; delete t.pins[selected];
+    persist(current); renderAll();
+  };
+}
+
+// ---------- contrôle ----------
+function renderVerify() {
+  const tuned = computed(), v = verifyTuning(tuned);
+  const lock = document.getElementById('lock');
+  lock.className = 'pill' + (v.pinned.length ? ' broken' : '');
+  lock.textContent = v.pinned.length
+    ? '⚠ ' + v.pinned.length + T(' valeur' + (v.pinned.length > 1 ? 's figées' : ' figée'), ' pinned value' + (v.pinned.length > 1 ? 's' : ''))
+    : T('🔒 contraste verrouillé', '🔒 contrast locked');
+
+  document.getElementById('ctrl-why').innerHTML = v.pinned.length
+    ? '<b style="color:var(--bad)">' + v.pinned.length + T(' cran' + (v.pinned.length > 1 ? 's ont' : ' a') + ' une valeur figée</b> : leur contraste est celui de la couleur, plus celui du barreau. ', ' step' + (v.pinned.length > 1 ? 's have' : ' has') + ' a pinned value</b>: their contrast is the colour\'s, no longer the ladder\'s. ')
+      + v.pinned.map(p => '<code>' + STEPS[p.index] + '</code> ' + fmt2(p.vsBlack) + T(':1 au lieu de ', ':1 instead of ') + fmt2(p.expectedVsBlack) + ':1').join(' · ')
+    : T('Tous les contrastes tiennent leur cible à <b>', 'Every contrast holds its target within <b>') + (v.maxRelativeDeviation * 100).toFixed(2) + T(' %</b> près. Ce résidu est celui de la grille hex — aucune couleur sRGB ne ferait mieux. Rien à corriger.', '%</b>. This residue comes from the hex grid — no sRGB colour would do better. Nothing to fix.');
+
+  let h = '<table><tr><th>' + T('Cran', 'Step') + '</th><th>' + T('Proposition</th><th>vs noir</th><th>vs blanc</th><th>cible</th><th>écart</th><th>clarté perçue', 'Proposal</th><th>vs black</th><th>vs white</th><th>target</th><th>gap</th><th>perceived lightness') + '</th></tr>';
+  tuned.forEach((t, i) => {
+    if (!t) return;
+    const got = luminanceToContrasts(t.y), want = luminanceToContrasts(t.targetY);
+    const rel = Math.max(Math.abs(got.vsBlack - want.vsBlack) / want.vsBlack, Math.abs(got.vsWhite - want.vsWhite) / want.vsWhite);
+    h += '<tr><td>' + STEPS[i] + (t.pinned ? ' 📌' : '') + '</td>'
+      + '<td><span class="sq" style="background:' + t.hex + '"></span><code>' + t.hex + '</code></td>'
+      + '<td class="num">' + fmt2(got.vsBlack) + '</td><td class="num">' + fmt2(got.vsWhite) + '</td>'
+      + '<td class="num">' + fmt2(want.vsBlack) + ' / ' + fmt2(want.vsWhite) + '</td>'
+      + '<td class="num" style="color:' + (t.pinned ? 'var(--bad)' : rel > 0.01 ? 'var(--warn)' : 'var(--ok)') + '">' + (rel * 100).toFixed(2) + ' %</td>'
+      + '<td class="num">' + ((t.perceivedShift ?? 0) >= 0 ? '+' : '') + (t.perceivedShift ?? 0).toFixed(3) + '</td></tr>';
+  });
+  document.getElementById('verify').innerHTML = h + '</table>';
+}
+
+// ---------- le système complet ----------
+let sysSort = (() => { try { return localStorage.getItem('sort-' + DATA.brand) || 'spec'; } catch (e) { return 'spec'; } })();
+// Masquer une rampe est un outil de comparaison à part entière : le neutre, plus long et
+// visuellement dominant, écrase la lecture des teintes dès qu'on veut les comparer entre elles.
+const hidden = new Set((() => {
+  try { return JSON.parse(localStorage.getItem('hide-' + DATA.brand)) || []; } catch (e) { return []; }
+})());
+const persistHidden = () => { try { localStorage.setItem('hide-' + DATA.brand, JSON.stringify([...hidden])); } catch (e) {} };
+
+/** L'ordre d'affichage de la palette complète. */
+function sortedRamps() {
+  const list = DATA.ramps.slice();
+  if (sysSort === 'name') {
+    return list.sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+  }
+  if (sysSort === 'hue') {
+    // les quasi-gris n'ont pas de teinte exploitable : ils vont à la fin
+    const key = r => {
+      const c = hexToOklch(seedOf(r.name));
+      return c.C < 0.04 ? 1e6 + c.L : c.H;
+    };
+    return list.sort((a, b) => key(a) - key(b));
+  }
+  return list;   // ordre de la spécification, déclinaisons contre leur parent
+}
+
+function renderSystem() {
+  const det = document.getElementById('sys-details');
+  if (!det.open) { document.getElementById('system').innerHTML = ''; return; }
+  const shown = sortedRamps().filter(r => !hidden.has(r.name));
+  const scales = new Map(shown.map(r => [r.name, finalScale(r.name)]));
+
+  // Une colonne que plus aucune rampe visible n'utilise n'a pas lieu d'occuper la grille :
+  // masquer le neutre doit resserrer l'affichage sur les crans réellement comparés.
+  const usedCols = STEPS.map((_, i) => shown.some(r => scales.get(r.name)[i]));
+  const idx = usedCols.map((u, i) => (u ? i : -1)).filter(i => i >= 0);
+
+  const cols = 'grid-template-columns:120px repeat(' + Math.max(1, idx.length) + ',1fr)';
+  let h = '<div class="sys-row" style="' + cols + '"><div></div>'
+    + idx.map(i => '<div class="sys-head">' + STEPS[i] + '</div>').join('') + '</div>';
+  for (const r of shown) {
+    const scale = scales.get(r.name);
+    h += '<div class="sys-row' + (r.name === current ? ' cur' : '') + '" style="' + cols + '">'
+      + '<div class="sys-lab" title="' + esc(r.label) + '">'
+        + (r.derived && sysSort === 'spec' ? '↳ ' : '') + esc(r.label) + '</div>'
+      + idx.map(i => scale[i]
+          ? '<div class="sys-cell" data-r="' + r.name + '" data-i="' + i + '" style="background:' + scale[i]
+            + '" title="' + esc(r.label) + ' ' + STEPS[i] + ' — ' + scale[i] + '"></div>'
+          : '<div class="sys-void"></div>').join('')
+      + '</div>';
+  }
+  if (!shown.length) h = '<p class="why">' + T('Tout est masqué.', 'Everything is hidden.') + '</p>';
+  document.getElementById('system').innerHTML = h;
+
+  // les bascules
+  document.getElementById('sys-toggles').innerHTML = sortedRamps().map(r =>
+    '<span class="tog' + (hidden.has(r.name) ? ' off' : '') + '" data-t="' + r.name + '">'
+    + '<span class="dot2" style="background:' + seedOf(r.name) + '"></span>'
+    + (r.derived ? '↳ ' : '') + esc(r.label) + '</span>').join('');
+  document.querySelectorAll('#sys-toggles .tog').forEach(el => {
+    el.onclick = () => {
+      const nm = el.dataset.t;
+      if (hidden.has(nm)) hidden.delete(nm); else hidden.add(nm);
+      persistHidden(); renderSystem();
+    };
+  });
+  document.getElementById('sys-all').onclick = () => { hidden.clear(); persistHidden(); renderSystem(); };
+  document.getElementById('sys-real').onclick = () => {
+    hidden.clear();
+    DATA.ramps.filter(r => r.derived).forEach(r => hidden.add(r.name));
+    persistHidden(); renderSystem();
+  };
+  document.querySelectorAll('#system .sys-cell').forEach(c => {
+    c.onclick = () => { current = c.dataset.r; selected = +c.dataset.i; sel.value = current; renderAll(); };
+  });
+
+  const ss = document.getElementById('sys-sort');
+  ss.value = sysSort;
+  ss.onchange = () => {
+    sysSort = ss.value;
+    try { localStorage.setItem('sort-' + DATA.brand, sysSort); } catch (e) {}
+    renderSystem();
+  };
+  const nHid = hidden.size;
+  document.getElementById('sys-hint').textContent =
+    (sysSort === 'hue' ? T('du rouge au violet — les quasi-gris en fin de liste', 'red to violet — near-greys last')
+     : sysSort === 'name' ? T('alphabétique', 'alphabetical') : T('chaque déclinaison sous son parent', 'each variant under its parent'))
+    + (nHid ? '  ·  ' + nHid + T(' masqué' + (nHid > 1 ? 's' : ''), ' hidden') : '');
+}
+
+// ---------- aperçu ----------
+function renderPreview() {
+  const t = computed();
+  const present = t.map((x, i) => (x ? i : -1)).filter(i => i >= 0);
+  // on raisonne en position parmi les crans présents, pour rester juste quelle que soit la rampe
+  const at = f => t[present[Math.max(0, Math.min(present.length - 1, Math.round(f * (present.length - 1))))]].hex;
+  const hex = i => at(i / (N - 1));
+  const on = h => (relativeLuminance(h) < 0.179 ? '#fff' : '#111');
+  document.getElementById('preview').innerHTML =
+    '<div class="prev" style="background:' + hex(0) + ';color:' + hex(N - 2) + '">'
+      + '<div style="font-weight:600;margin-bottom:4px">' + T('Surface teintée', 'Tinted surface') + '</div>'
+      + '<div style="font-size:12px">' + T('Texte courant sur le cran le plus clair.', 'Body text on the lightest step.') + '</div>'
+      + '<div style="margin-top:9px"><span class="btn" style="background:' + hex(5) + ';color:' + on(hex(5)) + '">' + T('Bouton', 'Button') + '</span></div></div>'
+    + '<div class="prev" style="background:#fff;color:#111;border:1px solid var(--line)">'
+      + '<span class="btn" style="background:' + hex(5) + ';color:' + on(hex(5)) + '">' + T('Action', 'Action') + '</span> '
+      + '<span class="chip" style="border-color:' + hex(3) + ';color:' + hex(N - 2) + '">' + T('badge', 'badge') + '</span>'
+      + '<div style="margin-top:8px;font-size:12px;color:' + hex(N - 2) + '">' + T('Texte sur fond blanc', 'Text on white') + '</div>'
+      + '<div style="margin-top:6px;height:2px;background:' + hex(4) + '"></div></div>'
+    + '<div class="prev" style="background:' + hex(N - 1) + ';color:' + hex(1) + '">'
+      + '<div style="font-weight:600;margin-bottom:4px">' + T('Surface foncée', 'Dark surface') + '</div>'
+      + '<div style="font-size:12px">' + T('Texte clair sur le cran le plus foncé de la rampe claire.', 'Light text on the darkest step of the light ramp.') + '</div>'
+      + '<div style="margin-top:9px"><span class="btn" style="background:' + hex(2) + ';color:' + on(hex(2)) + '">' + T('Bouton', 'Button') + '</span></div></div>';
+}
+
+// ---------- export ----------
+
+/** Ce qui compose le système livré : les nuanciers réels, plus les déclinaisons adoptées. */
+function deliveredRamps() {
+  return DATA.ramps.filter(r => !r.derived || adoptedSet.has(r.name));
+}
+
+/** Le nom sous lequel une déclinaison adoptée entre dans le système. */
+function deliveredName(r) {
+  if (!r.derived) return r.name;
+  return r.derivedFrom + (offsetOf(r.name) > 0 ? '-plus' : '-moins');
+}
+
+function exportPayload(fmt) {
+  const ramps = deliveredRamps();
+
+  if (fmt === 'palette') {
+    // Le résultat, sans détour : toutes les couleurs telles qu'elles seront utilisées.
+    const out = { marque: DATA.brand, steps: STEPS, base: DATA.baseMethod, nuanciers: {} };
+    for (const r of ramps) {
+      const scale = finalScale(r.name);
+      out.nuanciers[deliveredName(r)] = Object.fromEntries(
+        STEPS.map((s, i) => [s, scale[i]]).filter(([, v]) => v));
+    }
+    return out;
+  }
+
+  if (fmt === 'dtcg') {
+    const color = {};
+    for (const r of ramps) {
+      const scale = finalScale(r.name);
+      const g = { $description: r.label };
+      STEPS.forEach((s, i) => { if (scale[i]) g[s] = { $type: 'color', $value: scale[i] }; });
+      color[deliveredName(r)] = g;
+    }
+    return { core: { color } };
+  }
+
+  // format « spec » : de quoi faire régénérer exactement le même résultat par le build
+  const reglages = {}, nouveaux = [];
+  for (const r of DATA.ramps) {
+    const t = store[r.name];
+    if (!t) continue;
+    const touched = t.hueShift.some(v => v !== 0) || t.chromaFraction.some(v => v !== null) || Object.keys(t.pins).length;
+    const movedOffset = r.derived && t.hueOffset !== null && t.hueOffset !== undefined && t.hueOffset !== r.hueOffset;
+    if (!touched && !movedOffset && !adoptedSet.has(r.name)) continue;
+    const tuned = applyTuning(baseOf(r.name), r.ladder, t);
+    const scale = Object.fromEntries(STEPS.map((s, i) => [s, tuned[i] ? tuned[i].hex : null]).filter(([, v]) => v));
+    const from = { method: DATA.baseMethod, lockedY: true, pinned: Object.keys(t.pins).map(i => STEPS[i]) };
+    if (r.derived) {
+      if (!adoptedSet.has(r.name)) continue;
+      const parent = rampOf(r.derivedFrom);
+      nouveaux.push({
+        name: deliveredName(r), label: r.label, kind: r.kind || 'product',
+        note: 'Déclinaison HSL ' + (offsetOf(r.name) > 0 ? '+' : '−') + Math.abs(offsetOf(r.name))
+          + '° de « ' + parent.label + ' », adoptée comme couleur à part entière.',
+        anchors: { default: seedOf(r.name) }, tuned: scale, tunedFrom: from,
+      });
+    } else if (touched) {
+      reglages[r.name] = { tuned: scale, tunedFrom: from };
+    }
+  }
+  const p = {};
+  if (Object.keys(reglages).length) p.reglages = reglages;
+  if (nouveaux.length) p.nouveauxNuanciers = nouveaux;
+  return Object.keys(p).length ? p : { _: 'Aucun réglage manuel : le build reproduit déjà ce résultat tel quel.' };
+}
+
+function renderExport() {
+  const fmt = document.getElementById('export-fmt').value;
+  const payload = exportPayload(fmt);
+  const text = JSON.stringify(payload, null, 2);
+  document.getElementById('export-json').value = text;
+  document.getElementById('export-size').textContent =
+    Math.round(text.length / 1024 * 10) / 10 + ' Ko';
+
+  const ramps = deliveredRamps();
+  const nAdopted = ramps.filter(r => r.derived).length;
+  const nTuned = DATA.ramps.filter(r => {
+    const t = store[r.name];
+    return t && (t.hueShift.some(v => v !== 0) || t.chromaFraction.some(v => v !== null) || Object.keys(t.pins).length);
+  }).length;
+
+  document.getElementById('export-why').innerHTML =
+    '<b>' + ramps.length + ' nuanciers</b> — ' + (ramps.length - nAdopted) + ' réels'
+    + (nAdopted ? ' et ' + nAdopted + ' déclinaison' + (nAdopted > 1 ? 's adoptées' : ' adoptée') : '')
+    + (nTuned ? ', dont <b>' + nTuned + ' réglé' + (nTuned > 1 ? 's' : '') + ' à la main</b>' : ', aucun réglage manuel')
+    + '. Les déclinaisons non adoptées restent des hypothèses et ne sont pas livrées.';
+
+  document.getElementById('export-note').textContent =
+    fmt === 'palette' ? 'toutes les couleurs finales, prêtes à consommer'
+    : fmt === 'dtcg' ? 'à importer via figma_import_tokens (format dtcg)'
+    : 'pour que node build.mjs régénère exactement ce résultat';
+}
+
+function renderAll() {
+  const r = rampOf(current);
+  const ab = document.getElementById('btn-adopt');
+  ab.style.display = r.derived ? '' : 'none';
+  if (r.derived) {
+    const on = adoptedSet.has(current);
+    ab.textContent = on ? '✓ adoptée — retirer' : 'adopter cette couleur';
+    ab.className = on ? 'primary' : '';
+  }
+  renderCompare(); renderPad(); renderVerify(); renderSystem(); renderPreview(); renderExport();
+}
+
+const sel = document.getElementById('ramp-select');
+sel.innerHTML = DATA.ramps.map(r =>
+  '<option value="' + r.name + '">' + (r.derived ? '\u00a0\u00a0\u21b3 ' : '') + esc(r.label) + '</option>').join('');
+sel.onchange = () => { current = sel.value; selected = DATA.seedIndex; renderAll(); };
+document.getElementById('btn-adopt').onclick = () => {
+  if (adoptedSet.has(current)) adoptedSet.delete(current); else adoptedSet.add(current);
+  persistAdopted(); renderAll();
+};
+document.getElementById('btn-reset').onclick = () => {
+  if (!confirm(T('Réinitialiser tous les réglages de ce nuancier ?', 'Reset all tuning of this ramp?'))) return;
+  store[current] = blank(); persist(current); renderAll();
+};
+document.getElementById('btn-export').onclick = () => {
+  renderExport();
+  document.getElementById('export-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+document.getElementById('export-fmt').onchange = renderExport;
+document.getElementById('btn-dl').onclick = () => {
+  const fmt = document.getElementById('export-fmt').value;
+  const name = DATA.id + '-' + (fmt === 'dtcg' ? 'tokens' : fmt === 'spec' ? 'spec-patch' : 'palette') + '.json';
+  const blob = new Blob([document.getElementById('export-json').value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+document.getElementById('btn-copy').onclick = async () => {
+  const ta = document.getElementById('export-json');
+  try { await navigator.clipboard.writeText(ta.value); } catch (e) { ta.select(); document.execCommand('copy'); }
+  const b = document.getElementById('btn-copy');
+  b.textContent = 'copié ✓'; setTimeout(() => (b.textContent = 'copier'), 1400);
+};
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft' && selected > 0) { selected--; renderAll(); }
+  if (e.key === 'ArrowRight' && selected < N - 1) { selected++; renderAll(); }
+});
+
+document.getElementById('sys-details').addEventListener('toggle', renderSystem);
+
+renderAll();
+</script>
+</body>
+</html>

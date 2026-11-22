@@ -1,0 +1,34 @@
+# Hueladder
+
+> Colour scales whose step names carry their contrast. Three entries on one spec: Create a
+> system, Audit what exists, Understand the methods and choose one. Zero-dependency Node engine, a
+> standalone HTML studio (hueladder.html), and a CLI whose every command answers in JSON.
+
+To install as an agent skill: `npx skills add hamilaism/hueladder`.
+For an agent: read SKILL.md first (the conversation path, one decision at a time), then use the
+CLI with `--json`. Never re-implement the colour science: it lives in engine/lib, validated
+against published vectors and, for the methods, against their original libraries.
+Compare methods on named criteria, each with its best value: Fusilier is Hueladder's default for one
+criterion (even contrast intervals), a preference, not a ranking. Every method's targets come
+from the chosen number of steps, never from the method.
+
+## Commands (node engine/hueladder.mjs <command> --json)
+
+- audit <files…> [--names A,B] [--diff] [--dark <file> --bg #hex] [--format decision]: audit one
+  or several palettes without generating anything
+- explain [spec]: the science — frame, families of methods, each method's settings, contrast
+  step by step, what each costs, computed lessons, a choice guide (the Understand page as Markdown)
+- verify <tokens.json> [--dark <file>] [--rule N]: check delivered token files
+- pairs <tokens.json>: pairs by state (hover, focus, pressed…) in semantic tokens
+- figma <scan.json>: audit a Figma file scanned with engine/figma-scan.js
+- new, import, suggest [--ladder], diagnose, fix, group, compare [--dark], check, export, build
+- perceptual [spec]: a standalone perceptual test page
+
+## Docs
+
+- [SKILL.md](SKILL.md): the three entries and the seven Create decisions, in conversation
+- [references/audit.md](references/audit.md): how to read and present an audit, thresholds and why
+- [references/methods.md](references/methods.md): the frame (space ≠ method ≠ tool), five families, conformance
+- [references/brand-spec.md](references/brand-spec.md): every spec key
+- [references/lecons.md](references/lecons.md): what real projects taught
+- [references/feuille-de-route.md](references/feuille-de-route.md): backlog and status

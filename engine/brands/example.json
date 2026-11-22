@@ -1,0 +1,143 @@
+{
+  "id": "example",
+  "brand": "Marque de démonstration",
+  "title": "Comparaison des méthodes de génération — échelle 9 steps",
+  "subtitle": "Fixture de test du moteur : échelle à 9 crans, rôles nommés librement, ancres aux bornes du gamut, et un nuancier volontairement dépourvu de couleur par défaut. Elle existe pour qu'une régression qui recâblerait le moteur sur une marque particulière casse immédiatement ce build.",
+  "source": "Fixture — aucune source externe",
+  "accent": "#7c3aed",
+  "steps": [
+    "100",
+    "200",
+    "300",
+    "400",
+    "500",
+    "600",
+    "700",
+    "800",
+    "900"
+  ],
+  "seedStep": "500",
+  "_comment_extraSteps": "Crans hors grille : 0 et 1000 doivent ressortir en blanc et noir purs, 50 et 950 tombent entre les crans réguliers. Tous doivent rester exclus de la règle de contraste. Seul « seedless » les demande — les autres laissent ces rangs vides.",
+  "extraSteps": [
+    "0",
+    "50",
+    "950",
+    "1000"
+  ],
+  "coreMethod": "fusilier",
+  "defaultRole": "default",
+  "tokenRoot": "demo",
+  "anchorRoles": {
+    "subtle": {
+      "label": "Subtle",
+      "short": "subtle"
+    },
+    "muted": {
+      "label": "Muted",
+      "short": "muted"
+    },
+    "default": {
+      "label": "Default",
+      "short": "default"
+    },
+    "emphasis": {
+      "label": "Emphasis",
+      "short": "emph"
+    },
+    "surface": {
+      "label": "Surface",
+      "short": "surf"
+    },
+    "ink": {
+      "label": "Ink",
+      "short": "ink"
+    }
+  },
+  "ladders": {
+    "leonardoReference": "zinc"
+  },
+  "_comment_darkMode": "Mode sombre par égalité de contraste. Le fond #0e0d0d ne porte que 19,41:1 alors que le blanc en porte 21 : le cran hors grille 1000 est donc structurellement hors budget et doit ressortir en blanc pur, tandis que 950 (19,30 demandé) passe de justesse. C'est ce cas limite que la fixture doit garder sous contrôle.",
+  "darkMode": {
+    "background": "#0e0d0d",
+    "chromaProfile": "bell",
+    "gamutCeiling": 0.96,
+    "pins": {
+      "seedless": {
+        "50": "#151515"
+      }
+    }
+  },
+  "_comment_staticTokens": "Couleurs littérales : mêmes valeurs dans les deux fichiers de tokens. C'est le seul groupe dont un diff clair/sombre ne doit rien montrer.",
+  "staticTokens": {
+    "white": "#ffffff",
+    "black": "#000000"
+  },
+  "hueVariants": {
+    "space": "hsl",
+    "offsets": [
+      -30,
+      30
+    ],
+    "appliesTo": [
+      "solo",
+      "extremes"
+    ]
+  },
+  "ramps": [
+    {
+      "name": "solo",
+      "label": "Une seule couleur",
+      "kind": "brand",
+      "note": "Cas minimal : rien qu'un défaut. C'est la situation la plus courante pour une couleur de marque ou de ligne produit.",
+      "anchors": {
+        "default": "#7c3aed"
+      }
+    },
+    {
+      "name": "quad",
+      "label": "Quatre rôles, noms libres",
+      "kind": "system",
+      "note": "Rôles délibérément nommés autrement que dans les autres specs, pour vérifier qu'aucun nom de rôle n'est câblé.",
+      "anchors": {
+        "subtle": "#e0f2fe",
+        "muted": "#7dd3fc",
+        "default": "#0284c7",
+        "emphasis": "#075985"
+      },
+      "_comment_tuned": "Valeurs réglées à la main : vérifie que la méthode « tuned » apparaît, qu'elle est bien reprise, et qu'un cran non réglé retombe sur la méthode de base.",
+      "tuned": {
+        "100": "#e6f3fb",
+        "300": "#7cc3e8",
+        "500": "#1f7fb5",
+        "700": "#0d4d70"
+      }
+    },
+    {
+      "name": "extremes",
+      "label": "Ancres extrêmes",
+      "kind": "product",
+      "note": "Une ancre quasi blanche et une quasi noire, aux bornes du gamut : c'est là que la réduction de chroma et le placement des ancres peuvent déraper.",
+      "_comment_darkChroma": "Ce nuancier refuse le profil global et reste en variante « alignée » : il vérifie que l'arbitrage par nuancier l'emporte sur le réglage de la spec.",
+      "darkChroma": 0,
+      "anchors": {
+        "subtle": "#fdfdfc",
+        "default": "#65a30d",
+        "ink": "#0a0a0a"
+      }
+    },
+    {
+      "name": "seedless",
+      "label": "Sans couleur par défaut",
+      "kind": "neutral",
+      "note": "Aucun rôle « default » : le seed du step d'ancrage doit être synthétisé depuis la teinte des autres ancres, et l'artefact doit le signaler explicitement.",
+      "anchors": {
+        "surface": "#fafaf9",
+        "ink": "#1c1917"
+      },
+      "extraSteps": true
+    }
+  ],
+  "notes": {
+    "purpose": "Ce fichier n'est pas un livrable : c'est la fixture qui prouve que le moteur est générique. À lancer après toute modification de lib/ ou de template.html."
+  }
+}

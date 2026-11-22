@@ -1,0 +1,15 @@
+# Le travail client ne se versionne pas ici : chaque mission a son propre dépôt.
+clients/*
+!clients/.gitkeep
+
+# Sorties de build, si on lance le moteur sur place
+engine/index.html
+engine/tuner.html
+engine/data.json
+engine/*.tokens.json
+engine/*.manifest.json
+engine/*-color-guide.md
+engine/*-migration.md
+
+.DS_Store
+node_modules/
