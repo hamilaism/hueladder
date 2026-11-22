@@ -1009,7 +1009,7 @@ function toggleMatrix(name) {
 
   h += '<details><summary>' + T('Échelles cibles utilisées par chaque méthode', 'Target scales used by each method') + '</summary><table>'
     + '<tr><th>Step</th>' + STEPS.map(s => '<th>' + s + '</th>').join('') + '</tr>'
-    + '<tr><td>shade (Fusilier)</td>' + L.shade.map(v => '<td class="num">' + Math.round(v) + '</td>').join('') + '</tr>'
+    + '<tr><td>' + T('shade (Fusilier, adapté et original)', 'shade (Fusilier, adapted and original)') + '</td>' + L.shade.map(v => '<td class="num">' + Math.round(v) + '</td>').join('') + '</tr>'
     + '<tr><td>' + T('contraste cible vs noir', 'target contrast vs black') + '</td>' + L.shade.map(v => '<td class="num">' + fmt(Math.pow(21, v / 200)) + '</td>').join('') + '</tr>'
     + '<tr><td>' + T('L OKLCH (luminosité fixe)', 'OKLCH L (fixed lightness)') + '</td>' + L.oklchL.map(v => '<td class="num">' + (Math.round(v * 1000) / 1000) + '</td>').join('') + '</tr>'
     + '<tr><td>tone (HCT)</td>' + L.tone.map(v => '<td class="num">' + (Math.round(v * 10) / 10) + '</td>').join('') + '</tr>'

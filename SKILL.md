@@ -6,7 +6,7 @@ description: >
   method", OKLCH, Fusilier, color-shades, Leonardo, HCT / Material tone, APCA, contrast curve,
   fixing a palette, uneven palette, interchangeable color families, dark mode of a palette,
   exporting colors to Figma / Tokens Studio / Tailwind; in French: échelle de couleur,
-  nuancier, palette de marque. Compares 10 scale-generation methods, plus the existing colors
+  nuancier, palette de marque. Compares 11 scale-generation methods, plus the existing colors
   as a witness, on a brand's real colors; audits existing palettes; produces a decision report,
   a contrast-locked tuner and DTCG tokens ready for Figma. Use whenever a few hand-picked
   colors must become complete, defensible scales, or an existing palette that isn't right
@@ -115,7 +115,8 @@ Verify step, including the naming rule (the same step gap guarantees the same co
 hue). The adapted Fusilier is Hueladder's default, at the top of the list: a preference for even
 intervals, not a ranking. Say it is adapted: David Fusilier's contrast targets, exactly, on an
 OKLCH path (color-shades keeps the HSL hue and saturation); the tuner and dark mode work in
-OKLCH too. Choose on these numbers and on the criterion that matters to the team
+OKLCH too. The original, `colorshades` (color-shades reproduced to the hex), sits right after
+it, to compare. Choose on these numbers and on the criterion that matters to the team
 (`$C explain` compares them criterion by criterion). Write `coreMethod`. Reading the results:
 `references/reading-results.md`, `references/methods.md`.
 

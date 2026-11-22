@@ -187,7 +187,7 @@ Légende : ● oui · ◐ partiel · ○ non ou non documenté. Plusieurs cases 
 ### 2.1 Ce que Hueladder fait déjà mieux que tous les autres
 1. **Audit d'une palette existante** (crans mal nommés, crans non interchangeables, doublons) : aucun concurrent ne diagnostique. Atmos et Supa importent seulement, Palettte associe des couleurs [S/I].
 2. **Règle de contraste portée par le nom et vérifiée sur toutes les teintes, pour une palette générée** : Reasonable Colors le fait sur une palette figée, Leonardo et Harmonizer le font par niveau. Personne ne combine import, règle choisie, vérification et rapport [I].
-3. **Comparaison de 10 méthodes côte à côte** : aucun outil ne montre plusieurs algorithmes en parallèle [I].
+3. **Comparaison de 11 méthodes côte à côte** : aucun outil ne montre plusieurs algorithmes en parallèle [I].
 4. **Mode sombre jugé sous deux normes et avec plusieurs méthodes**, écarts annoncés : Harmonizer fait un miroir, Leonardo est adaptatif, Material passe par les tons. Aucun n'affiche les écarts [I].
 5. **Table de migration, guide d'usage pour IA, skill pour agents, CLI** : seuls Leonardo (MCP) et Ultimate Tokens (MCP) jouent sur le terrain des agents [S].
 6. **Open source avec moteur local** : seuls Leonardo, Harmonizer, Huetone et Ultimate Tokens sont comparables.

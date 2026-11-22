@@ -11,6 +11,7 @@ import { deltaE2000Hex } from './deltae.mjs';
 import { apcaLc } from './apca.mjs';
 import { hctFromHex, hctToHex } from './cam16.mjs';
 import { leonardoColors } from './leonardo.mjs';
+import { colorShades } from './colorshades.mjs';
 
 // ---------------------------------------------------------------- palette Tailwind (référence « dessinée à la main »)
 
@@ -215,6 +216,14 @@ function mFusilier(ctx) {
   });
 }
 
+/**
+ * Fusilier original : color-shades de David Fusilier, au hex près (colorshades.mjs). Mêmes cibles
+ * que le Fusilier adapté ; la teinte et la saturation HSL de la couleur de départ sont gardées.
+ */
+function mColorshades(ctx) {
+  return colorShades(ctx.seed, ctx.ladders.shade);
+}
+
 /** Mix blanc/noir en sRGB : la méthode naïve, sans notion perceptuelle. */
 function mMix(ctx) {
   const seed = hexToRgb(ctx.seed);
@@ -385,6 +394,7 @@ export const METHOD_IMPL = {
   tuned: mTuned,
   oklch: mOklch,
   fusilier: mFusilier,
+  colorshades: mColorshades,
   mix: mMix,
   hct: mHct,
   leonardo: mLeonardo,
@@ -396,7 +406,7 @@ export const METHOD_IMPL = {
 
 /** Ordre de calcul : `anchored` a besoin de `fusilier`, `existing` du placement des ancres. */
 export const METHOD_COMPUTE_ORDER = [
-  'oklch', 'fusilier', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
+  'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind', 'existing', 'anchored', 'tuned',
 ];
 
 /** Méthodes creuses : elles n'ont pas de valeur à tous les steps. */

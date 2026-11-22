@@ -19,7 +19,7 @@ Un fichier JSON dans `brands/`. Point de départ : `brands/_template.json` (il b
 | `subtitle` | non | phrase de contexte sous le titre, HTML simple accepté |
 | `source` | non | d'où viennent les couleurs |
 | `accent` | non | couleur d'accent de l'artefact. Défaut `#2f5bd3`. Y mettre la couleur de la marque |
-| `coreMethod` | non | méthode alimentant les tokens. Défaut `fusilier` ; `tuned` pour livrer les valeurs réglées (`ramps[].tuned`) |
+| `coreMethod` | non | méthode alimentant les tokens. Défaut `fusilier` (le Fusilier adapté ; `colorshades` pour l'original, color-shades au hex près) ; `tuned` pour livrer les valeurs réglées (`ramps[].tuned`) |
 | `tunedBase` | non | méthode sur laquelle les réglages ont été faits. Défaut `fusilier` |
 | `pinDefault` | non | `true` (défaut) : la couleur `defaultRole` est posée sur `seedStep`. `false` : elle prend son rang naturel — à mettre quand la marque fournit une palette complète |
 | `hueVariants` | non | déclinaisons de teinte à explorer (voir plus bas) |

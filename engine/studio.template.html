@@ -492,7 +492,7 @@ const I18N = {
     otherT: 'Les autres choix de méthode', otherDark: 'Le mode sombre : six façons de passer d\'un cran clair à un cran sombre', otherDarkGo: 'Les comparer sur tes couleurs : Créer, étape Mode sombre.',
     otherNaming: 'La nomenclature : comment le nom porte la règle', otherNamingGo: 'En changer : le bouton des crans, en haut de la page.', otherNorm: 'La norme : WCAG 2 ou APCA',
     tagline: "studio d'échelles", brandLabel: 'Marque', brandAria: 'Nom du système', brandTitle: 'nom du système — sert de préfixe aux fichiers',
-    crans: 'Crans', cransTitle: 'Les crans livrés. Modifiable à tout moment : un cran garde sa couleur d\'un jeu à l\'autre.', cransAria: 'Jeu de crans livré', share: 'Lien de partage', shareTitle: 'Copie un lien qui contient tout le projet : qui l\'ouvre retrouve les mêmes couleurs', reset: 'Nouveau projet', resetTitle: 'effacer ce projet et repartir de zéro',
+    crans: 'Crans', cransTitle: 'Les crans livrés. Modifiable à tout moment : un cran garde sa couleur d\'un jeu à l\'autre.', cransAria: 'Jeu de crans livré', share: 'Partager le projet', shareTitle: 'Copie un lien qui contient tout le projet : couleurs, crans et réglages. Qui l\'ouvre retrouve exactement ce projet, sans compte ni serveur.', reset: 'Nouveau projet', resetTitle: 'effacer ce projet et repartir de zéro',
     theme: 'thème clair / sombre', ghTitle: 'Le code source, les retours et les discussions sur GitHub', dl: 'Télécharger', dlTitle: 'Télécharger Hueladder : le studio, la ligne de commande et le skill (zip du dépôt GitHub)', langBtn: 'EN', langTitle: 'Switch to English', rail: 'Étapes',
     steps: [['Entrer', 'tes couleurs'], ['Diagnostic', 'ce que valent tes couleurs'], ['Générer', 'un parti pris'], ['Régler', 'teinte et éclat'],
       ['Mode sombre', 'le fond, le calcul'], ['Vérifier', 'le contrat'], ['Livrer', 'tokens et spec']],
@@ -589,13 +589,14 @@ const I18N = {
       guide: ['Guide IA', 'la règle, le rôle de chaque cran et un bloc de données, pour une IA comme pour une personne'], spec: ['Spec', 'rejoue exactement ce résultat par la ligne de commande (node engine/build.mjs)'] },
     pkg: 'Le paquet', pkgText: n => 'Tout en une archive, rangé par destination : <code>code/</code> (CSS, Tailwind 3 et 4, tokens DTCG), <code>figma/</code> (un fichier par mode, à glisser dans le panneau Variables), <code>tokens-studio/</code>, <code>ai/</code> (le guide et ses données en JSON), la spec' + (n ? ' et la migration' : '') + '. Un README dit quoi faire de chaque dossier.', pkgBtn: 'Télécharger le paquet (.zip)',
     copy: 'Copier', download: 'Télécharger', copied: 'Copié', meeting: 'Pour la réunion',
-    meetingText: 'Le rapport complet : les dix méthodes de génération comparées sur tes couleurs, leurs métriques, l\'interchangeabilité et le testeur de paires. C\'est la page qui sert à faire arbitrer.',
-    linkCopied: 'Lien copié : il contient tout le système', linkPrompt: 'Lien du système',
+    meetingText: 'Le rapport complet : les onze méthodes de génération comparées sur tes couleurs, leurs métriques, l\'interchangeabilité et le testeur de paires. C\'est la page qui sert à faire arbitrer.',
+    linkCopied: 'Lien copié : qui l\'ouvre retrouve ce projet, couleurs et réglages compris', linkPrompt: 'Lien du projet',
     confirmCrans: 'Changer de jeu de crans efface les réglages faits à la main. Continuer ?',
     confirmReset: 'Repartir de zéro ? Le système en cours sera effacé de ce navigateur.',
     engineRefused: 'Le moteur a refusé cette configuration', myBrand: 'Ma marque',
     methods: {
-      fusilier: ['Fusilier adapté — cibles de color-shades, chemin OKLCH', 'Chaque cran vise le contraste exact de la formule de David Fusilier. Adapté par Hueladder : color-shades garde la teinte et la saturation HSL de ta couleur ; ici, sa teinte et son éclat OKLCH, l\'espace du régleur et du mode sombre.'],
+      fusilier: ['Fusilier (adapté) — chemin OKLCH', 'Chaque cran vise le contraste exact de la formule de David Fusilier. Adapté par Hueladder : color-shades garde la teinte et la saturation HSL de ta couleur ; ici, sa teinte et son éclat OKLCH, l\'espace du régleur et du mode sombre.'],
+      colorshades: ['Fusilier (original) — color-shades en HSL', 'L\'outil de David Fusilier, au hex près : les mêmes contrastes, atteints en gardant la teinte et la saturation HSL de ta couleur. Pour comparer à la version adaptée.'],
       anchored: ['Ancres + interpolation OKLCH', 'Tes couleurs restent en place, les crans manquants sont interpolés entre elles.'],
       oklch: ['OKLCH — luminosité fixe', 'Luminosité OKLCH fixe par cran : régulier à l\'œil, sans garantie de contraste.'],
       mix: ['Mélange blanc/noir (sRGB)', 'Mélange avec le blanc et le noir : simple, la teinte se délave.'],
@@ -746,7 +747,7 @@ const I18N = {
     otherT: 'The other method choices', otherDark: 'Dark mode: six ways from a light step to a dark step', otherDarkGo: 'Compare them on your colours: Create, Dark mode step.',
     otherNaming: 'Naming: how the name carries the rule', otherNamingGo: 'To change it: the steps button, at the top of the page.', otherNorm: 'The norm: WCAG 2 or APCA',
     tagline: 'colour scale studio', brandLabel: 'Brand', brandAria: 'System name', brandTitle: 'system name — used as the file prefix',
-    crans: 'Steps', cransTitle: 'The steps delivered. Change it any time: a step keeps its colour from one set to another.', cransAria: 'Delivered step set', share: 'Share link', shareTitle: 'Copies a link that holds the whole project: whoever opens it gets the same colours', reset: 'New project', resetTitle: 'clear this project and start from scratch',
+    crans: 'Steps', cransTitle: 'The steps delivered. Change it any time: a step keeps its colour from one set to another.', cransAria: 'Delivered step set', share: 'Share project', shareTitle: 'Copies a link that holds the whole project: colours, steps and tuning. Whoever opens it gets exactly this project, with no account and no server.', reset: 'New project', resetTitle: 'clear this project and start from scratch',
     theme: 'light / dark theme', ghTitle: 'Source code, feedback and discussions on GitHub', dl: 'Download', dlTitle: 'Download Hueladder: the studio, the command line and the skill (zip of the GitHub repository)', langBtn: 'FR', langTitle: 'Passer en français', rail: 'Steps',
     steps: [['Enter', 'your colours'], ['Diagnosis', 'what your colours are worth'], ['Generate', 'pick a stance'], ['Tune', 'hue and vividness'],
       ['Dark mode', 'background, maths'], ['Verify', 'the contract'], ['Ship', 'tokens and spec']],
@@ -836,13 +837,14 @@ const I18N = {
       guide: ['AI guide', 'the rule, what each step is for and a data block, for an AI as much as for a person'], spec: ['Spec', 'replays this exact result from the command line (node engine/build.mjs)'] },
     pkg: 'The package', pkgText: n => 'Everything in one archive, sorted by destination: <code>code/</code> (CSS, Tailwind 3 and 4, DTCG tokens), <code>figma/</code> (one file per mode, to drop into the Variables panel), <code>tokens-studio/</code>, <code>ai/</code> (the guide and its JSON data), the spec' + (n ? ' and the migration' : '') + '. A README says what to do with each folder.', pkgBtn: 'Download the package (.zip)',
     copy: 'Copy', download: 'Download', copied: 'Copied', meeting: 'For the meeting',
-    meetingText: 'The full report: the ten generation methods compared on your colours, their metrics, interchangeability and the pair tester. It is the page used to reach a decision.',
-    linkCopied: 'Link copied: it holds the whole system', linkPrompt: 'System link',
+    meetingText: 'The full report: the eleven generation methods compared on your colours, their metrics, interchangeability and the pair tester. It is the page used to reach a decision.',
+    linkCopied: 'Link copied: whoever opens it gets this project, colours and tuning included', linkPrompt: 'Project link',
     confirmCrans: 'Changing the step set erases hand tuning. Continue?',
     confirmReset: 'Start from scratch? The current system will be erased from this browser.',
     engineRefused: 'The engine rejected this configuration', myBrand: 'My brand',
     methods: {
-      fusilier: ['Fusilier, adapted — color-shades targets, OKLCH path', 'Each step targets the exact contrast of David Fusilier\'s formula. Adapted by Hueladder: color-shades keeps your colour\'s HSL hue and saturation; here, its OKLCH hue and vividness, the space of the tuner and dark mode.'],
+      fusilier: ['Fusilier (adapted) — OKLCH path', 'Each step targets the exact contrast of David Fusilier\'s formula. Adapted by Hueladder: color-shades keeps your colour\'s HSL hue and saturation; here, its OKLCH hue and vividness, the space of the tuner and dark mode.'],
+      colorshades: ['Fusilier (original) — color-shades in HSL', 'David Fusilier\'s tool, to the hex: the same contrasts, reached by keeping your colour\'s HSL hue and saturation. To compare with the adapted version.'],
       anchored: ['Anchors + OKLCH interpolation', 'Your colours stay put; missing steps are interpolated between them.'],
       oklch: ['OKLCH — fixed lightness', 'Fixed OKLCH lightness per step: even to the eye, no contrast guarantee.'],
       mix: ['White/black mix (sRGB)', 'Mixing with white and black: simple, the hue washes out.'],
@@ -2411,7 +2413,9 @@ $('brand').onchange = e => { state.brand = e.target.value.trim() || t('myBrand')
 $('cransbtn').onclick = () => { ui.cransOpen = !ui.cransOpen; renderHeader(); };
 $('share').onclick = async () => {
   if (STEP_KEYS[state.step] === 'tune') pullTuning();
-  const url = location.href.split('#')[0] + '#s=' + encodeState(state);
+  // ouvert depuis un fichier téléchargé, l'adresse locale ne servirait à personne : le lien pointe vers le studio en ligne
+  const base = /^https?:$/.test(location.protocol) ? location.href.split('#')[0] : 'https://hamilaism.github.io/hueladder/hueladder.html';
+  const url = base + '#s=' + encodeState(state);
   try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); } catch (e) { prompt(t('linkPrompt'), url); }
 };
 $('reset').onclick = () => {

@@ -41,7 +41,7 @@ function synthesizeSeed(anchors, ladders, seedIndex) {
 
 /** Ordre d'affichage : l'existant d'abord (le point de départ), le core mis en avant. */
 export const METHOD_DISPLAY_ORDER = [
-  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind',
+  'existing', 'tuned', 'anchored', 'oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'curves', 'tailwind',
 ];
 
 const n1 = (x, lang) => {
@@ -111,21 +111,32 @@ function methodCatalog(spec, ladders, rules, tunedBase) {
         + `at constant hue and lightness when it falls outside the sRGB gamut. Perfect perceptual uniformity, but no explicit contrast guarantee.`),
     },
     fusilier: {
-      label: t(() => 'Fusilier adapté — cibles de color-shades, chemin OKLCH', () => 'Fusilier, adapted — color-shades targets, OKLCH path'),
+      label: t(() => 'Fusilier (adapté) — chemin OKLCH', () => 'Fusilier (adapted) — OKLCH path'),
       short: t(() => 'Fusilier (adapté)', () => 'Fusilier (adapted)'),
       generated: true,
       desc: t(() => `Chaque step vise un contraste précis face au noir : shade = 200 · (1 − (rang+0,5)/${n}), contraste cible = 21^(shade/200). `
-        + `Recherche binaire sur la luminosité OKLCH, hue et chroma du seed conservés. Adapté par Hueladder : color-shades, l'outil de David Fusilier, garde la teinte et la saturation HSL ; ici, la teinte et la chroma OKLCH, l'espace où travaillent aussi le régleur, le mode sombre et les ancres. Mêmes contrastes, couleurs un peu différentes. Le demi-pas d'inset évite que ${first} et ${last} `
+        + `Recherche binaire sur la luminosité OKLCH, hue et chroma du seed conservés. Adapté par Hueladder : color-shades, l'outil de David Fusilier, garde la teinte et la saturation HSL ; ici, la teinte et la chroma OKLCH, l'espace où travaillent aussi le régleur, le mode sombre et les ancres. Mêmes contrastes, couleurs un peu différentes : l'original est la méthode suivante, « Fusilier original ». Le demi-pas d'inset évite que ${first} et ${last} `
         + `touchent le blanc et le noir purs, qui n'ont plus de teinte. Barreau de shades : ${ladders.shade.map(s => Math.round(s)).join(', ')} `
         + `— soit ${n1(rules.shadePerRank)} shades par cran, et donc les garanties lisibles dans les noms : `
         + (rules.grain ? `Δ nom ≥ ${rules.rankForAA * rules.grain} ⇒ AA (4.5), Δ nom ≥ ${rules.rankForUI * rules.grain} ⇒ 3.0, Δ nom ≥ ${rules.rankForAAA * rules.grain} ⇒ AAA (7) — le nom de chaque cran fixe son contraste.`
           : `Δrang ≥ ${rules.rankForAA} ⇒ AA (4.5), Δrang ≥ ${rules.rankForUI} ⇒ 3.0, Δrang ≥ ${rules.rankForAAA} ⇒ AAA (7).`),
       () => `Each step targets a precise contrast against black: shade = 200 · (1 − (rank+0.5)/${n}), target contrast = 21^(shade/200). `
-        + `Binary search on OKLCH lightness, seed hue and chroma kept. The half-step inset keeps ${first} and ${last} `
+        + `Binary search on OKLCH lightness, seed hue and chroma kept. Adapted by Hueladder: color-shades, David Fusilier's tool, keeps the HSL hue and saturation; here, the OKLCH hue and chroma, the space the tuner, dark mode and anchors also work in. Same contrasts, slightly different colours: the original is the next method, “Fusilier, original”. The half-step inset keeps ${first} and ${last} `
         + `away from pure white and pure black, which have no hue left. Shade ladder: ${ladders.shade.map(s => Math.round(s)).join(', ')} `
         + `— that is ${n1(rules.shadePerRank, 'en')} shades per step, hence guarantees you can read in the names: `
         + (rules.grain ? `Δ name ≥ ${rules.rankForAA * rules.grain} ⇒ AA (4.5), Δ name ≥ ${rules.rankForUI * rules.grain} ⇒ 3.0, Δ name ≥ ${rules.rankForAAA * rules.grain} ⇒ AAA (7) — each step's name sets its contrast.`
           : `Δrank ≥ ${rules.rankForAA} ⇒ AA (4.5), Δrank ≥ ${rules.rankForUI} ⇒ 3.0, Δrank ≥ ${rules.rankForAAA} ⇒ AAA (7).`)),
+    },
+    colorshades: {
+      label: t(() => 'Fusilier (original) — color-shades en HSL', () => 'Fusilier (original) — color-shades in HSL'),
+      short: t(() => 'Fusilier (original)', () => 'Fusilier (original)'),
+      generated: true,
+      desc: t(() => `color-shades de David Fusilier, reproduit au hex près : les mêmes cibles que le Fusilier adapté (shade = 200 · (1 − (rang+0,5)/${n}), contraste face au noir = 21^(shade/200)), `
+        + `atteintes comme le fait son outil : recherche binaire sur la luminosité HSL, teinte et saturation HSL du seed conservées, arrêt dès que le contraste est entre la cible et la cible + 0,005. `
+        + `Aucune réduction de gamut : une couleur HSL est toujours dans sRGB.`,
+      () => `David Fusilier's color-shades, reproduced to the hex: the same targets as the adapted Fusilier (shade = 200 · (1 − (rank+0.5)/${n}), contrast against black = 21^(shade/200)), `
+        + `reached the way his tool reaches them: a binary search on HSL lightness, the seed's HSL hue and saturation kept, stopping as soon as the contrast is between the target and the target + 0.005. `
+        + `No gamut reduction: an HSL colour is always inside sRGB.`),
     },
     mix: {
       label: t(() => 'Mix blanc/noir (sRGB)', () => 'White/black mix (sRGB)'),

@@ -13,7 +13,8 @@ place dans l'échelle ni la teinte.
 | `existing` | — (les couleurs fournies, telles quelles ; absent de l'exemple, qui n'en fournit pas) | non | oui, par définition |
 | `anchored` | passe exactement par toutes les ancres | non | oui |
 | `oklch` | la luminosité OKLCH par cran | non | oui |
-| `fusilier` | le contraste vs noir, en progression log | oui | oui |
+| `fusilier` | le contraste vs noir, en progression log (Fusilier adapté, chemin OKLCH) | oui | oui |
+| `colorshades` | le même contraste (Fusilier original, color-shades au hex près, chemin HSL) | oui | oui, en HSL |
 | `mix` | rien | non | non |
 | `hct` | le tone (L*) par cran | oui (le tone est fonction de la luminance) | oui (CAM16) |
 | `leonardo` | le ratio WCAG face au fond (les ratios qu'on lui donne) | oui | oui |
@@ -45,7 +46,7 @@ Cinq familles, selon ce qu'elles rendent égal d'une teinte à l'autre :
 | Espace machine | `existing` (souvent HSL), `mix` | rien : à cran égal, chaque teinte a son propre contraste |
 | Clarté perçue | `oklch`, `hct`, `easing` | la même clarté perçue à cran égal ; avec L* (HCT, Lab) c'est aussi la même luminance, avec OKLCH non ; l'échelle de clarté ne vise pas les seuils, un cran peut tomber juste sous l'un d'eux |
 | Courbes par canal | `curves` | une rampe belle et régulière ; d'une teinte à l'autre, rien d'aligné |
-| Contraste visé | `fusilier`, `leonardo`, `apca` | chaque cran vise un contraste, donc une luminance égale entre teintes ; Leonardo prend les ratios qu'on lui donne, Fusilier les fixe en progression logarithmique (l'écart de noms donne le contraste), APCA vise une autre mesure |
+| Contraste visé | `fusilier`, `colorshades`, `leonardo`, `apca` | chaque cran vise un contraste, donc une luminance égale entre teintes ; Leonardo prend les ratios qu'on lui donne, Fusilier les fixe en progression logarithmique (l'écart de noms donne le contraste), APCA vise une autre mesure |
 | Dessin manuel | `tailwind` | le jugement optimisé teinte par teinte, pas le système |
 
 Ce que les mesures montrent, et que `hueladder explain` recalcule sur n'importe quelles couleurs, sans
@@ -95,6 +96,16 @@ la teinte et la saturation HSL ; Hueladder garde la teinte et l'éclat OKLCH de 
 départ, parce que le régleur, le mode sombre et les ancres travaillent dans cet espace. Mêmes
 cibles de contraste, couleurs un peu différentes : ΔE2000 de 2,6 en moyenne sur l'exemple,
 jusqu'à 12,6 sur le vert le plus clair.
+
+**`colorshades`** (Fusilier original) — color-shades de David Fusilier, reproduit au hex près
+(`engine/lib/colorshades.mjs`) : les mêmes cibles que `fusilier`, atteintes comme son outil les
+atteint, par une recherche binaire sur la luminosité HSL qui garde la teinte et la saturation
+HSL de la couleur de départ et s'arrête dès que le contraste face au noir est entre la cible et
+la cible + 0,005 (réglages par défaut de l'outil, commit 1c944dc, sur colorjs.io 0.4.1). Vérifié
+par `engine/conformance` contre les fonctions mêmes de color-shades. Elle est là pour comparer :
+le défaut reste la version adaptée. Comme pour toute méthode, son mode sombre est la dérivation
+de Hueladder, faite à partir des couleurs claires qu'elle donne ; color-shades n'a pas de mode
+sombre propre.
 
 **`mix`** — mélange linéaire en sRGB avec du blanc ou du noir (Sass `mix()`, Bootstrap).
 Aucune notion perceptuelle. Seule méthode à épingler la couleur d'identité exactement

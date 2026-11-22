@@ -5,7 +5,7 @@
 **[Try the studio online](https://hamilaism.github.io/hueladder/)**, nothing to install. *Version française : [README.fr.md](README.fr.md).*
 
 Hueladder turns the few colors a brand picked by hand into complete, accessible scales for a
-design system, and puts a number on every trade-off. It compares ten generation methods on
+design system, and puts a number on every trade-off. It compares eleven generation methods on
 *your* colors, audits the palette you already have, and ships tokens for code, Figma and AI
 agents.
 
@@ -69,13 +69,14 @@ semantic mapping stays your team's decision.
 
 ## The methods
 
-Ten generation methods, plus your existing colors as a witness. They all keep the hue and
-chroma of your starting color; what sets them apart is what they make equal across hues at
-the same step.
+Eleven generation methods, plus your existing colors as a witness. They all keep the hue and
+vividness of your starting color, each in its own color space; what sets them apart is what
+they make equal across hues at the same step.
 
 | Method | Makes equal across hues | Comes from |
 |---|---|---|
 | `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier. **Adapted**: his contrast targets, exactly; but Hueladder keeps the OKLCH hue and chroma of your color, where color-shades keeps its HSL hue and saturation, so that the tuner and dark mode work in the same space |
+| `colorshades` | the same contrasts as `fusilier` | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier. **Original**: his tool, reproduced to the hex, keeping your color's HSL hue and saturation. It is there to compare with the adapted version |
 | `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe), interpolated in OKLCH (the library defaults to RGB) |
 | `apca` | APCA contrast (Lc) against white | [APCA](https://github.com/Myndex/apca-w3), Andrew Somers. APCA is a measure; Hueladder turns it into a generator |
 | `hct` | HCT tone | [Material Color Utilities](https://github.com/material-foundation/material-color-utilities), Google |
@@ -157,8 +158,8 @@ documentation in reading order.
 | CIEDE2000 | the 34 test vectors of Sharma, Wu & Dalal |
 | APCA 0.0.98G-4g | the apca-w3 test vectors |
 | CAM16 / HCT | material-color-utilities |
-| Five generation methods | their original library (`engine/conformance`): mix, Tailwind 4.3 and Leonardo identical to the hex (Leonardo is a port of Adobe's library, in OKLCH as in its default RGB); HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge |
-| The other five | no library to compare against: Fusilier (color-shades is an app), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
+| Six generation methods | their original code (`engine/conformance`): mix, Tailwind 4.3, Leonardo and the original Fusilier identical to the hex (Leonardo is a port of Adobe's library, in OKLCH as in its default RGB; the original Fusilier is checked against color-shades' own functions, on the colorjs.io version it uses); HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge |
+| The other five | no library to compare against: the adapted Fusilier (color-shades' targets, on an OKLCH path), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
 
 `node engine/check.mjs` runs the whole verification: color science, engine genericity, both
 pages rendered in a real browser, build determinism, explicit rejection of invalid input, and
@@ -196,7 +197,8 @@ did.
 
 - **David Fusilier** ([@dfusilier](https://github.com/dfusilier)), for
   [color-shades](https://github.com/dfusilier/color-shades): steps that target an exact
-  contrast, and names that carry it. It is the default light-mode method and one of the step
+  contrast, and names that carry it. Adapted, it is the default light-mode method; the
+  original, reproduced to the hex, sits next to it for comparison. It is also one of the step
   namings.
 - **Nate Baldwin** ([@NateBaldwinDesign](https://github.com/NateBaldwinDesign)), for
   [Adobe Leonardo](https://github.com/adobe/leonardo): colors defined by their contrast

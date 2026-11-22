@@ -30,6 +30,9 @@ const chromaMod = await load('chroma-js'), chroma = chromaMod && (chromaMod.defa
 const hct = await load('@material/material-color-utilities', 'hct/hct.js'), str = await load('@material/material-color-utilities', 'utils/string_utils.js');
 const leo = await load('@adobe/leonardo-contrast-colors');
 const cjs = (await load('colorjs.io', 'dist/color.js')) || (await load('colorjs.io')), Color = cjs && ((cjs.default && cjs.default.default) || cjs.default || cjs.Color);
+// color-shades : ses propres fonctions (color-shades/, MIT), sur la version de colorjs.io qu'il utilise
+const cs04 = (await load('colorjs-0.4', 'dist/color.js')), Color04 = cs04 && cs04.default;
+const csMods = Color04 ? await Promise.all(['createInterpolants', 'suggestShades', 'shadeToContrast', 'toCssColor'].map(f => import(pathToFileURL(join(HERE, 'color-shades', f + '.js')).href).catch(() => null))) : [];
 let twCss = null; try { twCss = readFileSync(join(MODS, 'tailwindcss', 'theme.css'), 'utf8'); } catch (e) {}
 
 // le corpus : chaque teinte en seed seul, posée au 500 — le geste « créer »
@@ -88,6 +91,17 @@ if (leo && leo.Color && leo.Theme) {
   });
   report('leonardo', '@adobe/leonardo-contrast-colors', pairs, { ratioErrorHueladder: Math.round(errHueladder * 1000) / 1000, ratioErrorLeonardo: Math.round(errLeo * 1000) / 1000 });
 } else results.push({ method: 'leonardo', lib: '@adobe/leonardo-contrast-colors', verdict: 'librairie absente' });
+
+// Fusilier original : color-shades, ses réglages par défaut (« More shades »), aux mêmes shades que le barreau
+if (Color04 && csMods.length && csMods.every(Boolean)) {
+  const [{ default: createInterpolants }, { default: suggestShades }, { default: shadeToContrast }, { default: toCssColor }] = csMods;
+  const expand = h => (h.length === 4 ? '#' + [...h.slice(1)].map(c => c + c).join('') : h);
+  report('colorshades', 'color-shades 1c944dc + colorjs.io 0.4.1-patch.1', real.flatMap(r => {
+    const { setLightness } = createInterpolants(new Color04(r.seed).to('hsl'));
+    const ref = suggestShades({ manipulation: c => setLightness(c), targets: data.ladders.shade.map(shadeToContrast) }).map(c => expand(toCssColor(c.to('srgb'))));
+    return r.colors.colorshades.map((h, i) => (h ? { a: h, b: ref[i] } : {}));
+  }));
+} else results.push({ method: 'colorshades', lib: 'color-shades + colorjs.io 0.4.1', verdict: 'librairie absente' });
 
 // Tailwind : la table embarquée, face au theme.css officiel (OKLCH ramené en sRGB comme un navigateur)
 if (twCss && Color) {

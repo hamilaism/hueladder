@@ -84,7 +84,7 @@ déjà livrée, seulement celles qu'on livre.
 |---|---|---|
 | 1 · Entrer | colle une palette (porte A) ou choisit une couleur (porte B), renomme, change le rôle, retire, ajoute | `ramps[].anchors`, `seed`, `kind` ; `pinDefault: false` en porte A |
 | 2 · Diagnostic | lit le diagnostic, ajoute sur place le neutre ou les couleurs système manquantes | `ramps` si ajout |
-| 3 · Générer | choisit un parti pris : tout régénérer (`fusilier`, le défaut), tout conserver (`anchored`), ou une autre méthode dans la comparaison | `coreMethod` / `tunedBase` |
+| 3 · Générer | choisit un parti pris : tout régénérer (`fusilier`, le Fusilier adapté, le défaut ; `colorshades`, l'original, juste après), tout conserver (`anchored`), ou une autre méthode dans la comparaison | `coreMethod` / `tunedBase` |
 | 4 · Régler | règle teinte et éclat cran par cran, à contraste verrouillé | `ramps[].tuned`, `coreMethod: "tuned"` |
 | 5 · Mode sombre | lit comment le sombre est calculé, choisit le fond et le profil d'éclat | `darkMode` |
 | 6 · Vérifier | lit le contrat, teste des paires, voit l'aperçu | rien |

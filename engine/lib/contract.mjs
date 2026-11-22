@@ -219,9 +219,9 @@ export function contractChecks(data, label = '', { lang = 'en' } = {}) {
   // Le rapport au meilleur hex atteignable (ce que rendrait `solveAtLuminance`, qui encadre
   // la marche d'escalier au lieu de s'arrêter dessus) est reporté à côté : il ne déclenche
   // rien mais il dit d'où vient l'erreur — de la grille, ou de la méthode.
-  // Seules les méthodes qui visent le barreau de contraste (Fusilier, et les réglages faits
-  // dessus) ont une cible à atteindre ; pour les autres, l'écart est leur nature, pas une faute.
-  if (!['fusilier', 'tuned'].includes(core)) {
+  // Seules les méthodes qui visent le barreau de contraste (Fusilier, adapté ou original, et les
+  // réglages faits dessus) ont une cible à atteindre ; pour les autres, l'écart est leur nature, pas une faute.
+  if (!['fusilier', 'colorshades', 'tuned'].includes(core)) {
     ok(tag(L('précision de la méthode core', 'core method precision')), L(`sans objet : « ${core} » ne vise pas le barreau de contraste`, `not applicable: « ${core} » does not target the contrast ladder`));
   } else {
     let worstRel = 0, worstLabel = '', worstAbs = 0, floorRel = 0, floorLabel = '';

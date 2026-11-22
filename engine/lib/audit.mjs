@@ -15,7 +15,7 @@ import { distinguishability } from './cvd.mjs';
 import { extractPairs, auditPairs, pairsMarkdown } from './pairs.mjs';
 import { isFigmaScan, figmaAudit, figmaMarkdown } from './figma.mjs';
 
-const GENERATIVE = ['oklch', 'fusilier', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'tailwind'];
+const GENERATIVE = ['oklch', 'fusilier', 'colorshades', 'mix', 'hct', 'leonardo', 'apca', 'easing', 'tailwind'];
 const round = (v, d = 1) => Math.round(v * 10 ** d) / 10 ** d;
 const mean = xs => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const byStep = (a, b) => (Number(a) - Number(b)) || String(a).localeCompare(String(b));

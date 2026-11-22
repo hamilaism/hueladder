@@ -40,6 +40,21 @@ The `leonardo` method is a port, so that it gives exactly what Adobe's library g
 
 Changes: gathered in one dependency-free file, for a single key color on a white background.
 
+## color-shades and colorjs.io (`engine/lib/colorshades.mjs`)
+
+The `colorshades` method (the original Fusilier) is a port, so that it gives exactly what David
+Fusilier's tool gives:
+
+- [color-shades](https://github.com/dfusilier/color-shades) (its shade search, commit 1c944dc),
+  copyright (c) 2022 David Fusilier, MIT License;
+- the [colorjs.io](https://github.com/color-js/color.js) 0.4.1-patch.1 code it runs on (HSL ↔ sRGB,
+  the sRGB transfer function and luminance, WCAG 2.1 contrast, hex output), copyright (c) 2021
+  Lea Verou, Chris Lilley, MIT License.
+
+Both under the MIT terms quoted in the Tailwind section below. `engine/conformance/color-shades/`
+holds color-shades' own functions, unchanged but for their imports, as the reference the port is
+checked against.
+
 ## Tailwind CSS palette (`engine/lib/methods.mjs`)
 
 The `tailwind` method embeds the Tailwind CSS 4.3 default palette.
@@ -62,8 +77,8 @@ Modulz, Copyright (c) 2022-Present WorkOS.
 ## Methods used as ideas, without their code
 
 These methods are reimplemented from their published descriptions. No code is copied, and
-each one is credited in the [README](README.md#credits): color-shades (David Fusilier, MIT),
-chroma.js's `correctLightness` scale (the `easing` method), Oklab and OKLCH (Björn Ottosson),
+each one is credited in the [README](README.md#credits): color-shades' contrast targets on an
+OKLCH path (the adapted Fusilier, `fusilier`), chroma.js's `correctLightness` scale (the `easing` method), Oklab and OKLCH (Björn Ottosson),
 Accessible Palette, ColorBox (Lyft), Stripe's accessible color system, Adobe Spectrum, IBM
 Carbon, GitHub Primer and Atlassian. The test vectors and matrices come from
 published papers: CIEDE2000 (Sharma, Wu & Dalal, 2005), CAM16 (Li et al., 2017) and
