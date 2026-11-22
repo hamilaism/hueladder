@@ -52,7 +52,7 @@ export function figmaAudit(scan) {
   };
 }
 
-export function figmaMarkdown(a, { lang = 'fr' } = {}) {
+export function figmaMarkdown(a, { lang = 'en' } = {}) {
   const en = lang === 'en', T = (f, e) => (en ? e : f), n = x => (x === null ? '—' : en ? String(x) : String(x).replace('.', ','));
   const L = [`## Figma${a.file ? ' — ' + a.file : ''}${a.date ? ' (' + a.date + ')' : ''}`, '',
     T(`${a.variables} variables couleur dans ${a.collections} collection(s). Remplissages liés à une variable : ${n(a.binding.fills)} % ; textes : ${n(a.binding.texts)} %.`,

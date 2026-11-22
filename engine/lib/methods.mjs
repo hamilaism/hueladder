@@ -15,6 +15,7 @@ import { hctFromHex, hctToHex } from './cam16.mjs';
 
 // Tailwind 4.3 (theme.css, OKLCH), ramenée en sRGB par le gamut mapping CSS 4 — celui d'un
 // navigateur : c'est ce qu'un écran sRGB affiche. Vérifiée au hex près par engine/conformance.
+// Tailwind CSS palette: MIT, Copyright (c) Tailwind Labs, Inc. See THIRD_PARTY_NOTICES.md.
 export const TAILWIND = {
   red: ['#fef2f2', '#ffe2e2', '#ffc9c9', '#ffa2a2', '#ff6467', '#fb2c36', '#e7000b', '#c10007', '#9f0712', '#82181a', '#460809'],
   orange: ['#fff7ed', '#ffedd4', '#ffd6a7', '#ffb86a', '#ff8904', '#ff6900', '#f54900', '#ca3500', '#9f2d00', '#7e2a0c', '#441306'],

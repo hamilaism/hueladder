@@ -21,6 +21,7 @@ export function tunerDataFrom(spec, data, { gamut = true } = {}) {
   return {
     brand: spec.brand,
     id: spec.id,
+    lang: spec.lang === 'fr' ? 'fr' : 'en',
     steps: data.meta.steps,
     seedIndex: data.meta.seedIndex,
     baseMethod,
@@ -163,7 +164,7 @@ export function usageFacts(scale, steps, i, background) {
  * mono-mode, et rien ne justifierait de renommer le livrable de tous les clients qui n'ont
  * pas de mode sombre.
  */
-export function tokenTrees(spec, data, mode, { lang = spec.lang || 'fr' } = {}) {
+export function tokenTrees(spec, data, mode, { lang = spec.lang || 'en' } = {}) {
   const W = WORDS[lang] || WORDS.fr;
   const core = data.meta.coreMethod;
   const root = spec.tokenRoot || 'core';
@@ -231,7 +232,7 @@ export function tokenTrees(spec, data, mode, { lang = spec.lang || 'fr' } = {}) 
  * agent n'ait rien à déduire du texte. Il n'attribue pas de rôles sémantiques : Hueladder propose
  * une échelle, le système sémantique reste la décision de l'équipe.
  */
-export function usageGuide(spec, data, { lang = spec.lang || 'fr' } = {}) {
+export function usageGuide(spec, data, { lang = spec.lang || 'en' } = {}) {
   const fr = lang !== 'en';
   const T = (a, b) => (fr ? a : b);
   const W = WORDS[fr ? 'fr' : 'en'];
@@ -364,7 +365,7 @@ export function guideData(spec, data) {
  * Avant / après : chaque couleur existante, ce qu'elle devient, de combien elle bouge et
  * pourquoi. C'est le document qui sert à migrer une base de code et à le faire accepter.
  */
-export function migrationTable(spec, data, { lang = spec.lang || 'fr' } = {}) {
+export function migrationTable(spec, data, { lang = spec.lang || 'en' } = {}) {
   const fr = lang !== 'en';
   const T = (a, b) => (fr ? a : b);
   const core = data.meta.coreMethod;
@@ -418,7 +419,7 @@ export function cssVariables(spec, data) {
 }
 
 /** Tailwind 3 : `tailwind.config.js`, valeurs du mode clair. */
-export function tailwindConfig(spec, data, { lang = spec.lang || 'fr' } = {}) {
+export function tailwindConfig(spec, data, { lang = spec.lang || 'en' } = {}) {
   const head = lang === 'en' ? '// tailwind.config.js — light-mode values; for dark, point to the CSS variables'
     : '// tailwind.config.js — valeurs du mode clair ; pour le sombre, pointer vers les variables CSS';
   return head + '\nmodule.exports = {\n  theme: {\n    extend: {\n      colors: {\n'

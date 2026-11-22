@@ -25,7 +25,7 @@ const toFigma = tree => mapTokens(tree, t => ({ ...t, $value: t.$type === 'color
  * Les fichiers du paquet, [[chemin, contenu]]. `spec` : la spec telle qu'on la rejoue
  * (`specJson`, avant dépliage des crans) ; `audit` : ajoute la table de migration.
  */
-export function packageFiles(spec, data, { lang = spec.lang || 'fr', specJson = spec, audit = data.anchorMap.length > 0 } = {}) {
+export function packageFiles(spec, data, { lang = spec.lang || 'en', specJson = spec, audit = data.anchorMap.length > 0 } = {}) {
   const fr = lang !== 'en', id = spec.id || 'brand', dark = !!data.meta.dark;
   const light = tokenTrees(spec, data, 'light', { lang }), night = dark ? tokenTrees(spec, data, 'dark', { lang }) : null;
   const files = [];

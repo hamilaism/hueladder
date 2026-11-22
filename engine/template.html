@@ -174,7 +174,7 @@
 const DATA = /*DATA_INJECT*/{};
 
 // Langue du rapport : portée par les données (spec.lang), français par défaut.
-const LANG = DATA.meta.lang === 'en' ? 'en' : 'fr';
+const LANG = DATA.meta.lang === 'fr' ? 'fr' : 'en';
 const T = (fr, en) => (LANG === 'en' ? en : fr);
 // La règle dans l'unité de la nomenclature : des rangs, ou un écart de noms quand le nom encode le contraste.
 const RG = k => (DATA.rules.grain ? T('Δ nom ≥ ', 'Δ name ≥ ') + k * DATA.rules.grain : T('Δrang ≥ ', 'Δrank ≥ ') + k);

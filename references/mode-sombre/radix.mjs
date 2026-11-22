@@ -1,3 +1,4 @@
+// Radix Colors values: MIT, Copyright (c) 2021-2022 Modulz, (c) 2022-Present WorkOS. See THIRD_PARTY_NOTICES.md.
 import { hexToOklch, contrast, clipChromaOk } from '../../engine/lib/color.mjs';
 import { apcaLc } from '../../engine/lib/apca.mjs';
 const S = {

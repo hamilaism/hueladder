@@ -35,7 +35,7 @@ const hueSpan = hs => {
  * et d'où elle vient. Rien n'est jeté en silence : `dropped` dit ce qui n'a pas été lu et
  * pourquoi, `paths` garde chaque chemin (couleurs et alias) pour comparer deux versions.
  */
-export function readSource(text, { name = 'source', origin = '', date = '', lang = 'fr', naming = 'grid', stepList } = {}) {
+export function readSource(text, { name = 'source', origin = '', date = '', lang = 'en', naming = 'grid', stepList } = {}) {
   // un relevé Figma (engine/figma-scan.js) : ses variables, au premier mode (ou « Light »), font la palette
   let figma = null;
   try {
@@ -96,7 +96,7 @@ export function methodResemblance(data) {
 }
 
 /** L'audit d'une source : le diagnostic, la ressemblance, et ce que chaque méthode en ferait. */
-export function auditSource(src, { lang = 'fr' } = {}) {
+export function auditSource(src, { lang = 'en' } = {}) {
   const spec = applyNaming(src.spec);
   const data = buildData(spec);
   const findings = diagnose(data, src.spec.ramps, { accepted: (src.spec.accepted || []).map(a => a.key) })
@@ -265,14 +265,14 @@ const T = lang => (fr, en) => (lang === 'en' ? en : fr);
 const n = (x, lang, d = 1) => (x === null || x === undefined ? '—' : (Math.round(x * 10 ** d) / 10 ** d).toLocaleString(lang === 'en' ? 'en-US' : 'fr-FR'));
 
 /** La distinguabilité en une phrase : sous 5 (OKLab × 100), deux aplats se confondent. */
-export function cvdLine(c, lang = 'fr') {
+export function cvdLine(c, lang = 'en') {
   const t = T(lang), V = { normal: t('vision normale', 'normal vision'), protan: t('protanopie', 'protanopia'), deutan: t('deutéranopie', 'deuteranopia'), tritan: t('tritanopie', 'tritanopia') };
   return t('Distinguabilité au cran d\'ancrage (OKLab × 100, sous 5 deux aplats se confondent) : ', 'Distinguishability at the anchor step (OKLab × 100, under 5 two fills merge): ')
     + Object.entries(c).map(([v, x]) => `${V[v]} ${n(x.min, lang)}${x.pair ? ' (' + x.pair.join(' ↔ ') + ')' : ''}`).join(' · ') + '.';
 }
 
 /** Le rapport d'audit en Markdown : une source ou plusieurs, et le diff si on compare deux versions. */
-export function auditMarkdown(result, { lang = 'fr' } = {}) {
+export function auditMarkdown(result, { lang = 'en' } = {}) {
   const t = T(lang), L = [];
   const { audits, cross, diff, dark } = result;
   L.push(`# ${t('Audit des couleurs', 'Colour audit')}`, '');
@@ -323,13 +323,13 @@ export function auditMarkdown(result, { lang = 'fr' } = {}) {
 }
 
 /** La décision pour une spec qu'on recrée à partir d'une palette (Créer, depuis l'existant). */
-export function decisionFor(data, ramps, { lang = 'fr', accepted = [] } = {}) {
+export function decisionFor(data, ramps, { lang = 'en', accepted = [] } = {}) {
   const findings = diagnose(data, ramps, { accepted }).map(f => ({ ...f, ...describe(f, data, lang) }));
   return decision({ data, findings, methods: compareMethods(data, { lang }).map(({ fails, ...r }) => ({ ...r, fails: fails.length })) });
 }
 
 /** La page de décision en Markdown : se lit en trois minutes. */
-export function decisionMarkdown(d, { lang = 'fr', brand = '' } = {}) {
+export function decisionMarkdown(d, { lang = 'en', brand = '' } = {}) {
   const t = T(lang);
   const band = (k, title, text) => (d.bands[k].length ? [`### ${title} — ${d.bands[k].length}`, text, d.bands[k].map(i => `${i.label} ${n(i.meanDE, lang)}`).join(' · '), ''] : []);
   const L = [`# ${brand ? brand + ' — ' : ''}${t('garder ou régénérer ?', 'keep or regenerate?')}`, '',
@@ -370,7 +370,7 @@ const lum = hex => {
 };
 const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 
-export function verifyRamps(ramps, { mode = 'light', background = mode === 'dark' ? '#121212' : '#ffffff', lang = 'fr', expect = null } = {}) {
+export function verifyRamps(ramps, { mode = 'light', background = mode === 'dark' ? '#121212' : '#ffffff', lang = 'en', expect = null } = {}) {
   const t = T(lang), out = [];
   const numeric = s => /^\d+$/.test(s);
   const fams = ramps.map(r => ({ name: r.name, kind: r.kind, steps: Object.keys(r.anchors || {}).filter(numeric).sort(byStep).map(s => [s, r.anchors[s]]) }))
@@ -427,7 +427,7 @@ export function verifyRamps(ramps, { mode = 'light', background = mode === 'dark
  * aucun `null`, un type déclaré ou hérité), puis le contrat sur ses couleurs. Accepte les
  * couleurs DTCG en chaîne ou en objet (`{ colorSpace, components, hex }`, l'import natif de Figma).
  */
-export function verifyTokens(text, { mode = 'light', background, lang = 'fr', expect = null } = {}) {
+export function verifyTokens(text, { mode = 'light', background, lang = 'en', expect = null } = {}) {
   const t = T(lang);
   let json;
   try { json = JSON.parse(text); } catch (e) {
@@ -501,7 +501,7 @@ export function medianLadder(spec, data) {
  * au même cran dans les deux modes ? Ce qui ne s'apparie pas (une famille sans équivalent
  * clair) est dit. Le re-calage, ensuite, se fait dans Créer.
  */
-export function auditDark(light, dark, { background = '#121212', lang = 'fr' } = {}) {
+export function auditDark(light, dark, { background = '#121212', lang = 'en' } = {}) {
   const t = T(lang);
   const unmatched = dark.spec.ramps.filter(r => !light.spec.ramps.some(x => x.name === r.name)).map(r => r.name);
   const firstStep = (ramps, bg, th) => Object.fromEntries(ramps.map(r => {

@@ -47,6 +47,9 @@
   button.primary:hover { opacity: .88; }
   button.ghost { border-color: transparent; background: transparent; padding-inline: 8px; }
   button.ghost:hover { border-color: var(--line); }
+  a.toplink { color: inherit; text-decoration: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 8px; font-size: 14px; font-weight: 500; }
+  a.toplink:hover { border-color: var(--line); }
+  a.toplink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button:disabled { opacity: .45; cursor: not-allowed; }
   select, input[type=text] { border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 6px 9px; font-size: 14px; }
   input[type=text].hex { font-family: var(--mono); width: 110px; }
@@ -334,6 +337,8 @@
       <button id="cransbtn" aria-expanded="false" aria-controls="cranspanel"></button>
       <svg class="ruler" id="ruler" width="168" height="22" aria-hidden="true"></svg>
     </div>
+    <a class="toplink" id="gh" href="https://github.com/hamilaism/hueladder" target="_blank" rel="noopener">GitHub</a>
+    <a class="toplink" id="dl" href="https://github.com/hamilaism/hueladder/archive/refs/heads/main.zip"></a>
     <button class="ghost" id="lang"></button>
     <button class="ghost" id="theme">◐</button>
     <button id="share"></button>
@@ -379,7 +384,7 @@ const { slug } = __lib.import;
 
 let lang = (() => {
   try { const l = localStorage.getItem('hueladder-lang'); if (l === 'fr' || l === 'en') return l; } catch (e) {}
-  return /^fr/i.test(navigator.language || '') ? 'fr' : 'en';
+  return 'en';   // English by default; French stays one click away and is remembered
 })();
 const num = (x, d = 1) => (Math.round(x * 10 ** d) / 10 ** d).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US');
 const ratio = x => (lang === 'fr' ? fmtRatio(x).replace('.', ',') : fmtRatio(x)) + ':1';
@@ -468,7 +473,7 @@ const I18N = {
     otherNaming: 'La nomenclature : comment le nom porte la règle', otherNamingGo: 'En changer : le bouton des crans, en haut de la page.', otherNorm: 'La norme : WCAG 2 ou APCA',
     tagline: "studio d'échelles", brandAria: 'Nom du système', brandTitle: 'nom du système — sert de préfixe aux fichiers',
     crans: 'Crans', cransTitle: 'Les crans livrés. Modifiable à tout moment : un cran garde sa couleur d\'un jeu à l\'autre.', cransAria: 'Jeu de crans livré', share: 'Copier le lien', reset: 'Nouveau', resetTitle: 'recommencer à zéro',
-    theme: 'thème clair / sombre', langBtn: 'EN', langTitle: 'Switch to English', rail: 'Étapes',
+    theme: 'thème clair / sombre', ghTitle: 'Le code source, les retours et les discussions sur GitHub', dl: 'Télécharger', dlTitle: 'Télécharger Hueladder : le studio, la ligne de commande et le skill (zip du dépôt GitHub)', langBtn: 'EN', langTitle: 'Switch to English', rail: 'Étapes',
     steps: [['Entrer', 'tes couleurs'], ['Diagnostic', 'ce que valent tes couleurs'], ['Générer', 'un parti pris'], ['Régler', 'teinte et éclat'],
       ['Mode sombre', 'le fond, le calcul'], ['Vérifier', 'le contrat'], ['Livrer', 'tokens et spec']],
     stepLabel: (i, t) => 'Étape ' + i + ' · ' + t,
@@ -722,7 +727,7 @@ const I18N = {
     otherNaming: 'Naming: how the name carries the rule', otherNamingGo: 'To change it: the steps button, at the top of the page.', otherNorm: 'The norm: WCAG 2 or APCA',
     tagline: 'colour scale studio', brandAria: 'System name', brandTitle: 'system name — used as the file prefix',
     crans: 'Steps', cransTitle: 'The steps delivered. Change it any time: a step keeps its colour from one set to another.', cransAria: 'Delivered step set', share: 'Copy link', reset: 'New', resetTitle: 'start from scratch',
-    theme: 'light / dark theme', langBtn: 'FR', langTitle: 'Passer en français', rail: 'Steps',
+    theme: 'light / dark theme', ghTitle: 'Source code, feedback and discussions on GitHub', dl: 'Download', dlTitle: 'Download Hueladder: the studio, the command line and the skill (zip of the GitHub repository)', langBtn: 'FR', langTitle: 'Passer en français', rail: 'Steps',
     steps: [['Enter', 'your colours'], ['Diagnosis', 'what your colours are worth'], ['Generate', 'pick a stance'], ['Tune', 'hue and vividness'],
       ['Dark mode', 'background, maths'], ['Verify', 'the contract'], ['Ship', 'tokens and spec']],
     stepLabel: (i, t) => 'Step ' + i + ' · ' + t,
@@ -1092,6 +1097,7 @@ function renderHeader() {
   if (ui.cransOpen) renderCransPanel();
   $('share').textContent = t('share'); $('reset').textContent = t('reset'); $('reset').title = t('resetTitle');
   $('theme').title = t('theme'); $('theme').setAttribute('aria-label', t('theme'));
+  $('gh').title = t('ghTitle'); $('dl').textContent = t('dl'); $('dl').title = t('dlTitle');
   $('lang').textContent = t('langBtn'); $('lang').title = t('langTitle'); $('lang').setAttribute('aria-label', t('langTitle'));
   $('rail').setAttribute('aria-label', t('rail'));
   // la règle : chaque cran livré à sa place sur l'axe du contraste (du blanc au noir)

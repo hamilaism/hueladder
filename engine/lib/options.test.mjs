@@ -13,7 +13,7 @@ import { relativeLuminance } from './color.mjs';
 const STEPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
 const spec = extra => applyNaming({ id: 't', brand: 'T', naming: 'grid', stepList: STEPS,
   ramps: [{ name: 'b', kind: 'brand', anchors: { default: '#3b6fd6' } }, { name: 'g', kind: 'product', anchors: { default: '#2e9e52' } }, { name: 's', kind: 'neutral', anchors: { default: '#6b6f78' } }], ...extra });
-const fails = d => contractChecks(d).filter(c => !c.pass).map(c => c.label);
+const fails = d => contractChecks(d, '', { lang: 'fr' }).filter(c => !c.pass).map(c => c.label);
 
 // le haut du sombre : rien ne bouge s'il tient sous le budget ; le plafond anti-halo se paie, et le contrat le dit
 const plain = buildData(spec({ darkMode: { background: '#0d0d0f' } }));
@@ -26,7 +26,7 @@ assert.ok(top.every((c, i) => !i || c > top[i - 1]), 'et l\'ordre est gardé');
 assert.ok(fails(halo).some(l => /règle du nom sombre/.test(l)), 'le plafond coûte la règle en sombre : le contrat le dit');
 
 // la norme APCA : une règle en Lc, dans les deux modes
-const apca = contractChecks(buildData(spec({ contract: { norm: 'apca' }, darkMode: { background: '#121212' } }))).filter(c => /APCA/.test(c.label));
+const apca = contractChecks(buildData(spec({ contract: { norm: 'apca' }, darkMode: { background: '#121212' } })), '', { lang: 'fr' }).filter(c => /APCA/.test(c.label));
 assert.equal(apca.length, 2);
 
 // le contraste élevé : aucun contraste face au fond ne baisse, les encres montent
@@ -55,7 +55,7 @@ const u = buildData(spec({})).usages.map(x => x.ref);
 assert.ok(u.includes('G183 · 1.4.1') && u.some(r => /2\.4\.13/.test(r)));
 
 // la dispersion se juge contre le plancher sRGB du cran
-assert.ok(/plancher sRGB/.test(contractChecks(buildData(spec({}))).find(c => /^dispersion clair/.test(c.label)).detail));
+assert.ok(/plancher sRGB/.test(contractChecks(buildData(spec({})), '', { lang: 'fr' }).find(c => /^dispersion clair/.test(c.label)).detail));
 
 // P3 : seuls les crans écrêtés regagnent de l'éclat, à luminance égale (donc à contraste égal)
 const vivid = buildData(spec({ ramps: [{ name: 'g', kind: 'product', anchors: { default: '#00b36b' } }] }));

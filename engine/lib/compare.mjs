@@ -33,7 +33,7 @@ export function originGap(data, m = data.meta.coreMethod) {
  * préférence pour des intervalles réguliers), puis celles qui tiennent le contrat, de la plus
  * fidèle à la moins fidèle, puis les autres.
  */
-export function compareMethods(data, { lang = 'fr' } = {}) {
+export function compareMethods(data, { lang = 'en' } = {}) {
   const rows = data.methodOrder.filter(m => !['existing', 'tuned'].includes(m) && data.metrics[m]).map(m => {
     const fails = contractChecks({ ...data, meta: { ...data.meta, coreMethod: m } }, '', { lang }).filter(c => !c.pass && c.area !== 'dark');
     return { method: m, label: data.methods[m].label, holds: fails.length === 0, fails,

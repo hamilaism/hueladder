@@ -11,7 +11,7 @@ const scale = (d, mode = 'colors') => Object.fromEntries(d.meta.steps.map((st, i
 // chaque préréglage passe le contrat (le fond #121212 ne peut pas porter le 975 : attendu)
 for (const [naming, N] of Object.entries(NAMINGS)) {
   for (const [p, list] of Object.entries(N.presets)) {
-    const fails = contractChecks(build(naming, list)).filter(c => !c.pass).map(c => c.label);
+    const fails = contractChecks(build(naming, list), '', { lang: 'fr' }).filter(c => !c.pass).map(c => c.label);
     const expected = naming === 'hundreds' && p === 'quarter' ? ['règle du nom sombre', 'budget de contraste'] : [];
     assert.deepEqual(fails, expected, `${naming}/${p} : ${fails.join(', ')}`);
   }
@@ -34,7 +34,8 @@ for (const [naming, a, b] of [['hundreds', ['100', '500', '900'], ['100', '350',
 // les règles, dans l'unité de la nomenclature : le nom fixe le contraste, avec la marge de 4 %
 assert.equal(ruleWords(build('hundreds', ['100', '900']).rules).aa, 'Δ 525');
 assert.equal(ruleWords(build('shade', ['150', '50']).rules).aa, 'Δ 105');
-assert.equal(ruleWords(build('grid', NAMINGS.grid.presets.standard).rules).aa, '6 rangs');
+assert.equal(ruleWords(build('grid', NAMINGS.grid.presets.standard).rules, 'fr').aa, '6 rangs');
+assert.equal(ruleWords(build('grid', NAMINGS.grid.presets.standard).rules).aa, '6 ranks');
 // et elles tiennent sur les couleurs livrées : 100 et 625 (Δ 525) passent AA sur toutes les teintes
 {
   const d = build('hundreds', ['100', '625']);

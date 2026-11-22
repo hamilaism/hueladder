@@ -225,7 +225,7 @@ const W = {
 };
 
 /** Un constat en mots : son genre, son titre, son explication, le libellé de chaque action. */
-export function describe(f, data, lang = 'fr') {
+export function describe(f, data, lang = 'en') {
   const w = W[lang] || W.fr;
   const L = n => (data.ramps.find(r => r.name === n) || {}).label || n;
   const [kind, title, text] = w[f.type];
@@ -244,7 +244,7 @@ export function describe(f, data, lang = 'fr') {
  * déplacées dans le neutre. Jamais une couleur système avec une couleur d'identité : celles-là
  * s'arbitrent, une par une. Les exceptions déjà acceptées ne reviennent pas.
  */
-export function proposeGrouping(data, ramps, { accepted = [], lang = 'fr' } = {}) {
+export function proposeGrouping(data, ramps, { accepted = [], lang = 'en' } = {}) {
   const fs = diagnose(data, ramps, { accepted });
   let cur = ramps;
   const steps = [];

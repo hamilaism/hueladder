@@ -9,7 +9,7 @@ import { apcaLc } from './apca.mjs';
 
 const ramps = ['#2f5bd3', '#d92d20', '#6b6f78'].map((h, i) => ({ name: 'r' + i, label: 'r' + i, kind: i === 2 ? 'neutral' : 'product', anchors: { default: h } }));
 const build = (naming, stepList, background, method) => buildData(applyNaming({ id: 't', brand: 't', naming, stepList, ramps, darkMode: { background, method } }));
-const ruleFails = d => contractChecks(d).filter(c => !c.pass && c.area === 'dark').map(c => c.label);
+const ruleFails = d => contractChecks(d, '', { lang: 'fr' }).filter(c => !c.pass && c.area === 'dark').map(c => c.label);
 
 let gain = 0;
 for (const bg of ['#000000', '#121212', '#1f1f1f']) {

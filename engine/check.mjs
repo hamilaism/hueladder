@@ -296,7 +296,7 @@ step('3 ter · hueladder.mjs — les gestes du studio, pour un agent');
     const ex = JSON.parse(hueladder('explain', '--json')), keys = ex.lessons.map(l => l.key);
     ['luminance', 'intervals', 'quantity', 'usage', 'identity'].every(k => keys.includes(k)) && ex.guide.length >= 8 && ex.lessons.every(l => l.title && l.text) && !ex.methods.some(m => m.method === 'existing')
       ? ok('explain : ' + keys.length + ' constats titrés et un guide de choix, sur l\'exemple (aucune couleur « fournie »)') : ko('explain', keys.join(', '));
-    const exMd = hueladder('explain');
+    const exMd = hueladder('explain', '--lang', 'fr');
     (exMd.match(/^- Réglages : /gm) || []).length >= 10 && /Ce qui ne change pas, quelle que soit la méthode/.test(exMd) && !/couleurs fournies/.test(exMd)
       && (exMd.split('## Le contraste face au blanc, cran par cran')[1] || '').split('\n## ')[0].split('\n').filter(l => /^\| .+ \| [\d,–]+ \|/.test(l)).length >= 10
       ? ok('explain : chaque méthode dit ses réglages et son contraste cran par cran, et l\'argumentaire ce qu\'aucune méthode ne change') : ko('explain réglages', (exMd.match(/^- Réglages : /gm) || []).length + ' réglages');

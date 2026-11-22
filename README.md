@@ -2,7 +2,7 @@
 
 **Color scales you can defend.**
 
-*Version française : [README.fr.md](README.fr.md).*
+**[Try the studio online](https://hamilaism.github.io/hueladder/)**, nothing to install. *Version française : [README.fr.md](README.fr.md).*
 
 Hueladder turns the few colors a brand picked by hand into complete, accessible scales for a
 design system, and puts a number on every trade-off. It compares ten generation methods on
@@ -50,7 +50,7 @@ decision page.
 one to choose and how to present it: the frame, the families, one card per method, charts, a
 criteria table, a choice guide and a Markdown brief, on an example or on your own colors.
 
-The studio follows your browser's language, English or French.
+The studio opens in English; French is one click away, and the choice is remembered.
 
 ## What you ship
 
@@ -75,8 +75,8 @@ the same step.
 
 | Method | Makes equal across hues | Comes from |
 |---|---|---|
-| `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier |
-| `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe) |
+| `fusilier` | contrast, on a logarithmic progression: the gap between two step names gives their contrast | [color-shades](https://github.com/dfusilier/color-shades), David Fusilier: his contrast targets. Hueladder keeps the OKLCH hue and chroma of your color, where color-shades keeps its HSL hue and saturation |
+| `leonardo` | the WCAG ratio against the background, for the ratios you give it | [Leonardo](https://github.com/adobe/leonardo), Nate Baldwin (Adobe), interpolated in OKLCH (the library defaults to RGB) |
 | `apca` | APCA contrast (Lc) against white | [APCA](https://github.com/Myndex/apca-w3), Andrew Somers. APCA is a measure; Hueladder turns it into a generator |
 | `hct` | HCT tone | [Material Color Utilities](https://github.com/material-foundation/material-color-utilities), Google |
 | `oklch` | OKLCH lightness | [Accessible Palette](https://accessiblepalette.com), Eugene Fedorenko, on Björn Ottosson's [Oklab](https://bottosson.github.io/posts/oklab/) |
@@ -115,12 +115,12 @@ The same moves as the studio, for a person at a terminal or an AI agent. Every c
 the spec, some rewrite it, all of them accept `--json`.
 
 ```bash
-node engine/hueladder.mjs audit tokens.json --lang en                  # what your palette is worth
-node engine/hueladder.mjs new "#2f5bd3" --brand Acme --lang en --out acme.json
+node engine/hueladder.mjs audit tokens.json                            # what your palette is worth
+node engine/hueladder.mjs new "#2f5bd3" --brand Acme --out acme.json
 node engine/hueladder.mjs compare acme.json                            # the methods, on your colors
 node engine/hueladder.mjs check acme.json                              # the system contract
 node engine/hueladder.mjs export acme.json --format package --out dist # the delivery package
-node engine/hueladder.mjs explain --lang en                            # the science, as Markdown
+node engine/hueladder.mjs explain                                      # the science, as Markdown
 node engine/hueladder.mjs help                                         # every command
 ```
 
@@ -145,8 +145,7 @@ copying it, so a `git pull` updates the skill. Either way, the agent needs Node.
 engine.
 
 Then just ask: *"Turn #2f5bd3 into an accessible color scale, with a dark mode"*, or *"Audit
-the colors in tokens.css"*. [`SKILL.md`](SKILL.md) is written in French for now; the agent
-answers in your language.
+the colors in tokens.css"*. The agent answers in your language.
 
 [`llms.txt`](llms.txt) is the entry point for any other agent or LLM: the commands, and the
 documentation in reading order.
@@ -158,7 +157,8 @@ documentation in reading order.
 | CIEDE2000 | the 34 test vectors of Sharma, Wu & Dalal |
 | APCA 0.0.98G-4g | the apca-w3 test vectors |
 | CAM16 / HCT | material-color-utilities |
-| Each generation method | its original library (`engine/conformance`): mix and Tailwind 4.3 identical to the hex, HCT within ΔE 0.6, easing identical except at the gamut edge, Leonardo on the same path and ratios |
+| Five generation methods | their original library (`engine/conformance`): mix and Tailwind 4.3 identical to the hex; HCT within ΔE 0.6; easing identical on 82 of 88 colors, within ΔE 1.7 at the gamut edge; Leonardo on the same OKLCH path and target ratios, but only 17 of 88 colors identical, up to ΔE 19 near the gamut edge |
+| The other five | no library to compare against: Fusilier (color-shades is an app), APCA as a generator, OKLCH, curves and anchored follow the formulas written in [`references/methods.md`](references/methods.md) |
 
 `node engine/check.mjs` runs the whole verification: color science, engine genericity, both
 pages rendered in a real browser, build determinism, explicit rejection of invalid input, and
@@ -168,9 +168,11 @@ the system contract in both modes.
 
 ```
 hueladder.html   the studio, built by engine/studio.mjs; open it with a double-click
+index.html       the GitHub Pages entry: opens the studio
 SKILL.md         the agent skill (this repository is the skill)
 llms.txt         the entry point for agents
 install.sh       links the skill into Claude Code
+THIRD_PARTY_NOTICES.md   what is not MIT (APCA) and the third-party portions
 engine/          the engine and the CLI, zero dependencies, with their tests
 references/      method, spec format, studio, reading results, dark-mode research
 ```
@@ -183,8 +185,9 @@ templates must keep `node engine/check.mjs` green; `node engine/studio.mjs` then
 ## Status
 
 Hueladder works and is verified, and it is young. The studio, the reports and the generated
-files exist in English and French. The in-depth references (`references/`) and the CLI help
-are still in French; English versions are coming.
+files exist in English and French, and English is the default (`--lang fr` on the command
+line). The in-depth references (`references/`) are still in French; English versions are
+coming.
 
 ## Credits
 
@@ -225,7 +228,9 @@ introducing me to David.
 
 ## License
 
-[MIT](LICENSE). Use it, fork it, build its mechanics into your own product or package, and
+[MIT](LICENSE), except for the APCA code, which keeps its author's license (web content, in
+support of WCAG), and a few third-party portions: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Use it, fork it, build its mechanics into your own product or package, and
 rename what you build: that is what the license is for. A credit and a link back are always
 appreciated. The one thing that isn't in the spirit of the project is the same tool, renamed,
 with nothing added.

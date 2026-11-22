@@ -15,7 +15,7 @@ import { apcaLc } from './apca.mjs';
  * contrôles sont donc appliqués à **toutes** les specs présentes dans `brands/`, y compris
  * celle du client une fois le moteur copié chez lui.
  */
-export function contractChecks(data, label = '', { lang = 'fr' } = {}) {
+export function contractChecks(data, label = '', { lang = 'en' } = {}) {
   const L = (fr, en) => (lang === 'en' ? en : fr);
   const md = m => L(m, { clair: 'light', sombre: 'dark' }[m] || m);
   const out = [];

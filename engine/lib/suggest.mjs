@@ -41,7 +41,7 @@ export function systemSeed([, hex, , [lo, hi]], ramps) {
 const unique = (ramps, base) => { let n = base, i = 2; while (ramps.some(r => r.name === n)) n = base + '-' + i++; return n; };
 
 /** Les nuanciers système manquants, prêts à ajouter à la spec. */
-export function suggestSystem(ramps, lang = 'fr') {
+export function suggestSystem(ramps, lang = 'en') {
   const out = [];
   for (const role of missingSystem(ramps)) {
     const seed = systemSeed(role, [...ramps, ...out]).hex;
@@ -51,7 +51,7 @@ export function suggestSystem(ramps, lang = 'fr') {
 }
 
 /** Un neutre qui prend la teinte de la marque, à peine : assez pour ne pas être un gris d'usine. */
-export function suggestNeutral(ramps, lang = 'fr') {
+export function suggestNeutral(ramps, lang = 'en') {
   if (ramps.some(r => r.kind === 'neutral')) return null;
   const brand = ramps.find(r => r.kind === 'brand') || ramps[0];
   const a = brand ? brand.anchors : {};

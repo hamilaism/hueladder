@@ -96,7 +96,7 @@ export function auditPairs(pairs) {
 }
 
 /** Le rapport des paires en Markdown. */
-export function pairsMarkdown(res, { lang = 'fr' } = {}) {
+export function pairsMarkdown(res, { lang = 'en' } = {}) {
   const en = lang === 'en', T = (f, e) => (en ? e : f), n = x => (en ? String(x) : String(x).replace('.', ','));
   const t = res.totals;
   const L = [`## ${T('Paires par état', 'Pairs by state')}`, '',

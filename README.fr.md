@@ -1,6 +1,6 @@
 # Hueladder — des échelles de couleur défendables
 
-*English version: [README.md](README.md).*
+**[Essayer le studio en ligne](https://hamilaism.github.io/hueladder/)**, sans rien installer. *English version: [README.md](README.md).*
 
 Transformer les quelques couleurs qu'une marque a arbitrées à la main en **échelles complètes
 défendables**, et pouvoir justifier chaque arbitrage avec des chiffres plutôt qu'avec du goût.

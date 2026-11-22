@@ -32,7 +32,7 @@ const DEMO = [
   ['neutral', 'Neutre', 'Neutral', 0.55, 0.01, 260],
 ];
 
-export function demoSpec(lang = 'fr') {
+export function demoSpec(lang = 'en') {
   const en = lang === 'en';
   return {
     id: 'demo', brand: en ? 'Example' : 'Exemple', lang, naming: 'grid', stepList: NAMINGS.grid.presets.standard.slice(),
@@ -143,7 +143,7 @@ export const SETTINGS = {
   fr: {
     anchored: 'Fusilier sert de colonne. À chaque couleur de départ, l\'écart en OKLCH (clarté, éclat, teinte) est mesuré, puis interpolé d\'une couleur à l\'autre ; au-delà de la dernière, teinte et éclat restent corrigés, la clarté revient vers Fusilier.',
     oklch: 'Clarté OKLCH de 0,965 au cran le plus clair à 0,205 au plus foncé, en ligne droite ; éclat et teinte de la couleur de départ, éclat réduit si la couleur sort de l\'écran. Réglable dans la spec : ladders.oklchLMax, ladders.oklchLMin.',
-    fusilier: 'Contraste visé face au noir : 21^(shade/200), avec shade = 200 × (1 − (rang + 0,5) / nombre de crans) ; éclat et teinte de la couleur de départ, éclat réduit à clarté et teinte constantes si besoin. Les cibles suivent la nomenclature choisie.',
+    fusilier: 'Contraste visé face au noir : 21^(shade/200), avec shade = 200 × (1 − (rang + 0,5) / nombre de crans) ; éclat et teinte OKLCH de la couleur de départ, éclat réduit à clarté et teinte constantes si besoin. Les cibles suivent la nomenclature choisie. Écart à l\'outil d\'origine : color-shades garde la teinte et la saturation HSL ; mêmes contrastes, couleurs un peu différentes.',
     mix: 'Mélange en sRGB avec le blanc au-dessus de la couleur de départ et le noir en dessous, en parts égales d\'un cran à l\'autre ; la couleur de départ reste à son cran. Bootstrap, lui, mélange par pas de 20 %.',
     hct: 'Tons HCT de 95 au cran le plus clair à 5 au plus foncé, un par cran choisi, régulièrement espacés ; teinte et chroma HCT de la couleur de départ, chroma réduite au gamut comme le fait Material. Material fixe ses propres tons (0, 10, 20 … 90, 95, 99, 100) ; ici, comme pour toutes les méthodes, ce sont les crans choisis qui les fixent. Réglable dans la spec : ladders.toneMax, ladders.toneMin.',
     leonardo: 'Librairie @adobe/leonardo-contrast-colors 1.1, une seule couleur clé, sans lissage. Interpolation choisie par Hueladder : OKLCH (la librairie interpole en RGB par défaut). Ratios visés face au blanc : lus dans les crans choisis, comme pour Fusilier, pour comparer à ratios égaux. Réglable dans la spec : ladders.leonardoReference (les ratios d\'une rampe Tailwind).',
@@ -155,7 +155,7 @@ export const SETTINGS = {
   en: {
     anchored: 'Fusilier is the backbone. At each starting colour, the OKLCH offset (lightness, chroma, hue) is measured, then interpolated from one colour to the next; beyond the last one, hue and chroma stay corrected and lightness returns to Fusilier.',
     oklch: 'OKLCH lightness from 0.965 at the lightest step to 0.205 at the darkest, in a straight line; chroma and hue of the starting colour, chroma reduced when the colour leaves the screen gamut. Adjustable in the spec: ladders.oklchLMax, ladders.oklchLMin.',
-    fusilier: 'Target contrast against black: 21^(shade/200), with shade = 200 × (1 − (rank + 0.5) / number of steps); chroma and hue of the starting colour, chroma reduced at constant lightness and hue when needed. The targets follow the chosen naming.',
+    fusilier: 'Target contrast against black: 21^(shade/200), with shade = 200 × (1 − (rank + 0.5) / number of steps); OKLCH chroma and hue of the starting colour, chroma reduced at constant lightness and hue when needed. The targets follow the chosen naming. Departure from the original tool: color-shades keeps the HSL hue and saturation; same contrasts, slightly different colours.',
     mix: 'sRGB mix with white above the starting colour and black below it, in equal parts from one step to the next; the starting colour stays at its step. Bootstrap mixes in 20% steps.',
     hct: 'HCT tones from 95 at the lightest step to 5 at the darkest, one per chosen step, evenly spaced; HCT hue and chroma of the starting colour, chroma reduced to the gamut the way Material does it. Material sets its own tones (0, 10, 20 … 90, 95, 99, 100); here, as for every method, the chosen steps set them. Adjustable in the spec: ladders.toneMax, ladders.toneMin.',
     leonardo: '@adobe/leonardo-contrast-colors 1.1 library, a single key colour, no smoothing. Interpolation chosen by Hueladder: OKLCH (the library interpolates in RGB by default). Target ratios against white: read from the chosen steps, as for Fusilier, to compare at equal ratios. Adjustable in the spec: ladders.leonardoReference (the ratios of a Tailwind ramp).',
@@ -255,7 +255,7 @@ export function pairScore(data, m, fg, bg, threshold) {
 }
 
 /** Les colonnes du tableau, avec ce qui est bon pour chacune et ce qu'elle veut dire. */
-export function columns(lang = 'fr') {
+export function columns(lang = 'en') {
   return lang === 'en' ? [
     ['verdict', 'Same verdict at equal step', '0', 'Swapping one hue for another at the same step: does the answer to “does it pass 3, 4.5 or 7:1 against white?” change? The number of hue pairs where it does.'],
     ['spread', 'Gap between hues', 'close to 0', 'At equal step, the mean gap in contrast on white between hues. A small gap reassures; it is the verdict change that decides (4.48 and 4.52 are close, and fall on either side of 4.5).'],
@@ -302,7 +302,7 @@ function onThreshold(data, m) {
  * Les constats, calculés : chacun ne s'écrit que si les chiffres le montrent sur ces couleurs.
  * Le titre dit le constat, le texte sa preuve : de quoi faire une diapositive par constat.
  */
-export function lessons(data, { lang = 'fr', label = null } = {}) {
+export function lessons(data, { lang = 'en', label = null } = {}) {
   const en = lang === 'en', out = [], f = fmt(en), pl = plur(en), list = listOf(en), ratio = ratioOf(en);
   const T = (fr, eng) => (en ? eng : fr);
   const add = (key, title, text) => out.push({ key, title, text });
@@ -414,7 +414,7 @@ export function lessons(data, { lang = 'fr', label = null } = {}) {
  * dits à la main, sans chiffre. Deux gestes du parcours complètent : régler sous luminance
  * verrouillée, garder la marque telle quelle.
  */
-export function choose(data, { lang = 'fr', label = null } = {}) {
+export function choose(data, { lang = 'en', label = null } = {}) {
   const en = lang === 'en', f = fmt(en), pl = plur(en), list = listOf(en), T = (fr, eng) => (en ? eng : fr);
   const L = label || (m => data.methods[m]?.label || m);
   const rows = methodTable(data).filter(r => !r.sparse), best = bestOf(rows), by = m => rows.find(r => r.method === m);
@@ -584,7 +584,7 @@ export const NORMS = {
 // ---------------------------------------------------------------- l'argumentaire, en Markdown
 
 /** Le tout en Markdown : pour la CLI, et pour qui veut en faire une présentation. */
-export function explainMarkdown(data, { lang = 'fr', label = null } = {}) {
+export function explainMarkdown(data, { lang = 'en', label = null } = {}) {
   const en = lang === 'en', k = en ? 'en' : 'fr', F = FRAME[k], f = fmt(en), pl = plur(en), ratio = ratioOf(en), L = [];
   const T = (fr, eng) => (en ? eng : fr);
   const lab = label || (m => data.methods[m]?.label || m);

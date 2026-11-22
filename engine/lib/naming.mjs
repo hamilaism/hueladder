@@ -110,7 +110,7 @@ export function applyNaming(spec) {
  * par grille, « Δ 525 » quand le nom encode le contraste. `gap(k)` rend l'écart à écrire
  * pour k rangs de la règle.
  */
-export function ruleWords(rules, lang = 'fr') {
+export function ruleWords(rules, lang = 'en') {
   const g = rules.grain;
   const fr = lang !== 'en';
   const gap = k => (g ? 'Δ ' + k * g : k + (fr ? (k > 1 ? ' rangs' : ' rang') : (k > 1 ? ' ranks' : ' rank')));

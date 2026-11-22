@@ -89,7 +89,10 @@ perdues.
 `shade = 200·(1 − (i+0.5)/n)`. Le demi-pas d'inset évite que les crans extrêmes touchent le
 blanc et le noir purs, qui n'ont plus de teinte. Conséquence : l'écart de rang **détermine**
 le contraste, la garantie est lisible dans le nom du step. Symétrique clair/sombre par
-construction, ce qui en fait le meilleur candidat par défaut pour un DS multi-mode.
+construction : c'est la raison du choix par défaut, une préférence de prévisibilité, pas un
+classement. **Écart à l'outil d'origine** : color-shades fait varier la luminosité HSL en gardant
+la teinte et la saturation HSL ; Hueladder garde la teinte et l'éclat OKLCH de la couleur de
+départ. Mêmes cibles de contraste, couleurs un peu différentes.
 
 **`mix`** — mélange linéaire en sRGB avec du blanc ou du noir (Sass `mix()`, Bootstrap).
 Aucune notion perceptuelle. Seule méthode à épingler la couleur d'identité exactement

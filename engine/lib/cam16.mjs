@@ -1,6 +1,10 @@
 /**
  * cam16.mjs — Google Material's HCT colour space in pure JS (no dependencies).
  *
+ * Portions derived from material-color-utilities, Copyright 2021 Google LLC, Apache License 2.0
+ * (LICENSES/Apache-2.0.txt). Changes: ported to plain JavaScript, own gamut solver.
+ * See THIRD_PARTY_NOTICES.md.
+ *
  * HCT = CAM16 Hue + CAM16 Chroma + CIELAB L* (called "tone").
  *
  * Reference implementation: material-color-utilities (Cam16, Hct, HctSolver,

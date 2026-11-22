@@ -24,7 +24,7 @@ import { perceptualTrials, perceptualPage, perceptualSummary } from './lib/perce
 import { basename } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const HELP = `hueladder — échelles de couleur dont le nom porte le contraste
+const HELP_FR = `hueladder — échelles de couleur dont le nom porte le contraste
 
 Trois entrées : créer un système, auditer l'existant, comprendre les méthodes.
 
@@ -61,10 +61,51 @@ Trois entrées : créer un système, auditer l'existant, comprendre les méthode
 
   --out <chemin>   écrit dans un fichier (ou un dossier pour package/build) au lieu de stdout
   --json           sortie en données, pour un agent
-  --lang en        textes en anglais (sinon la langue de la spec, ou le français)
+  --lang fr        textes en français (sinon la langue de la spec, ou l'anglais)
 
 Une commande qui modifie la spec (new, import, suggest --write, fix) l'écrit sur --out, ou
 sur place pour suggest et fix.`;
+const HELP_EN = `hueladder — color scales whose step names carry their contrast
+
+Three ways in: create a system, audit what exists, understand the methods.
+
+  audit <file…> [--names A,B]           audit one or several palettes (brands, products,
+        [--diff] [--format decision]    versions) without generating anything; --diff compares
+        [--dark <f> --bg #hex]          two versions; decision: the keep-or-regenerate page;
+                                        --dark: the declared dark mode of the first one
+  explain [spec]                        understand: the thesis, the lessons, one card per method,
+                                        what each one costs, the choice guide, the pitch
+                                        (on a neutral example without a spec)
+  perceptual [spec] [--out test.html]   the perceptual test page (dark and chroma variants,
+             --summary <r1.json…>        keyboard choices); --summary aggregates answers
+  figma <scan.json>                     audit a Figma file scanned with engine/figma-scan.js:
+                                        hard-coded colors, binding rate, labels, duplicates
+  pairs <tokens.json>                   pairs by state (text on background on hover, focus,
+                                        press…) in a semantic token file
+  verify <tokens.json> [--dark <f>]     check delivered tokens: validity, monotonicity, thresholds
+         [--bg #hex] [--rule N]         at the same step, naming rule (N ranks ⇒ AA expected)
+
+  new <#hex> [--brand Name]             a brand from one color → spec
+  import <file> [--brand Name]          an existing palette (hex, CSS, SCSS, Tailwind, DTCG,
+                                        Tokens Studio) → spec; says what could not be read
+  suggest <spec> [--write] [--ladder]   the missing neutral and system colors; --ladder: the
+                                        median ladder of the supplied palette
+  diagnose <spec>                       the findings, each with numbered actions
+  fix <spec> <finding> <action>         apply one diagnosis action (numbers 1, 2…)
+  group <spec> [--write]                the proposed regrouping in one go: duplicate families
+                                        merged, off-family colors moved
+  compare <spec> [--dark] [--bg #hex]   the methods, and what each one will give the contract
+  check <spec>                          the system contract (exit code 1 if red)
+  export <spec> --format <f>            css | tailwind | tailwind4 | dtcg | dtcg-dark | guide
+                                        | palette | migration | package (folder, --out)
+  build <spec> [--out folder]           the report, the tuner and every file
+
+  --out <path>     write to a file (or a folder for package/build) instead of stdout
+  --json           data output, for an agent
+  --lang fr        French texts (otherwise the spec's language, or English)
+
+A command that changes the spec (new, import, suggest --write, fix) writes it to --out, or
+in place for suggest and fix.`;
 
 const argv = process.argv.slice(2);
 const flag = name => { const i = argv.indexOf('--' + name); return i < 0 ? null : (argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : true); };
@@ -72,25 +113,28 @@ const pos = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].
 const [cmd, ...args] = pos;
 const asJson = !!flag('json');
 
+const FR = flag('lang') === 'fr';
+const L = (fr, en) => (FR ? fr : en);   // messages written before any spec is read
+const HELP = FR ? HELP_FR : HELP_EN;
 const die = msg => { console.error(msg); process.exit(1); };
-const readSpec = p => { if (!p) die('spec manquante — ' + cmd + ' <spec.json>'); return JSON.parse(readFileSync(resolve(p), 'utf8')); };
-const langOf = spec => flag('lang') || (spec && spec.lang) || 'fr';
+const readSpec = p => { if (!p) die(L('spec manquante — ', 'missing spec — ') + cmd + ' <spec.json>'); return JSON.parse(readFileSync(resolve(p), 'utf8')); };
+const langOf = spec => flag('lang') || (spec && spec.lang) || 'en';
 const built = raw => { const spec = applyNaming(raw); return { spec, data: buildData(spec) }; };
 const emit = (text, out = flag('out')) => { if (out && out !== true) { writeFileSync(resolve(out), text); console.error('→ ' + out); } else process.stdout.write(text.endsWith('\n') ? text : text + '\n'); };
 const saveSpec = (spec, path) => emit(JSON.stringify(spec, null, 2) + '\n', path);
-const base = brand => ({ id: slug(brand), brand, naming: 'grid', stepList: NAMINGS.grid.presets.standard.slice(), lang: flag('lang') || 'fr', source: 'Hueladder' });
+const base = brand => ({ id: slug(brand), brand, naming: 'grid', stepList: NAMINGS.grid.presets.standard.slice(), lang: flag('lang') || 'en', source: 'Hueladder' });
 
 const commands = {
   help() { console.log(HELP); },
 
   audit() {
-    if (!args.length) die('fichier attendu — hueladder audit <palette> [<autre palette>…]');
+    if (!args.length) die(L('fichier attendu — hueladder audit <palette> [<autre palette>…]', 'file expected — hueladder audit <palette> [<other palette>…]'));
     const names = typeof flag('names') === 'string' ? flag('names').split(',') : [];
-    const lang = flag('lang') || 'fr';
+    const lang = flag('lang') || 'en';
     const sources = args.map((p, i) => readSource(readFileSync(resolve(p), 'utf8'), { name: names[i] || basename(p).replace(/\.[^.]+$/, ''), origin: p, lang }));
     const audits = sources.map(s => auditSource(s, { lang }));
     const cross = audits.length > 1 ? compareSources(audits) : null;
-    const diff = flag('diff') ? (sources.length === 2 ? diffVersions(sources[0], sources[1]) : die('--diff compare exactement deux versions')) : null;
+    const diff = flag('diff') ? (sources.length === 2 ? diffVersions(sources[0], sources[1]) : die(L('--diff compare exactement deux versions', '--diff compares exactly two versions'))) : null;
     const darkPath = typeof flag('dark') === 'string' ? flag('dark') : null;
     const dark = darkPath ? [{ of: sources[0].name, ...auditDark(sources[0], readSource(readFileSync(resolve(darkPath), 'utf8'), { name: 'dark', lang }), { background: typeof flag('bg') === 'string' ? flag('bg') : '#121212', lang }) }] : [];
     if (flag('format') === 'decision') {
@@ -107,31 +151,31 @@ const commands = {
       const files = argv.filter(a => a.endsWith('.json')).map(p => JSON.parse(readFileSync(resolve(p), 'utf8')));
       return emit(JSON.stringify(perceptualSummary(files), null, 2));
     }
-    const raw = args[0] ? readSpec(args[0]) : demoSpec(flag('lang') || 'fr');
+    const raw = args[0] ? readSpec(args[0]) : demoSpec(flag('lang') || 'en');
     emit(perceptualPage(perceptualTrials(raw), { lang: langOf(raw), title: raw.brand || 'Hueladder' }), typeof flag('out') === 'string' ? flag('out') : 'hueladder-test-perceptif.html');
   },
 
   figma() {
-    if (!args[0]) die('relevé attendu — hueladder figma <figma-scan.json> (produit par engine/figma-scan.js)');
+    if (!args[0]) die(L('relevé attendu — hueladder figma <figma-scan.json> (produit par engine/figma-scan.js)', 'scan expected — hueladder figma <figma-scan.json> (made by engine/figma-scan.js)'));
     const j = JSON.parse(readFileSync(resolve(args[0]), 'utf8'));
-    if (!isFigmaScan(j)) die('ce fichier n\'est pas un relevé de engine/figma-scan.js');
+    if (!isFigmaScan(j)) die(L('ce fichier n\'est pas un relevé de engine/figma-scan.js', 'this file is not a scan from engine/figma-scan.js'));
     const a = figmaAudit(j);
     if (asJson) return emit(JSON.stringify(a, null, 2));
-    emit(figmaMarkdown(a, { lang: flag('lang') || 'fr' }));
+    emit(figmaMarkdown(a, { lang: flag('lang') || 'en' }));
   },
 
   pairs() {
-    if (!args[0]) die('fichier de tokens attendu — hueladder pairs <tokens.json>');
+    if (!args[0]) die(L('fichier de tokens attendu — hueladder pairs <tokens.json>', 'token file expected — hueladder pairs <tokens.json>'));
     const p = extractPairs(readFileSync(resolve(args[0]), 'utf8'));
-    if (!p.length) die('aucune paire lue : il faut des chemins qui portent un rôle (fg, bg, text, border…) et, s\'il y en a, un état (hover, focus…)');
+    if (!p.length) die(L('aucune paire lue : il faut des chemins qui portent un rôle (fg, bg, text, border…) et, s\'il y en a, un état (hover, focus…)', 'no pair read: paths need a role (fg, bg, text, border…) and, if any, a state (hover, focus…)'));
     const r = auditPairs(p);
-    if (asJson) emit(JSON.stringify(r, null, 2)); else emit(pairsMarkdown(r, { lang: flag('lang') || 'fr' }));
+    if (asJson) emit(JSON.stringify(r, null, 2)); else emit(pairsMarkdown(r, { lang: flag('lang') || 'en' }));
     if (r.totals.invisible || r.totals.fail) process.exitCode = 1;
   },
 
   verify() {
-    if (!args[0]) die('fichier de tokens attendu — hueladder verify <tokens.json>');
-    const lang = flag('lang') || 'fr', expect = flag('rule') ? Number(flag('rule')) : null;
+    if (!args[0]) die(L('fichier de tokens attendu — hueladder verify <tokens.json>', 'token file expected — hueladder verify <tokens.json>'));
+    const lang = flag('lang') || 'en', expect = flag('rule') ? Number(flag('rule')) : null;
     const runs = [['light', args[0], undefined]];
     if (typeof flag('dark') === 'string') runs.push(['dark', flag('dark'), typeof flag('bg') === 'string' ? flag('bg') : undefined]);
     const all = runs.map(([mode, p, background]) => ({ mode, file: p, checks: verifyTokens(readFileSync(resolve(p), 'utf8'), { mode, background, lang, expect }) }));
@@ -141,30 +185,30 @@ const commands = {
   },
 
   explain() {
-    const raw = args[0] ? readSpec(args[0]) : demoSpec(flag('lang') || 'fr');
+    const raw = args[0] ? readSpec(args[0]) : demoSpec(flag('lang') || 'en');
     const lang = langOf(raw), { data } = built(raw);
     if (asJson) return emit(JSON.stringify({ demo: !args[0], frame: FRAME[lang === 'en' ? 'en' : 'fr'], families: FAMILIES.map(f => ({ key: f.key, methods: f.methods, ...Object.fromEntries([['title', f[lang === 'en' ? 'en' : 'fr'][0]], ['text', f[lang === 'en' ? 'en' : 'fr'][1]]]) })),
       thesis: THESIS[lang === 'en' ? 'en' : 'fr'], methods: methodTable(data), lessons: lessons(data, { lang }), guide: choose(data, { lang }) }, null, 2));
-    if (!args[0]) console.error(lang === 'en' ? 'Synthetic example (no client colour). hueladder explain <spec> for yours.' : 'Exemple synthétique (aucune couleur de client). hueladder explain <spec> pour les tiennes.');
+    if (!args[0]) console.error(lang === 'en' ? 'Synthetic example (no real brand colors). hueladder explain <spec> for yours.' : 'Exemple synthétique (aucune couleur de client). hueladder explain <spec> pour les tiennes.');
     emit(explainMarkdown(data, { lang }));
   },
 
   new() {
     const hex = normHex(args[0] || '')?.hex;
-    if (!hex) die('couleur attendue, par exemple : hueladder new "#2f5bd3" --brand Acme');
+    if (!hex) die(L('couleur attendue, par exemple : hueladder new "#2f5bd3" --brand Acme', 'color expected, for example: hueladder new "#2f5bd3" --brand Acme'));
     const brand = flag('brand') || 'Brand';
     saveSpec({ ...base(brand), pinDefault: true, ramps: [{ name: slug(brand), label: brand, kind: 'brand', anchors: { default: hex } }] });
   },
 
   import() {
-    if (!args[0]) die('fichier attendu');
+    if (!args[0]) die(L('fichier attendu', 'file expected'));
     const res = parseInput(readFileSync(resolve(args[0]), 'utf8'));
     if (res.spec) return saveSpec(res.spec);
-    if (!res.items.length) die('aucune couleur lisible');
+    if (!res.items.length) die(L('aucune couleur lisible', 'no readable color'));
     const spec = { ...base(flag('brand') || 'Brand'), pinDefault: false, ramps: groupItems(res.items) };
     // ce qui n'a pas été lu se dit, avec la raison : rien ne disparaît en silence
-    const en = spec.lang === 'en';
-    console.error(en ? `${res.items.length} colours read of ${res.seen}, ${spec.ramps.length} ramps.` : `${res.items.length} couleurs lues sur ${res.seen}, ${spec.ramps.length} nuanciers.`);
+    const en = spec.lang !== 'fr';
+    console.error(en ? `${res.items.length} colors read of ${res.seen}, ${spec.ramps.length} ramps.` : `${res.items.length} couleurs lues sur ${res.seen}, ${spec.ramps.length} nuanciers.`);
     for (const d of res.dropped) console.error(`  ${en ? 'dropped:' : 'écartée :'} ${d.path.join('.')} = ${d.value} (${d.why})`);
     saveSpec(spec);
   },
@@ -173,18 +217,19 @@ const commands = {
     const spec = readSpec(args[0]), lang = langOf(spec);
     if (flag('ladder')) {
       const { spec: s, data } = built(spec), m = medianLadder(s, data);
-      if (!m) die('pas assez de crans nommés dans la palette pour un barreau médian');
+      if (!m) die(lang === 'fr' ? 'pas assez de crans nommés dans la palette pour un barreau médian' : 'not enough named steps in the palette for a median ladder');
       if (flag('write')) { spec.ladders = { ...(spec.ladders || {}), shadeLadder: m.shadeLadder }; return saveSpec(spec, flag('out') || args[0]); }
       if (asJson) return emit(JSON.stringify(m, null, 2));
-      for (const g of m.steps) console.log(`${g.step.padStart(5)}  médiane ${String(g.median).padStart(7)}  défaut ${String(g.default).padStart(7)}  écart ${g.gap}${g.n ? '' : '  (interpolé)'}`);
-      return console.log(`\nécart max ${m.maxGap} shade${m.monotone ? '' : ' — ne descend pas : pas une règle'} ; --write pour l'adopter.`);
+      const fr = lang === 'fr';
+      for (const g of m.steps) console.log(`${g.step.padStart(5)}  ${fr ? 'médiane' : 'median '} ${String(g.median).padStart(7)}  ${fr ? 'défaut' : 'default'} ${String(g.default).padStart(7)}  ${fr ? 'écart' : 'gap'} ${g.gap}${g.n ? '' : fr ? '  (interpolé)' : '  (interpolated)'}`);
+      return console.log(fr ? `\nécart max ${m.maxGap} shade${m.monotone ? '' : ' — ne descend pas : pas une règle'} ; --write pour l'adopter.` : `\nmax gap ${m.maxGap} shade${m.monotone ? '' : ' — does not descend: not a rule'}; --write to adopt it.`);
     }
     const add = [suggestNeutral(spec.ramps, lang), ...suggestSystem(spec.ramps, lang)].filter(Boolean);
     if (flag('write')) { spec.ramps.push(...add); return saveSpec(spec, flag('out') || args[0]); }
     if (asJson) return emit(JSON.stringify(add, null, 2));
-    if (!add.length) return console.log('Rien ne manque : un neutre et les quatre couleurs système sont là.');
+    if (!add.length) return console.log(lang === 'fr' ? 'Rien ne manque : un neutre et les quatre couleurs système sont là.' : 'Nothing is missing: a neutral and the four system colors are there.');
     for (const r of add) console.log(`${r.kind.padEnd(8)} ${r.name.padEnd(10)} ${r.anchors.default}`);
-    console.log('\n--write pour les ajouter à la spec.');
+    console.log(lang === 'fr' ? '\n--write pour les ajouter à la spec.' : '\n--write to add them to the spec.');
   },
 
   diagnose() {
@@ -204,7 +249,7 @@ const commands = {
     const raw = readSpec(args[0]), lang = langOf(raw), { data } = built(raw);
     const g = proposeGrouping(data, raw.ramps, { accepted: (raw.accepted || []).map(a => a.key), lang });
     if (flag('write')) {
-      if (!g.steps.length) return console.error('rien à regrouper');
+      if (!g.steps.length) return console.error(lang === 'fr' ? 'rien à regrouper' : 'nothing to regroup');
       raw.ramps = g.ramps; raw.notes = [...(Array.isArray(raw.notes) ? raw.notes : []), ...g.notes];
       return saveSpec(raw, flag('out') || args[0]);
     }
@@ -219,7 +264,7 @@ const commands = {
     const raw = readSpec(path), lang = langOf(raw), { data } = built(raw);
     const fs = diagnose(data, raw.ramps, { accepted: (raw.accepted || []).map(a => a.key) });
     const f = fs[Number(n) - 1], action = f && f.actions[Number(k) - 1];
-    if (!action) die(`pas de constat ${n} ou d'action ${k} — voir hueladder diagnose ${path}`);
+    if (!action) die(lang === 'fr' ? `pas de constat ${n} ou d'action ${k} — voir hueladder diagnose ${path}` : `no finding ${n} or action ${k} — see hueladder diagnose ${path}`);
     const res = applyAction(raw.ramps, f, action, data);
     raw.ramps = res.ramps;
     if (res.accept) {
@@ -270,7 +315,7 @@ const commands = {
       tailwind: () => tailwindConfig(spec, data, { lang }),
       tailwind4: () => tailwindTheme(spec, data),
       dtcg: () => JSON.stringify(tokenTrees(spec, data, 'light', { lang }).tokens, null, 2),
-      'dtcg-dark': () => (data.meta.dark ? JSON.stringify(tokenTrees(spec, data, 'dark', { lang }).tokens, null, 2) : die('pas de mode sombre dans cette spec')),
+      'dtcg-dark': () => (data.meta.dark ? JSON.stringify(tokenTrees(spec, data, 'dark', { lang }).tokens, null, 2) : die(lang === 'fr' ? 'pas de mode sombre dans cette spec' : 'no dark mode in this spec')),
       guide: () => usageGuide(spec, data, { lang }),
       palette: () => JSON.stringify(guideData(spec, data), null, 2),
       migration: () => migrationTable(spec, data, { lang }),
@@ -281,7 +326,7 @@ const commands = {
       for (const [p, c] of files) { mkdirSync(dirname(join(dir, p)), { recursive: true }); writeFileSync(join(dir, p), c); }
       return console.error(`→ ${files.length} ${lang === 'en' ? 'files in' : 'fichiers dans'} ${join(dir, files[0][0].split('/')[0])}`);
     }
-    if (!one[format]) die('--format attendu : ' + [...Object.keys(one), 'package'].join(', '));
+    if (!one[format]) die((lang === 'fr' ? '--format attendu : ' : '--format expected: ') + [...Object.keys(one), 'package'].join(', '));
     emit(one[format]());
   },
 

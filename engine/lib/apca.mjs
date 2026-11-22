@@ -1,6 +1,11 @@
 /**
  * APCA 0.0.98G-4g — Accessible Perceptual Contrast Algorithm (WCAG 3 draft).
  *
+ * License: NOT covered by Hueladder's MIT license. Port of apca-w3, copyright © 2019-2023
+ * Andrew Somers / Myndex Research, under its "W3 License for Compliant Code Only" (web-based
+ * content, in support of WCAG). APCA™ is a trademark of Myndex; Hueladder is not affiliated
+ * with or endorsed by Myndex. See THIRD_PARTY_NOTICES.md.
+ *
  * Port of the `apca-w3` reference implementation (constants of the 0.0.98G-4g
  * lookup, "G" series, 4g exponents). Pure JS, no dependencies.
  *

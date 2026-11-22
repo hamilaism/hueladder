@@ -416,7 +416,7 @@ try {
   section('7 · Lien de partage, jeux de crans, remise à zéro');
   const link = await js('return location.href.split("#")[0] + "#s=" + encodeState(state);');
   const saved = await st();
-  await js('localStorage.clear();');
+  await js("localStorage.clear(); localStorage.setItem('hueladder-lang', 'fr');");   // le lien ne porte pas la langue : c'est celle de qui l'ouvre
   await load('about:blank'); await load(link);
   const back = await st();
   ok(JSON.stringify(back.ramps) === JSON.stringify(saved.ramps) && JSON.stringify(back.tuned) === JSON.stringify(saved.tuned), 'le lien restaure nuanciers et réglages');

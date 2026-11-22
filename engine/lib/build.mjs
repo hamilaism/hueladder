@@ -50,7 +50,7 @@ const n1 = (x, lang) => {
 };
 
 function methodCatalog(spec, ladders, rules, tunedBase) {
-  const lang = spec.lang === 'en' ? 'en' : 'fr';
+  const lang = spec.lang === 'fr' ? 'fr' : 'en';
   const t = (fr, en) => (lang === 'en' ? en() : fr());
   const n = spec.steps.length;
   const first = spec.steps[0], last = spec.steps[n - 1], seed = spec.seedStep;
@@ -662,7 +662,7 @@ export function buildData(spec) {
         lightnessDelta: v.lightnessDelta,
         hslHue: v.hslHue,
         source: '',
-        note: spec.lang === 'en' ? (hueSpace === 'hsl'
+        note: spec.lang !== 'fr' ? (hueSpace === 'hsl'
           ? `Variant of “${rspec.label || rspec.name}”: hue rotated by ${sign}${Math.abs(offset)}° on the `
             + `HSL wheel — the one colour pickers use — HSL saturation and lightness unchanged (H ${v.hslHue}° in HSL). `
             + `Since HSL is not perceptual, these ${Math.abs(offset)}° actually amount to `
@@ -774,8 +774,8 @@ export function buildData(spec) {
     meta: {
       brand: spec.brand,
       // lang n'est écrit que s'il est fourni : le rapport lit 'fr' par défaut
-      ...(spec.lang ? { lang: spec.lang === 'en' ? 'en' : 'fr' } : {}),
-      title: spec.title || (spec.lang === 'en'
+      lang: spec.lang === 'fr' ? 'fr' : 'en',
+      title: spec.title || (spec.lang !== 'fr'
         ? `Generation methods compared — ${spec.brand} core scales`
         : `Comparaison des méthodes de génération — scales core ${spec.brand}`),
       subtitle: spec.subtitle || '',

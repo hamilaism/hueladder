@@ -36,7 +36,7 @@ export function perceptualTrials(spec, { background = '#121212' } = {}) {
 }
 
 /** La page du test, autonome : aucune ressource externe, les réponses gardées dans la page. */
-export function perceptualPage(trials, { lang = 'fr', title = 'Hueladder' } = {}) {
+export function perceptualPage(trials, { lang = 'en', title = 'Hueladder' } = {}) {
   const en = lang === 'en';
   const T = {
     title: en ? 'Which one reads better?' : 'Laquelle se lit le mieux ?',

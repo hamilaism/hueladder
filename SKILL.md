@@ -1,239 +1,239 @@
 ---
 name: hueladder
 description: >
-  TRIGGER on: hueladder, studio Hueladder, cran (ancien nom), nuancier, color scale, échelle de couleur, color ramp, palette de marque,
-  extrapoler des couleurs, générer une échelle 50-950 / 100-900, steps de couleur,
-  primitives couleur, tokens couleur d'un design system, "quelle méthode de génération",
-  OKLCH, Fusilier, color-shades, Leonardo, HCT / Material tone, APCA, courbe de contraste,
-  réparer une palette, palette pas homogène, interchangeabilité des nuanciers, mode sombre
-  d'une palette, exporter des couleurs vers Figma / Tokens Studio / Tailwind.
-  Compare 10 méthodes de génération d'échelles, plus l'existant comme témoin, sur les vraies couleurs d'une
-  marque, produit un artefact d'arbitrage, un régleur à contraste verrouillé, et des tokens
-  DTCG prêts pour Figma. Utiliser dès qu'il faut transformer quelques couleurs choisies à la
-  main en échelles complètes défendables, ou réparer une palette existante qui n'est pas juste.
+  TRIGGER on: hueladder, color scale, color ramp, color tokens, brand palette, generating a
+  50-950 / 100-900 scale, color steps, color primitives of a design system, "which generation
+  method", OKLCH, Fusilier, color-shades, Leonardo, HCT / Material tone, APCA, contrast curve,
+  fixing a palette, uneven palette, interchangeable color families, dark mode of a palette,
+  exporting colors to Figma / Tokens Studio / Tailwind; in French: échelle de couleur,
+  nuancier, palette de marque. Compares 10 scale-generation methods, plus the existing colors
+  as a witness, on a brand's real colors; audits existing palettes; produces a decision report,
+  a contrast-locked tuner and DTCG tokens ready for Figma. Use whenever a few hand-picked
+  colors must become complete, defensible scales, or an existing palette that isn't right
+  must be audited or fixed.
 ---
 
-# Hueladder — des échelles de couleur défendables
+# Hueladder — color scales you can defend
 
-Une marque arrive avec quelques couleurs arbitrées à la main. Un design system a besoin
-d'échelles complètes, cohérentes entre elles, et défendables en réunion. Cet outil fait le
-pont, et surtout il **mesure** ce que chaque option coûte.
+A brand arrives with a few colors picked by hand. A design system needs complete scales,
+consistent with one another and defensible in a meeting. This tool bridges the two, and above
+all it **measures** what each option costs.
 
-Le moteur est du code figé et validé — **ne jamais réécrire la colorimétrie**. Le travail
-consiste à extraire les bonnes couleurs, écrire la spec, lancer le build, puis **lire les
-résultats et recommander**. C'est cette dernière partie qui a de la valeur pour le client.
+The engine is frozen, validated code — **never rewrite the color science**. The work is to
+extract the right colors, write the spec, run the build, then **read the results and
+recommend**. That last part is where the value for the team lies.
 
-## Trois entrées
+## Three ways in
 
-Demander d'abord ce que la personne vient faire. Le studio ouvre sur les mêmes trois entrées,
-qui partagent la spec : on passe de l'une à l'autre sans rien perdre.
+First ask what the person came to do. The studio opens on the same three entries, which share
+the spec: you move from one to another without losing anything.
 
-- **Auditer** — elle a une palette, ou plusieurs (marques, produits, versions), et veut savoir
-  ce qu'elle vaut, sans rien changer. `$C audit a.json b.css --names Marque,Produit` rend, par
-  source, la lecture (ce qui a été écarté et pourquoi), la méthode la plus proche, les
-  franchissements de seuil, les constats et la décision « garder ou régénérer » ; entre
-  sources, les familles alignées, divergentes ou exclusives, les noms différents pour une même
-  couleur, la table de triage. `--diff` compare deux versions (chemins perdus, valeurs
-  changées, alias) ; `--format decision` écrit la page qui se lit en trois minutes. Présenter
-  la lecture **avant** les chiffres. Pour corriger : `$C import` puis le parcours ci-dessous.
-- **Comprendre** — elle veut comprendre les méthodes et choisir la sienne. `$C explain`
-  (exemple synthétique : neuf couleurs de départ, rien d'autre de fourni) ou `$C explain <spec>` :
-  le propos et les constats titrés, chacun calculé depuis les chiffres ; le cadre (espace ≠
-  méthode ≠ outil), les cinq familles, une fiche par méthode (ce qu'elle rend égal entre
-  teintes, comment elle répartit les crans, quand la choisir, ce qu'il faut savoir), le tableau
-  des critères (même verdict à cran égal, écart entre teintes, écart de crans pour 3 · 4,5 ·
-  7:1, intervalles, paires, éclat, couleur de départ déplacée : ce qui est bon, le meilleur de
-  chaque critère), le contraste de chaque cran face au blanc, méthode par méthode, les usages, le guide de choix, un déroulé de présentation, le protocole et
-  ses limites, les autres choix (mode sombre, nomenclature, norme). Ne pas plaider : chaque
-  méthode a ses points forts, Fusilier est le défaut de Hueladder pour un critère (des intervalles
-  réguliers), pas un classement. Les cibles de chaque méthode (contrastes, Lc, tons, clartés)
-  viennent du nombre de crans choisi, jamais de la méthode : on compare à crans égaux. Pour des
-  parties prenantes : partir du guide de choix.
-- **Créer** — le parcours en sept décisions ci-dessous.
+- **Audit** — they have a palette, or several (brands, products, versions), and want to know
+  what it is worth, without changing anything. `$C audit a.json b.css --names Brand,Product`
+  returns, per source, the reading (what was dropped and why), the closest method, the
+  threshold crossings, the findings and the keep-or-regenerate decision; across sources, the
+  aligned, divergent or exclusive families, the different names for the same color, the triage
+  table. `--diff` compares two versions (lost paths, changed values, aliases); `--format
+  decision` writes the page that reads in three minutes. Present the reading **before** the
+  numbers. To fix: `$C import`, then the path below.
+- **Understand** — they want to understand the methods and choose theirs. `$C explain`
+  (synthetic example: nine starting colors, nothing else supplied) or `$C explain <spec>`: the
+  thesis and the titled findings, each computed from the numbers; the frame (space ≠ method ≠
+  tool), the five families, one card per method (what it makes equal across hues, how it
+  spreads the steps, when to choose it, what to know), the criteria table (same verdict at the
+  same step, gap across hues, step gap for 3 · 4.5 · 7:1, intervals, pairs, vividness, starting
+  color moved: what is good, the best on each criterion), the contrast of each step against
+  white, method by method, the uses, the choice guide, a presentation outline, the protocol and
+  its limits, the other choices (dark mode, naming, standard). Don't plead: each method has its
+  strengths, and Fusilier is Hueladder's default for one criterion (even intervals), not a
+  ranking. Each method's targets (contrasts, Lc, tones, lightnesses) come from the chosen
+  number of steps, never from the method: methods are compared at equal steps. For
+  stakeholders: start from the choice guide.
+- **Create** — the seven-decision path below.
 
-## Créer : le parcours, en conversation
+## Create: the path, as a conversation
 
-Le studio (`hueladder.html`) pose sept décisions dans un ordre précis ; un agent pose les mêmes,
-dans le même ordre, avec `engine/hueladder.mjs`. **Une décision à la fois** : montrer
-l'information qui permet de décider (les chiffres, pas un avis), recommander, attendre la
-réponse, puis l'écrire dans la spec. Proposer le studio dès que l'interlocuteur est designer et
-préfère voir ; la spec passe de l'un à l'autre sans perte.
+The studio (`hueladder.html`) asks seven decisions in a set order; an agent asks the same ones,
+in the same order, with `engine/hueladder.mjs`. **One decision at a time**: show the
+information that lets the person decide (numbers, not an opinion), recommend, wait for the
+answer, then write it into the spec. Offer the studio as soon as the person is a designer and
+prefers to see (`hueladder.html`, or online at https://hamilaism.github.io/hueladder/); the spec
+moves between the two without loss.
 
 ```bash
-C="node <dossier de ce skill>/engine/hueladder.mjs"   # le dossier où se trouve ce SKILL.md
+C="node <this skill's folder>/engine/hueladder.mjs"   # the folder that holds this SKILL.md
 $C help
 ```
 
-Seule dépendance : Node.js. Toutes les commandes acceptent `--json` (sortie en données, à lire
-plutôt que le texte) et `--lang en`. La spec est le seul état : chaque commande la lit, `new`,
-`import`, `suggest --write` et `fix` la réécrivent.
+Only dependency: Node.js. Every command accepts `--json` (data output, to read rather than the
+text) and `--lang`. The spec is the only state: every command reads it; `new`, `import`,
+`suggest --write` and `fix` rewrite it.
 
-**Langue.** Ce skill est écrit en français, mais il sert tout le monde : répondre dans la langue
-de la personne, et si elle n'écrit pas en français, passer `--lang en` à `new` et `import` (la
-spec garde la langue, les commandes suivantes la suivent) et à `explain` et `audit`.
+**Language.** Answer in the person's language. Commands answer in English by default; for a
+French speaker, pass `--lang fr` to `new` and `import` (the spec keeps the language, later
+commands follow it) and to `explain` and `audit`.
 
-### 0. Les crans
+### 0. Steps
 
-Demander comment l'équipe nomme ses crans, et combien elle en veut. Par défaut, la grille
-50 → 950 (`naming: "grid"`). Si elle veut pouvoir **ajouter un cran plus tard sans rien
-déplacer**, proposer `hundreds` (centaines par contraste) ou `shade` (le nom est le contraste,
-David Fusilier) ; si elle a déjà des rangs (Radix 1–12, Carbon 10–100), `rank`. Écrire
-`naming` et `stepList`. Détails : `references/nomenclatures.md`.
+Ask how the team names its steps, and how many it wants. By default, the 50 → 950 grid
+(`naming: "grid"`). If they want to **add a step later without moving anything**, offer
+`hundreds` (hundreds by contrast) or `shade` (the name is the contrast, David Fusilier); if
+they already have ranks (Radix 1–12, Carbon 10–100), `rank`. Write `naming` and `stepList`.
+Details: `references/nomenclatures.md`.
 
-### 1. Entrer
+### 1. Enter
 
-- Une palette existante : `$C import <fichier> --brand Nom --out <id>.json`. Le fichier peut
-  être une liste de hex, du CSS/SCSS, une config Tailwind, des tokens DTCG ou Tokens Studio.
-  **Répéter à l'utilisateur ce qui a été écarté** (alias, rgba, doublons) : rien ne doit
-  disparaître en silence.
-- Une seule couleur : `$C new "#2f5bd3" --brand Nom --out <id>.json`.
-- Depuis Figma : `references/extracting-colors.md`. Lire le texte affiché, pas le nom du
-  calque, et balayer tout le fichier avant de conclure qu'une marque n'a qu'une couleur.
+- An existing palette: `$C import <file> --brand Name --out <id>.json`. The file can be a list
+  of hex values, CSS/SCSS, a Tailwind config, DTCG or Tokens Studio tokens. **Tell the user
+  what was dropped** (aliases, rgba, duplicates): nothing may disappear silently.
+- A single color: `$C new "#2f5bd3" --brand Name --out <id>.json`.
+- From Figma: `references/extracting-colors.md`. Read the displayed text, not the layer name,
+  and scan the whole file before concluding that a brand has only one color.
 
-### 2. Diagnostic
+### 2. Diagnosis
 
-`$C diagnose <id>.json` rend les constats, du plus grave au moins grave, chacun avec ses
-actions numérotées (renommer, remplacer, retirer, écarter la teinte, régénérer, garder et
-documenter). Les présenter **un par un**, avec la phrase et les chiffres du constat, et
-demander laquelle appliquer : `$C fix <id>.json <constat> <action>`. Une exception gardée
-part dans la spec (`accepted`, `notes`) et ne revient plus.
+`$C diagnose <id>.json` returns the findings, from most to least severe, each with numbered
+actions (rename, replace, remove, set the hue aside, regenerate, keep and document). Present
+them **one by one**, with the finding's sentence and numbers, and ask which one to apply:
+`$C fix <id>.json <finding> <action>`. An exception that is kept goes into the spec
+(`accepted`, `notes`) and does not come back.
 
-`$C suggest <id>.json` dit ce qui manque (un neutre teinté de la marque, les quatre couleurs
-système placées hors des teintes déjà prises) ; `--write` les ajoute, après accord.
+`$C suggest <id>.json` says what is missing (a neutral tinted by the brand, the four system
+colors placed away from the hues already taken); `--write` adds them, after agreement.
 
-Partie d'une palette existante : `$C suggest <id>.json --ladder` donne le **barreau médian**
-(la médiane des luminances fournies, cran par cran) et son écart au barreau par défaut ; un
-écart faible veut dire que la palette suivait déjà une règle. `--write` l'adopte, après accord.
-Une couleur système trop proche d'une couleur d'identité reçoit trois options chiffrées
-(assombrir, tirer la teinte, valeur éprouvée) : la marque ne bouge pas, c'est le système qui
-s'écarte.
+Starting from an existing palette: `$C suggest <id>.json --ladder` gives the **median ladder**
+(the median of the supplied luminances, step by step) and its gap to the default ladder; a
+small gap means the palette already followed a rule. `--write` adopts it, after agreement. A
+system color too close to an identity color gets three options with numbers (darken, pull the
+hue, proven value): the brand does not move, the system steps aside.
 
-### 3. Générer
+### 3. Generate
 
-`$C compare <id>.json` : chaque méthode, si elle tiendra le contrat, son écart moyen aux
-couleurs d'origine (ΔE) et ses croisements de seuil. Le contrat, ce sont les contrôles de
-l'étape Vérifier, dont la règle du nom (un même écart de crans garantit le même contraste sur
-toutes les teintes). Fusilier est le défaut de Hueladder, en tête de la liste : une préférence pour
-des intervalles réguliers, pas un classement. Choisir sur ces chiffres et sur le critère qui
-compte pour l'équipe (`$C explain` les compare critère par critère). Écrire `coreMethod`. Lire les résultats :
+`$C compare <id>.json`: each method, whether it will hold the contract, its mean gap to the
+original colors (ΔE) and its threshold crossings. The contract is the set of checks from the
+Verify step, including the naming rule (the same step gap guarantees the same contrast on every
+hue). Fusilier is Hueladder's default, at the top of the list: a preference for even intervals,
+not a ranking. Choose on these numbers and on the criterion that matters to the team
+(`$C explain` compares them criterion by criterion). Write `coreMethod`. Reading the results:
 `references/reading-results.md`, `references/methods.md`.
 
-Éclat : `"lightChroma": "vivid"` re-sature en clair, à luminance constante (donc sans toucher
-un seul contraste), en cloche, jamais sous la chroma d'avant ni au-delà de 96 % du gamut. À
-proposer quand l'équipe trouve la rampe terne ; le neutre n'y touche pas.
+Vividness: `"lightChroma": "vivid"` re-saturates the light steps at constant luminance (so
+without touching a single contrast), in a bell, never below the previous chroma nor beyond 96 %
+of the gamut. Offer it when the team finds the ramp dull; the neutral is left alone.
 
-### 4. Régler (facultatif)
+### 4. Tune (optional)
 
-Le régleur (`tuner.html`, produit par `build`) verrouille le contraste et laisse la teinte et
-l'éclat libres. Sans lui : écrire les valeurs dans `ramps[].tuned` (`{ "500": "#…" }`),
-`"coreMethod": "tuned"`, `"tunedBase": <méthode>`, puis `$C check` : une valeur hors du
-barreau de luminance casse la garantie, et le contrôle le dira. `references/tuner.md`.
+The tuner (`tuner.html`, produced by `build`) locks contrast and leaves hue and vividness
+free. Without it: write the values into `ramps[].tuned` (`{ "500": "#…" }`),
+`"coreMethod": "tuned"`, `"tunedBase": <method>`, then `$C check`: a value off the luminance
+ladder breaks the guarantee, and the check will say so. `references/tuner.md`.
 
-### 5. Mode sombre
+### 5. Dark mode
 
-Trois décisions, dans cet ordre :
+Three decisions, in this order:
 
-1. **Le fond.** Il fixe le contraste maximal possible (`#121212` : 18,73:1). Trop clair, les
-   derniers crans n'atteignent plus leur contraste.
-2. **La méthode.** `$C compare <id>.json --dark --bg "#121212"` juge chacune sous WCAG 2 (la
-   règle du nom survit-elle ?) et sous APCA (le texte reste-t-il aussi lisible qu'en clair ?).
-   `mirror-wcag` par défaut : la seule qui transporte exactement la règle. `mirror-bridge` si
-   l'équipe juge aussi en APCA : la règle tient, le texte gagne 7 à 17 Lc au milieu de
-   l'échelle, au prix de seuils atteints un cran plus tôt qu'en clair. Les autres servent de
-   témoins.
-3. **L'éclat.** Garder la chroma du clair (les systèmes mesurés gardent 90 à 100 % de la
-   chroma permise) ; `chromaProfile: "bell"` ou `desaturate` (surfaces seulement) sont des
-   options à justifier.
+1. **The background.** It sets the highest possible contrast (`#121212`: 18.73:1). Too light,
+   and the last steps no longer reach their contrast.
+2. **The method.** `$C compare <id>.json --dark --bg "#121212"` judges each one under WCAG 2
+   (does the naming rule survive?) and under APCA (does text stay as readable as in light
+   mode?). `mirror-wcag` by default: the only one that carries the rule over exactly.
+   `mirror-bridge` if the team also judges in APCA: the rule holds, text gains 7 to 17 Lc in
+   the middle of the scale, at the price of thresholds reached one step earlier than in light
+   mode. The others serve as witnesses.
+3. **Vividness.** Keep the light-mode chroma (the measured systems keep 90 to 100 % of the
+   allowed chroma); `chromaProfile: "bell"` or `desaturate` (surfaces only) are options to
+   justify.
 
-Écrire `darkMode`. Ajouter `staticTokens` pour ce qui ne s'inverse pas (un blanc qui doit
-rester blanc). Sources et mesures : `references/mode-sombre/recherche.md` et
+Write `darkMode`. Add `staticTokens` for what does not invert (a white that must stay white).
+Sources and measurements: `references/mode-sombre/recherche.md` and
 `references/mode-sombre/perceptif.md`.
 
-### 6. Vérifier
+### 6. Verify
 
-`$C check <id>.json` : le contrat du système (interchangeabilité, règle du nom paire par paire
-dans les deux modes, monotonie, teinte, chroma, gamut, budget). Code de sortie 1 s'il y a du
-rouge. Chaque rouge renvoie à une décision précédente : y retourner plutôt que de livrer. Un
-écart voulu s'accepte dans le studio (étape Vérifier) et se documente (`assumed`).
+`$C check <id>.json`: the system contract (interchangeability, naming rule pair by pair in both
+modes, monotonicity, hue, chroma, gamut, budget). Exit code 1 if anything is red. Each red
+points back to an earlier decision: go back there rather than ship. A deliberate deviation is
+accepted in the studio (Verify step) and documented (`assumed`).
 
-`node engine/check.mjs` vérifie l'outil lui-même (colorimétrie, rendu, déterminisme, studio) :
-le lancer après toute modification du moteur. Sans Chrome, les sections de rendu sont sautées :
-le dire plutôt que de conclure « tout est vert ».
+`node engine/check.mjs` checks the tool itself (color science, rendering, determinism,
+studio): run it after any change to the engine. Without Chrome, the rendering sections are
+skipped: say so rather than conclude "all green".
 
-`$C verify <tokens.json> [--dark <tokens.json> --bg #hex] [--rule N]` vérifie des fichiers
-**livrés** (retouchés, exportés, recopiés), pas la sortie du moteur : validité (aucun `null`,
-un type), monotonie, seuils au même cran pour toutes les familles, règle du nom relue dans
-les fichiers. Des fonds teintés à tenir se déclarent dans `surfaces` : le contrat dit où le
-texte AA commence sur chacun.
+`$C verify <tokens.json> [--dark <tokens.json> --bg #hex] [--rule N]` checks **delivered**
+files (retouched, exported, copied), not the engine's output: validity (no `null`, a type),
+monotonicity, thresholds at the same step for every family, naming rule read back from the
+files. Tinted backgrounds to hold are declared in `surfaces`: the contract says where AA text
+starts on each one.
 
-### 7. Livrer
+### 7. Ship
 
-`$C export <id>.json --format package --out livraison` écrit un dossier par destination :
+`$C export <id>.json --format package --out dist` writes one folder per destination:
 
-- `code/` : variables CSS (sombre sous `[data-theme="dark"]`), Tailwind 4 (`@theme`),
-  Tailwind 3, tokens DTCG ;
-- `figma/` : un fichier par mode, à glisser ensemble dans le panneau Variables (couleurs au
-  format objet de l'import natif) ;
-- `tokens-studio/tokens.json` : un jeu par mode, thèmes pour la version Pro ;
-- `ai/` : `color-guide.md` (la règle, le rôle de chaque cran) et `palette.json` (les mêmes
-  informations en données), à joindre au contexte d'un agent qui construit des interfaces ;
-- la spec, la migration (palette importée) et un README.
+- `code/`: CSS variables (dark under `[data-theme="dark"]`), Tailwind 4 (`@theme`),
+  Tailwind 3, DTCG tokens;
+- `figma/`: one file per mode, to drop together into the Variables panel (colors in the object
+  format of the native import);
+- `tokens-studio/tokens.json`: one set per mode, themes for the Pro version;
+- `ai/`: `color-guide.md` (the rule, the role of each step) and `palette.json` (the same
+  information as data), to attach to the context of an agent that builds interfaces;
+- the spec, the migration (imported palette) and a README.
 
-Un seul format : `--format css | tailwind | tailwind4 | dtcg | dtcg-dark | guide | palette |
-migration`. Le rapport d'arbitrage (`index.html`) et le régleur : `$C build <id>.json --out
-<dossier>` (identique à `node engine/build.mjs`). Le studio produit les mêmes fichiers au bit
-près.
+A single format: `--format css | tailwind | tailwind4 | dtcg | dtcg-dark | guide | palette |
+migration`. The decision report (`index.html`) and the tuner: `$C build <id>.json --out
+<folder>` (same as `node engine/build.mjs`). The studio produces the same files, bit for bit.
 
-**Hueladder propose une échelle, pas un système sémantique.** Les tokens et le guide décrivent
-l'usage de chaque cran (fond, bordure, texte, avec quels crans il tient AA) ; ils n'attribuent
-pas de rôles (`action.primary`, `surface.default`…). Ce mapping reste une décision de l'équipe.
+**Hueladder offers a scale, not a semantic system.** The tokens and the guide describe what
+each step is for (background, border, text, with which steps it passes AA); they do not assign
+roles (`action.primary`, `surface.default`…). That mapping stays the team's decision.
 
-Pour une mission client, copier le moteur dans le dossier du client
-(`cp -R engine clients/<client>/hueladder`) : le livrable reste reproductible sans
-dépendre d'une version future de l'outil.
+For a client project, copy the engine into the project folder
+(`cp -R engine clients/<client>/hueladder`): the delivery stays reproducible without depending
+on a future version of the tool.
 
-Options du paquet, à proposer selon le produit : `"cvdModes": true` (modes daltoniens à
-luminance verrouillée : les teintes de statut tournent pour rester distinguables, rien d'autre
-ne change), `"dataviz": true` (palettes de dataviz en alias de crans ; au-delà de quatre
-séries, un second codage), `gradients` (dégradés mesurés et normalisés, tokens d'arrêt).
-Partie d'une palette, le paquet contient aussi `decision.md`, la page « garder ou régénérer ».
+Package options, to offer depending on the product: `"cvdModes": true` (color-vision
+deficiency modes with locked luminance: status hues rotate to stay distinguishable, nothing
+else changes), `"dataviz": true` (dataviz palettes as aliases of steps; beyond four series, a
+second encoding), `gradients` (measured and normalized gradients, stop tokens). Starting from a
+palette, the package also contains `decision.md`, the keep-or-regenerate page.
 
-## Ce qu'il ne faut pas faire
+## What not to do
 
-- **Ne pas réimplémenter ΔE2000, APCA ou CAM16.** Ils sont dans `lib/`, validés contre les
-  vecteurs publiés. Une réimplémentation à la volée sera fausse.
-- **Ne pas amputer l'artefact.** Les 5 groupes de graphiques, le testeur de paires, les usages
-  conventionnels, les matrices et l'annexe font partie du livrable.
-- **Ne pas choisir la méthode avant d'avoir lu les chiffres.** `fusilier` est un défaut
-  raisonnable, pas une conclusion.
-- **Ne pas prendre Tailwind pour référence esthétique.** Son interchangeabilité est mauvaise
-  (mesurable dans l'artefact). Il sert de témoin « palette dessinée à la main », rien de plus.
-  La référence perceptive, ce sont les couleurs du client.
-- **Ne pas inventer de couleurs.** Tout ce qui est dans `anchors` vient d'une source vérifiable.
-- **Ne pas promettre un écart de contraste nul entre teintes.** La grille hex est discrète : le
-  meilleur atteignable sur 20 familles est de l'ordre de 0,04 point, soit ~1 % en relatif. Le
-  chiffre qui s'écrit dans la doc du design system, c'est **zéro franchissement de seuil**.
-- **Ne jamais moyenner deux couleurs sur leurs composantes RGB.** La moyenne déplace la
-  luminance, donc le contraste, donc le sens de l'échelon. Quand un client hésite entre deux
-  variantes, la moyenne se fait **sur la chroma en OKLCh**, à luminance et teinte constantes
-  (`blendVariants` dans `lib/tune.mjs`) — mesuré, la moyenne RGB se trompe de 9 % sur Y.
-- **Ne pas re-saturer un mode sombre uniformément.** Sans profil en cloche, les crans extrêmes
-  deviennent des aplats au lieu de rester des fonds : mesuré, +1065 % de chroma sur un cran 50.
+- **Don't reimplement ΔE2000, APCA or CAM16.** They are in `lib/`, validated against the
+  published vectors. An on-the-fly reimplementation will be wrong.
+- **Don't strip the report.** The 5 chart groups, the pair tester, the conventional uses, the
+  matrices and the appendix are part of the delivery.
+- **Don't choose the method before reading the numbers.** `fusilier` is a reasonable default,
+  not a conclusion.
+- **Don't take Tailwind as an aesthetic reference.** Its interchangeability is poor
+  (measurable in the report). It serves as the "hand-drawn palette" witness, nothing more. The
+  perceptual reference is the brand's own colors.
+- **Don't invent colors.** Everything in `anchors` comes from a verifiable source.
+- **Don't promise a zero contrast gap across hues.** The hex grid is discrete: the best
+  achievable over 20 families is around 0.04 point, about 1 % relative. The number that goes
+  into the design system's documentation is **zero threshold crossings**.
+- **Never average two colors on their RGB components.** The average moves luminance, hence
+  contrast, hence the meaning of the step. When a team hesitates between two variants, average
+  **on chroma in OKLCh**, at constant luminance and hue (`blendVariants` in `lib/tune.mjs`) —
+  measured, the RGB average is off by 9 % on Y.
+- **Don't re-saturate a dark mode uniformly.** Without a bell profile, the extreme steps turn
+  into flat fills instead of staying backgrounds: measured, +1065 % chroma on a 50 step.
 
-## Références
+## References
 
-| Fichier | Quand l'ouvrir |
+These documents are in French for now; read them all the same.
+
+| File | When to open it |
 |---|---|
-| `references/audit.md` | auditer : quoi donner, dans quel ordre lire et présenter, les seuils et pourquoi |
-| `references/brand-spec.md` | écrire la spec : toutes les clés et leurs effets |
-| `references/reading-results.md` | interpréter l'artefact et formuler la recommandation |
-| `references/extracting-colors.md` | sortir les couleurs de Figma proprement |
-| `references/methods.md` | le cadre (espace ≠ méthode ≠ outil), les cinq familles, chaque méthode, la conformité aux librairies |
-| `references/tuner.md` | le régleur à contraste verrouillé |
-| `references/studio.md` | le studio Hueladder : parcours, lecture des imports, diagnostic, exports |
-| `references/lecons.md` | ce que les missions ont appris — à relire avant de recommander |
-| `references/feuille-de-route.md` | ce qui manque encore, avant de promettre une fonction |
-| `references/nomenclatures.md` | les façons de nommer les crans (rang, luminosité, contraste) et leurs règles |
-| `references/mode-sombre/recherche.md` | les méthodes de mode sombre documentées, sources et mesures |
-| `references/mode-sombre/perceptif.md` | méthodes « perceptives » évaluées, et pourquoi `mirror-bridge` |
-| `references/benchmark.md` | les autres outils, ce que Hueladder fait de plus, et les formats de livraison (Figma, Tokens Studio, code) |
+| `references/audit.md` | auditing: what to give, in what order to read and present, the thresholds and why |
+| `references/brand-spec.md` | writing the spec: every key and its effect |
+| `references/reading-results.md` | interpreting the report and phrasing the recommendation |
+| `references/extracting-colors.md` | getting colors out of Figma cleanly |
+| `references/methods.md` | the frame (space ≠ method ≠ tool), the five families, each method, conformance to the libraries |
+| `references/tuner.md` | the contrast-locked tuner |
+| `references/studio.md` | the Hueladder studio: path, reading imports, diagnosis, exports |
+| `references/lecons.md` | what real projects taught — reread before recommending |
+| `references/feuille-de-route.md` | what is still missing, before promising a feature |
+| `references/nomenclatures.md` | the ways to name steps (rank, lightness, contrast) and their rules |
+| `references/mode-sombre/recherche.md` | the documented dark-mode methods, sources and measurements |
+| `references/mode-sombre/perceptif.md` | "perceptual" methods evaluated, and why `mirror-bridge` |
+| `references/benchmark.md` | the other tools, what Hueladder adds, and the delivery formats (Figma, Tokens Studio, code) |

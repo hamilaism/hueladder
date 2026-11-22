@@ -1,0 +1,56 @@
+# Third-party notices
+
+Hueladder is released under the [MIT license](LICENSE), with the exceptions below. They apply
+to the files named here and to `hueladder.html`, which embeds the engine.
+
+## APCA (`engine/lib/apca.mjs`)
+
+A port of [apca-w3](https://github.com/Myndex/apca-w3) (APCA 0.0.98G-4g), copyright © 2019-2023
+Andrew Somers and Myndex Research. **This file is not covered by Hueladder's MIT license.** Its
+author licenses it under the
+[W3 License for Compliant Code Only](https://github.com/Myndex/apca-w3/blob/master/LICENSE.md):
+
+- use for web-based content, in support of the WCAG accessibility guidelines;
+- no modification of the essential algorithm, and an obligation to keep it current;
+- other uses fall under the AGPL v3, and commercial use outside that agreement needs a written
+  license from Myndex. Patents are pending.
+
+APCA™ and the related terms are trademarks of Myndex. Hueladder is not affiliated with,
+certified or endorsed by Myndex. If you build Hueladder into a product, read the APCA license
+for your use case first.
+
+## Material Color Utilities (`engine/lib/cam16.mjs`)
+
+Portions derived from [material-color-utilities](https://github.com/material-foundation/material-color-utilities),
+copyright 2021 Google LLC, licensed under the Apache License, Version 2.0
+([full text](LICENSES/Apache-2.0.txt)). Changes: ported from TypeScript to dependency-free
+JavaScript, with Hueladder's own gamut solver.
+
+## Tailwind CSS palette (`engine/lib/methods.mjs`)
+
+The `tailwind` method embeds the Tailwind CSS 4.3 default palette.
+
+> MIT License. Copyright (c) Tailwind Labs, Inc.
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+> and associated documentation files (the "Software"), to deal in the Software without
+> restriction, including without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+> Software is furnished to do so, subject to the following conditions: The above copyright
+> notice and this permission notice shall be included in all copies or substantial portions of
+> the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+## Radix Colors (`references/mode-sombre/radix.mjs`)
+
+A research script that quotes a few Radix Colors values. MIT License. Copyright (c) 2021-2022
+Modulz, Copyright (c) 2022-Present WorkOS.
+
+## Methods used as ideas, without their code
+
+These methods are reimplemented from their published descriptions. No code is copied, and
+each one is credited in the [README](README.md#credits): color-shades (David Fusilier, MIT),
+Leonardo (Adobe, Apache 2.0), chroma.js (Gregor Aisch, BSD 3-Clause), Oklab and OKLCH (Björn
+Ottosson), Accessible Palette, ColorBox (Lyft), Stripe's accessible color system, Adobe
+Spectrum, IBM Carbon, GitHub Primer and Atlassian. The test vectors and matrices come from
+published papers: CIEDE2000 (Sharma, Wu & Dalal, 2005), CAM16 (Li et al., 2017) and
+color-vision deficiency simulation (Machado, Oliveira & Fernandes, 2009).

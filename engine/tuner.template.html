@@ -234,8 +234,8 @@ const DATA = /*TUNER_DATA*/{};
 
 if (DATA.embedded) document.body.classList.add('embedded');
 // Le studio passe sa langue ; la page autonome reste en français.
-const T = (fr, en) => (DATA.lang === 'en' ? en : fr);
-if (DATA.lang === 'en') {
+const T = (fr, en) => (DATA.lang === 'fr' ? fr : en);
+if (DATA.lang !== 'fr') {
   document.documentElement.lang = 'en';
   const set = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
   set('.bar label', 'Ramp');
